@@ -133,7 +133,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Every attempt, block and execution written as `ActionDecision` events.
 - **Done when:** tests cover blocked writes without consent, blocked calls outside hours, and audit entries for each path.
 
-#### [ ] B3 Mission ledger and state machine
+#### [x] B3 Mission ledger and state machine
 - **Branch:** `feat/B3-missions`
 - **Owns:** `chanakya/missions/ledger.py`, `chanakya/missions/state.py`
 - **Build:**
