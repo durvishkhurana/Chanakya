@@ -210,3 +210,37 @@ def test_fake_llm_records_calls():
     llm = FakeLLM({Role.JUDGE: "yes"})
     assert asyncio.run(llm.complete(Role.JUDGE, [{"role": "user", "content": "?"}])) == "yes"
     assert llm.calls[0][0] == Role.JUDGE
+
+
+def test_groq_is_chosen_when_only_its_key_is_set(monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("GROQ_API_KEY", "groq-test-secret")
+    settings = Settings.from_env()
+    assert settings.llm_provider == "groq" and settings.llm_api_key == "groq-test-secret"
+    assert settings.models["twin_a"].split("/")[0] != settings.models["twin_b"].split("/")[0]
+    assert "groq-test-secret" not in repr(settings)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "o")
+    assert Settings.from_env().llm_provider == "openrouter"
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    assert Settings.from_env().llm_provider == "groq"
+
+
+def test_groq_client_uses_its_endpoint_json_mode_seed_and_retries_rate_limits():
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append((str(request.url), __import__("json").loads(request.content), request.headers["Authorization"]))
+        if len(seen) == 1:
+            return httpx.Response(429, headers={"retry-after": "0"})
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"ok": true}'}}]})
+
+    settings = Settings(llm_provider="groq", groq_api_key="g", models=dict(__import__("chanakya.core.config", fromlist=["GROQ_MODELS"]).GROQ_MODELS))
+    llm = OpenRouterLLM(settings, client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    reply = asyncio.run(llm.complete(Role.MAIN, [{"role": "user", "content": "hi"}], json_mode=True, seed=4))
+    url, body, auth = seen[-1]
+    assert reply == '{"ok": true}' and len(seen) == 2
+    assert url == "https://api.groq.com/openai/v1/chat/completions" and auth == "Bearer g"
+    assert body["response_format"] == {"type": "json_object"} and body["seed"] == 4
+    assert body["reasoning_effort"] == "low" and "reasoning" not in body
+    assert any("json" in m["content"].lower() for m in body["messages"])

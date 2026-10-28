@@ -24,7 +24,7 @@ The Chanakya brain (belief tracker, Strategy Forest, look-ahead planner), missio
 
 Requires Python 3.12 and Node.js 20 or newer.
 
-1. Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY` and `SARVAM_API_KEY`.
+1. Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY` and `SARVAM_API_KEY`. The Chanakya modules can use Groq instead: set `GROQ_API_KEY` (and `LLM_PROVIDER=groq` if both keys are present); `MODEL_<ROLE>` overrides a role's model.
 2. Install and verify everything:
 
    ```bash
