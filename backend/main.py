@@ -89,3 +89,14 @@ async def voice_websocket_endpoint(
         return
     from backend.voice_pipeline import voice_pipeline
     await voice_pipeline(websocket, voice_agent_instance, retrieval_provider)
+
+
+# Chanakya mission, action and hand-off APIs (task B5); mounted only when MISSIONS_ENABLED is true.
+if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}:
+    from chanakya.actions.api import router as actions_router
+    from chanakya.humans.api import router as handoffs_router
+    from chanakya.missions.api import router as missions_router
+
+    app.include_router(missions_router)
+    app.include_router(actions_router)
+    app.include_router(handoffs_router)
