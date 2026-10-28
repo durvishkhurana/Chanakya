@@ -141,7 +141,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Mission API: create, advance, attach turn, attach action, close.
 - **Done when:** illegal transitions raise; a full mission can be replayed from its events.
 
-#### [ ] B4 Hand-off cards
+#### [x] B4 Hand-off cards
 - **Branch:** `feat/B4-handoff`
 - **Owns:** `chanakya/humans/handoff.py`
 - **Depends on:** B3

@@ -330,9 +330,9 @@
       "dependencies": [
         "B3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Card generated from a recorded mission; human queue claim/resolve endpoints work.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 90 passed (card built from a recorded mission: concerns, moves, executed actions, summary; LLM summary and fallback; escalate/claim/resolve order enforced; urgent first; closed mission cannot escalate); ./init.sh passed."
     },
     {
       "id": "B5",
