@@ -128,5 +128,5 @@ class EventBus(Protocol):
         ...
 
     def subscribe(self, mission_id: str | None = None) -> AsyncIterator[MissionEvent]:
-        """Live events from now on, for one mission or all."""
+        """Live events from the moment of this call, for one mission or all; supports ``aclose()``."""
         ...
