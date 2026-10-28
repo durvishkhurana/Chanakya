@@ -38,9 +38,9 @@
         "chanakya/core/"
       ],
       "dependencies": [],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Schemas round-trip to JSON, fakes satisfy every protocol, tests pass. Includes MissionCard with why_now and starting_worries (docs/IDEA.md 3.2).",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 23 passed (schema round trips, protocols, gate, event bus, flags, LLM payload); ./init.sh passed (agent 94 OK, backend 94 OK, Ruff clean, frontend lint and tests)."
     },
     {
       "id": "F0.3",

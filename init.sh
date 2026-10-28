@@ -32,7 +32,7 @@ echo "--- Inherited unit tests: backend"
 
 if [ -d chanakya ] || [ -d tests ]; then
   echo "--- pytest"
-  "$PY" -m pytest -q
+  "$PY" -m pytest
 fi
 
 if [ -f pyproject.toml ] && grep -q '\[tool.ruff' pyproject.toml; then
