@@ -172,7 +172,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Strict time budget with fallback; emits `PlanComputed` events including the search tree for the dashboard.
 - **Done when:** beats the baseline planner on a fixed Twin-A set; stays inside the time budget.
 
-#### [ ] A7 Planning while listening
+#### [x] A7 Planning while listening
 - **Branch:** `feat/A7-plan-while-listening`
 - **Owns:** `backend/` voice session planning hook, `chanakya/brain/speculative.py`
 - **Depends on:** A6

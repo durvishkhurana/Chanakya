@@ -184,9 +184,9 @@
       "dependencies": [
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "p50/p90 turn latency logged and compared with planning after speech; only read-only tools run before end of speech.",
-      "evidence": "",
+      "evidence": "2026-10-29: chanakya/brain/speculative.py, agent/brain_agent.py (_turn/prepare/commit), backend/voice_session.py partial-transcript hook. python -m chanakya.brain.speculative --turns 40 --seed 3 (fake delays rollout 0.25 s, main 0.8 s, partial 0.6 s before final, 25% of finals changed): planning after speech p50 1064.7 ms / p90 1076.9 ms; planning while listening p50 459.3 ms / p90 1063.1 ms; 8 misses recomputed. Live: LLM_MODEL_MAIN=openai/gpt-oss-20b python -m chanakya.brain.speculative --live --turns 12 --seed 3: after speech p50 8299 / p90 12564 ms, while listening p50 11717 / p90 15244 ms; both dominated by Groq free-tier rate-limit waits, and speculation adds calls, so the flag defaults to false. Write actions never run speculatively (tested). Tests: chanakya/brain/tests/test_speculative.py, backend/test_voice_speculation.py. SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 98 OK, pytest 136 passed, Ruff clean, frontend 9/9.",
       "notes": "Roadmap candidate."
     },
     {

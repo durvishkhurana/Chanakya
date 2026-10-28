@@ -60,6 +60,9 @@ async def run_voice_session(
     language = VoiceLanguage()
     activity = activity_factory()
     thread_id = str(uuid.uuid4())
+    # Planning while listening (off by default): agents that can prepare a turn from partials do so.
+    listening = os.getenv("PLANNING_WHILE_LISTENING", "false").lower() in {"true", "1", "yes"}
+    speculate = getattr(voice_agent, "prepare", None) if listening else None
 
     def owns(owner):
         return response is owner and not owner.cancelled
@@ -323,7 +326,10 @@ async def run_voice_session(
                 if event_type.startswith(("RealtimeTranscript", "RealtimeVad")):
                     activity.touch()
                 if event_type == "RealtimeTranscriptPartial":
-                    await emit("partial_transcript", text=getattr(event, "text", ""), utterance_id=utterance_id)
+                    partial = getattr(event, "text", "")
+                    await emit("partial_transcript", text=partial, utterance_id=utterance_id)
+                    if callable(speculate) and partial.strip():
+                        launch(speculate(" ".join([*fragments, partial]), thread_id, language.current))
                 elif event_type == "RealtimeVadSpeechStart":
                     utterance_id += 1
                     utterance_open = True

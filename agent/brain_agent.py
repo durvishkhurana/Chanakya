@@ -11,7 +11,8 @@ from chanakya.brain.belief import BayesianBeliefTracker, LexicalScorer, LLMScore
 from chanakya.brain.concern_bank import default_bank
 from chanakya.brain.planner_rules import RuleBasedPlanner
 from chanakya.brain.realizer import LLMRealizer, TemplateRealizer
-from chanakya.core.events import ActionDecided, PlanComputed, TurnCompleted
+from chanakya.brain.speculative import Speculation
+from chanakya.core.events import ActionDecided, BeliefUpdated, PlanComputed, TurnCompleted
 from chanakya.core.schemas import (
     ActionDecision,
     ConsentRecord,
@@ -56,6 +57,8 @@ class BrainAgent:
         self.actions_enabled = actions_enabled
         self.threads: dict[str, DialogueState] = {}
         self._locks: dict[str, asyncio.Lock] = {}
+        self.speculations: dict[str, Speculation] = {}
+        self.speculation_hits = 0
 
     def start(self, thread_id: str, card: MissionCard) -> DialogueState:
         """Begin ``thread_id`` from a given mission card instead of the default inbound one."""
@@ -73,7 +76,7 @@ class BrainAgent:
                                                     transcript=Transcript(mission_id=card.mission_id))
         return self.threads[thread_id]
 
-    async def _act(self, state: DialogueState, tool: str) -> ActionDecision:
+    async def _act(self, state: DialogueState, tool: str) -> ActionDecided:
         call = ToolCall(tool=tool, args={"merchant_id": state.card.merchant.merchant_id},
                         mission_id=state.card.mission_id)
         if not await self.planner.reconsider(state, call):
@@ -83,43 +86,90 @@ class BrainAgent:
         else:
             decision = await self.gate.check(call, state)
         state.actions.append(decision)
-        if self.bus is not None:
-            await self.bus.publish(ActionDecided(mission_id=state.card.mission_id, decision=decision))
-        return decision
+        return ActionDecided(mission_id=state.card.mission_id, decision=decision)
+
+    async def _turn(self, state: DialogueState, text: str, language: str, speculative: bool = False):
+        """Advance ``state`` by one merchant turn. Returns ``(reply, events)``, or ``None`` when a
+        speculative turn reaches a write action, which may only run once the merchant has finished."""
+        if state.card.merchant.language != language:
+            merchant = state.card.merchant.model_copy(update={"language": language})
+            state.card = state.card.model_copy(update={"merchant": merchant})
+        turn = Turn(speaker="merchant", text=text, language=language)
+        state.transcript.turns.append(turn)
+        if state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT and lib.explicit_consent(text):
+            state.transcript.consents.append(ConsentRecord(
+                tool=state.moves[-1].tool, turn_index=len(state.transcript.turns) - 1, utterance=text))
+        tracker = BayesianBeliefTracker(self.bank, scorer=self.scorer)
+        state.belief = await tracker.update(state.belief, turn, state.transcript.turns)
+        mission = state.card.mission_id
+        events = [BeliefUpdated(mission_id=mission, belief=state.belief, latency_ms=tracker.last_latency_ms,
+                                evidence=tracker.last_evidence)]
+        plan = await self.planner.plan(state)
+        events.append(PlanComputed(mission_id=mission, plan=plan))
+        move = plan.move
+        if move.type == MoveType.TAKE_ACTION and move.tool in lib.WRITE_TOOLS:
+            if speculative:
+                return None
+            events.append(await self._act(state, move.tool))
+        reply = await self.realizer.realize(move, state)
+        agent_turn = Turn(speaker="agent", text=reply, language=language, move=move)
+        state.moves.append(move)
+        state.transcript.turns.append(agent_turn)
+        if move.type == MoveType.DISCLOSE_AND_GREET:
+            state.transcript.disclosed_ai = True
+        if move.type in lib.TERMINAL_MOVES:
+            state.ended = True
+        events.append(TurnCompleted(mission_id=mission, turn=agent_turn, belief=state.belief, move=move))
+        return reply, events
+
+    async def prepare(self, partial: str, thread_id: str, language: str = "en-IN") -> None:
+        """Start preparing the next turn from a partial transcript (planning while listening)."""
+        if not partial.strip():
+            return
+        previous = self.speculations.pop(thread_id, None)
+        if previous is not None:
+            previous.task.cancel()
+        state = self.state(thread_id, language)
+        copy = state.model_copy(deep=True)
+
+        async def run():
+            result = await self._turn(copy, partial, language, speculative=True)
+            return None if result is None else (copy, *result)
+
+        self.speculations[thread_id] = Speculation(partial, len(state.transcript.turns), asyncio.create_task(run()))
+
+    async def _speculated(self, thread_id: str, text: str, version: int):
+        """The prepared turn for ``text``, if one matches; a mismatch is cancelled and discarded."""
+        speculation = self.speculations.pop(thread_id, None)
+        if speculation is None:
+            return None
+        if not speculation.usable_for(text, version):
+            speculation.task.cancel()
+            return None
+        try:
+            return await speculation.task
+        except Exception:  # noqa: BLE001 - A failed speculation just means computing the turn normally.
+            return None
 
     async def respond(self, text: str, thread_id: str, language: str = "en-IN") -> str:
         """Fold in the merchant's words, plan one move, take it safely and return what Chanakya says."""
         lock = self._locks.setdefault(thread_id, asyncio.Lock())
         async with lock:
             state = self.state(thread_id, language)
-            if state.card.merchant.language != language:
-                merchant = state.card.merchant.model_copy(update={"language": language})
-                state.card = state.card.model_copy(update={"merchant": merchant})
-            turn = Turn(speaker="merchant", text=text, language=language)
-            state.transcript.turns.append(turn)
-            if state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT and lib.explicit_consent(text):
-                state.transcript.consents.append(ConsentRecord(
-                    tool=state.moves[-1].tool, turn_index=len(state.transcript.turns) - 1, utterance=text))
-            tracker = BayesianBeliefTracker(self.bank, scorer=self.scorer, bus=self.bus,
-                                            mission_id=state.card.mission_id)
-            state.belief = await tracker.update(state.belief, turn, state.transcript.turns)
-            plan = await self.planner.plan(state)
+            prepared = await self._speculated(thread_id, text, len(state.transcript.turns))
+            if prepared is not None:
+                state, reply, events = prepared
+                merchant_index = next(i for i in range(len(state.transcript.turns) - 1, -1, -1)
+                                      if state.transcript.turns[i].speaker == "merchant")
+                state.transcript.turns[merchant_index] = state.transcript.turns[merchant_index].model_copy(
+                    update={"text": text})
+                self.threads[thread_id] = state
+                self.speculation_hits += 1
+            else:
+                reply, events = await self._turn(state, text, language)
             if self.bus is not None:
-                await self.bus.publish(PlanComputed(mission_id=state.card.mission_id, plan=plan))
-            move = plan.move
-            if move.type == MoveType.TAKE_ACTION and move.tool in lib.WRITE_TOOLS:
-                await self._act(state, move.tool)
-            reply = await self.realizer.realize(move, state)
-            agent_turn = Turn(speaker="agent", text=reply, language=language, move=move)
-            state.moves.append(move)
-            state.transcript.turns.append(agent_turn)
-            if move.type == MoveType.DISCLOSE_AND_GREET:
-                state.transcript.disclosed_ai = True
-            if move.type in lib.TERMINAL_MOVES:
-                state.ended = True
-            if self.bus is not None:
-                await self.bus.publish(TurnCompleted(mission_id=state.card.mission_id, turn=agent_turn,
-                                                     belief=state.belief, move=move))
+                for event in events:
+                    await self.bus.publish(event)
             return reply
 
     async def astream(self, query: str, config=None, **kwargs):
@@ -134,6 +184,9 @@ class BrainAgent:
         """Release a finished conversation."""
         self.threads.pop(thread_id, None)
         self._locks.pop(thread_id, None)
+        speculation = self.speculations.pop(thread_id, None)
+        if speculation is not None:
+            speculation.task.cancel()
 
     async def aclose(self) -> None:
         """Close the LLM client if it has one."""
