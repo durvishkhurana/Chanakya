@@ -82,7 +82,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Adversarial personas: angry merchant, prompt-injection attempts, fake "Paytm staff" asking for OTP.
 - **Done when:** fixed-seed runs are reproducible; calibration test shows a realistic walk-away rate.
 
-#### [ ] A3 Belief tracker and live concern meter feed
+#### [x] A3 Belief tracker and live concern meter feed
 - **Branch:** `feat/A3-belief-tracker`
 - **Owns:** `chanakya/brain/belief.py`, `chanakya/brain/cues.py`
 - **Depends on:** A1

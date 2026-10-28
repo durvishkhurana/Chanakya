@@ -18,6 +18,7 @@
 4. `fix/voice-llm-provider`: voice agent runs on Groq while only `GROQ_API_KEY` is set; OpenRouter behaviour unchanged when its key is present
 5. `feat/A1-concerns-personas`: Concern Bank (13 concerns), trigger priors, 68 fictional personas
 6. `feat/A2-twins`: Twin-A and Twin-B with a deterministic judge, walk-away calibration, adversarial personas
+7. `feat/A3-belief-tracker`: Bayesian belief tracker with lexical and LLM evidence scorers and hesitation cues
 
 ## Status
 
@@ -31,6 +32,7 @@
 - [x] Voice agent on Groq: live text turns verified (English greeting, Hindi Soundbox question answered from the source with no invented rental, fake-staff OTP request refused); Sarvam key verified with one Hindi TTS call; em dashes stripped from spoken text in code
 - [x] A1 Concern Bank and personas: 13 concerns with Hindi, Hinglish, Punjabi and English phrasings; every resolve condition points to a real knowledge node and quotes no price; priors for all 11 triggers (IDEA rows copied exactly, others marked design_default); 68 seeded personas split planning/evaluation with disjoint cities and 8 adversarial
 - [x] A2 merchant twins: deterministic judge (willingness rises only when a hidden concern is resolved without invented money claims; falls on pressure, repetition, ignored objections, sensitive-data requests), walk-away rule, template and LLM voices, Twin-B refuses planning personas; untreated agent loses 63% (planning) and 58% (evaluation) of merchants over 20 seeds
+- [x] A3 belief tracker: starts from the mission card prior (smoothed 15% toward uniform), Bayesian update with decay, likelihood from an LLM scorer (Groq) or an offline trigram-and-cue-word scorer, hesitation from pause, fillers, speech rate and short deflections; BeliefUpdated events carry latency
 
 ### What's In Progress
 

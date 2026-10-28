@@ -111,9 +111,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Starts from the mission card prior; scripted utterances move the right concern to the top; BeliefUpdated events emitted; latency per update logged.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/belief.py, chanakya/brain/cues.py. Tests (chanakya/brain/tests/test_belief.py): 8 scripted utterances in Hinglish, Hindi and Punjabi each move the right concern to the top; evidence overrides a wrong prior within two turns; hesitation tilts toward unspoken worries; BeliefUpdated events persisted with latency. Live LLM scorer on Groq (openai/gpt-oss-20b): paraphrases in Hinglish, Punjabi and Hindi scored hidden_charges 0.95, not_needed 0.95, settlement_delay 0.96 at 1566/841/609 ms per update. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 61 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "A4",
