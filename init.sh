@@ -9,18 +9,32 @@ APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$APP_ROOT"
 echo "=== Chanakya verification ==="
 
-PYTHON="$(command -v python3.12 || command -v python3)"
-"$PYTHON" -c 'import sys; assert sys.version_info >= (3, 11), "Python 3.11+ required"'
+# Take the first interpreter that actually runs: on Windows, python3 can be a Microsoft Store stub.
+PYTHON=()
+for candidate in "python3.12" "py -3.12" "python3" "python" "py -3"; do
+  read -r -a cmd <<< "$candidate"
+  if command -v "${cmd[0]}" >/dev/null 2>&1 \
+      && "${cmd[@]}" -c 'import sys; assert sys.version_info >= (3, 12)' >/dev/null 2>&1; then
+    PYTHON=("${cmd[@]}")
+    break
+  fi
+done
+# 3.11's asyncio.wait_for can swallow cancellation, which hangs voice session teardown tests.
+[ ${#PYTHON[@]} -gt 0 ] || { echo "Python 3.12+ required (see pyproject.toml)"; exit 1; }
 
 VENV="$APP_ROOT/.venv"
-if [ ! -x "$VENV/bin/python" ]; then
+# Windows virtualenvs keep the interpreter in Scripts/, POSIX ones in bin/.
+venv_python() {
+  if [ -x "$VENV/Scripts/python.exe" ]; then echo "$VENV/Scripts/python.exe"; else echo "$VENV/bin/python"; fi
+}
+if [ ! -x "$(venv_python)" ]; then
   [ -n "${SKIP_INSTALL:-}" ] && { echo "No virtualenv at $VENV and SKIP_INSTALL is set"; exit 1; }
-  echo "--- Creating virtualenv and installing locked dependencies"
-  "$PYTHON" -m venv "$VENV"
-  "$VENV/bin/python" -m pip install -q --upgrade pip
-  "$VENV/bin/python" -m pip install -q -r "$APP_ROOT/requirements.lock.txt"
+  echo "--- Creating virtualenv with $("${PYTHON[@]}" --version) and installing locked dependencies"
+  "${PYTHON[@]}" -m venv "$VENV"
+  "$(venv_python)" -m pip install -q --upgrade pip
+  "$(venv_python)" -m pip install -q -r "$APP_ROOT/requirements.lock.txt"
 fi
-PY="$VENV/bin/python"
+PY="$(venv_python)"
 if [ -z "${SKIP_INSTALL:-}" ] && ! "$PY" -c 'import pytest, ruff' 2>/dev/null; then
   "$PY" -m pip install -q pytest ruff
 fi
