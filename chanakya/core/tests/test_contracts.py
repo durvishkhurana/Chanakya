@@ -1,0 +1,198 @@
+import asyncio
+
+import httpx
+import pytest
+from pydantic import ValidationError
+
+from chanakya.core import interfaces
+from chanakya.core.config import Settings
+from chanakya.core.events import InProcessEventBus
+from chanakya.core.fakes import (
+    FakeBeliefTracker,
+    FakeMerchantTwin,
+    FakePlanner,
+    FakeRealizer,
+    FakeSafetyGate,
+    FakeToolRegistry,
+    InMemoryMissionStore,
+)
+from chanakya.core.llm import FakeLLM, OpenRouterLLM, Role
+from chanakya.core.schemas import (
+    ActionDecision,
+    BeliefState,
+    ContactWindow,
+    Door,
+    EventKind,
+    HandoffCard,
+    Merchant,
+    MerchantSignal,
+    Mission,
+    MissionCard,
+    MissionEvent,
+    MissionType,
+    Move,
+    MoveType,
+    PlanContext,
+    PlanResult,
+    ScoredMove,
+    SignalKind,
+    Speaker,
+    ToolCall,
+    ToolInfo,
+    ToolKind,
+    ToolResult,
+    Transcript,
+    Turn,
+    TwinReply,
+    Verdict,
+)
+
+
+def card(**overrides) -> MissionCard:
+    data = {
+        "merchant_id": "mer_1", "merchant_name": "Ramesh Kirana", "door": Door.MERCHANT,
+        "signal_kind": SignalKind.CALLBACK_REQUEST, "signal_id": "sig_1", "mission_type": MissionType.SALES,
+        "goal": "Sell Soundbox", "product": "soundbox", "why_now": "Requested a callback",
+        "starting_worries": {"hidden_charges": 5, "competitor_qr": 3, "just_busy": 2}, "priority": 0.6,
+    }
+    return MissionCard(**(data | overrides))
+
+
+def samples():
+    mission = Mission(card=card())
+    call = ToolCall(mission_id=mission.id, tool="send_onboarding_link", args={"product": "soundbox"})
+    move = Move(type=MoveType.RESOLVE_CONCERN, concern_id="hidden_charges")
+    transcript = Transcript(mission_id=mission.id, turns=[Turn(speaker=Speaker.MERCHANT, text="Kitna katega?", move=None)])
+    return [
+        Merchant(id="mer_1", name="Ramesh Kirana", business_type="kirana", city="Patiala"),
+        MerchantSignal(merchant_id="mer_1", kind=SignalKind.SOUNDBOX_UNUSED, door=Door.DATA, source="signal feed"),
+        mission,
+        MissionEvent.of(mission.id, EventKind.NOTE, {"text": "hi"}),
+        BeliefState(probabilities={"a": 1, "b": 3}),
+        PlanResult(chosen=move, candidates=[ScoredMove(move=move, score=0.4, visits=3)], tree={"root": []}),
+        transcript,
+        PlanContext(mission=mission, belief=BeliefState(probabilities={"a": 1}), transcript=transcript),
+        ToolInfo(name="get_device_status", system="devices", kind=ToolKind.READ, description="status"),
+        ActionDecision(call=call, verdict=Verdict.EXECUTED, reason="ok",
+                       result=ToolResult(call_id=call.id, tool=call.tool, ok=True)),
+        HandoffCard(mission_id=mission.id, merchant_name="Ramesh", language="hi-IN", reason="distress", summary="s"),
+        TwinReply(text="Haan", willingness=0.4),
+    ]
+
+
+@pytest.mark.parametrize("model", samples(), ids=lambda m: type(m).__name__)
+def test_every_schema_round_trips_through_json(model):
+    assert type(model).model_validate_json(model.model_dump_json()) == model
+
+
+def test_probabilities_are_normalized():
+    assert card().starting_worries == {"hidden_charges": 0.5, "competitor_qr": 0.3, "just_busy": 0.2}
+    assert BeliefState(probabilities={"a": 1, "b": 3}).top(1) == [("b", 0.75)]
+    with pytest.raises(ValidationError):
+        BeliefState(probabilities={"a": -1})
+
+
+def test_moves_enforce_their_required_fields():
+    with pytest.raises(ValidationError):
+        Move(type=MoveType.TAKE_ACTION)
+    with pytest.raises(ValidationError):
+        Move(type=MoveType.PROBE_CONCERN)
+
+
+def test_contact_window():
+    assert ContactWindow(start_hour=14, end_hour=17).contains(16)
+    assert not ContactWindow(start_hour=14, end_hour=17).contains(17)
+    with pytest.raises(ValidationError):
+        ContactWindow(start_hour=17, end_hour=14)
+
+
+def test_unknown_fields_are_rejected():
+    with pytest.raises(ValidationError):
+        Turn(speaker=Speaker.AGENT, text="hi", mood="happy")
+
+
+def test_fakes_satisfy_protocols():
+    store = InMemoryMissionStore()
+    registry = FakeToolRegistry()
+    pairs = [
+        (FakeBeliefTracker(), interfaces.BeliefTracker),
+        (FakePlanner(), interfaces.Planner),
+        (FakeRealizer(), interfaces.Realizer),
+        (registry, interfaces.ToolRegistry),
+        (FakeSafetyGate(registry, store), interfaces.SafetyGate),
+        (store, interfaces.MissionStore),
+        (FakeMerchantTwin(), interfaces.MerchantTwin),
+        (InProcessEventBus(store), interfaces.EventBus),
+    ]
+    for fake, protocol in pairs:
+        assert isinstance(fake, protocol), protocol.__name__
+
+
+def test_fake_gate_blocks_writes_without_consent_and_audits():
+    store = InMemoryMissionStore()
+    mission = store.create(Mission(card=card()))
+    info = ToolInfo(name="send_onboarding_link", system="messaging", kind=ToolKind.WRITE, description="send")
+    gate = FakeSafetyGate(FakeToolRegistry({info.name: (info, lambda args: {"sent": True})}), store)
+    call = ToolCall(mission_id=mission.id, tool=info.name)
+
+    assert asyncio.run(gate.submit(call)).verdict == Verdict.BLOCKED
+    store.append(MissionEvent.of(mission.id, EventKind.CONSENT_GIVEN, {"for": info.name}))
+    assert asyncio.run(gate.submit(call)).verdict == Verdict.EXECUTED
+    assert asyncio.run(gate.submit(ToolCall(mission_id=mission.id, tool="invented"))).verdict == Verdict.REJECTED
+    assert [e.kind for e in store.events(mission.id)].count(EventKind.ACTION_DECISION) == 3
+
+
+def test_event_bus_persists_then_delivers_to_matching_subscribers():
+    async def scenario():
+        store = InMemoryMissionStore()
+        bus = InProcessEventBus(store)
+        everything, only_m1 = bus.subscribe(), bus.subscribe("m1")
+        first_all = asyncio.ensure_future(anext(everything))
+        first_m1 = asyncio.ensure_future(anext(only_m1))
+        await asyncio.sleep(0)
+        await bus.publish(MissionEvent.of("m2", EventKind.NOTE))
+        await bus.publish(MissionEvent.of("m1", EventKind.NOTE))
+        got_all, got_m1 = await first_all, await first_m1
+        await everything.aclose()
+        await only_m1.aclose()
+        return store, got_all, got_m1, bus
+
+    store, got_all, got_m1, bus = asyncio.run(scenario())
+    assert got_all.mission_id == "m2" and got_m1.mission_id == "m1"
+    assert got_m1.seq == 1 and len(store.events()) == 2
+    assert bus.subscriber_count == 0
+
+
+def test_flags_default_off(monkeypatch):
+    for name in ("PLANNER_ENABLED", "ACTIONS_ENABLED", "MISSIONS_ENABLED", "COACH_ENABLED"):
+        monkeypatch.delenv(name, raising=False)
+    settings = Settings.from_env()
+    assert not any([settings.planner_enabled, settings.actions_enabled,
+                    settings.missions_enabled, settings.coach_enabled])
+    monkeypatch.setenv("MISSIONS_ENABLED", "true")
+    assert Settings.from_env().missions_enabled
+
+
+def test_twin_b_uses_a_different_model_family_by_default():
+    models = Settings().models
+    assert models["twin_a"].split("/")[0] != models["twin_b"].split("/")[0]
+
+
+def test_openrouter_client_sends_role_model_and_reasoning_settings():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.update(__import__("json").loads(request.content))
+        seen["auth"] = request.headers["Authorization"]
+        return httpx.Response(200, json={"choices": [{"message": {"content": " 391 "}}]})
+
+    llm = OpenRouterLLM(Settings(openrouter_api_key="k"), client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    assert asyncio.run(llm.complete(Role.TWIN_A, [{"role": "user", "content": "17*23"}])) == "391"
+    assert seen["model"].startswith("deepseek/") and seen["reasoning"] == {"enabled": False}
+    assert seen["auth"] == "Bearer k"
+
+
+def test_fake_llm_records_calls():
+    llm = FakeLLM({Role.JUDGE: "yes"})
+    assert asyncio.run(llm.complete(Role.JUDGE, [{"role": "user", "content": "?"}])) == "yes"
+    assert llm.calls[0][0] == Role.JUDGE
