@@ -76,6 +76,7 @@ def test_full_mission_over_http_reaches_done(client):
     assert client.get("/api/actions/outbox", params={"mission_id": mission_id}).json()[0]["link"] == sent["result"]["data"]["link"]
 
     complete_onboarding(client.runtime.db, sent["result"]["data"]["session_id"])
+    assert client.get("/api/missions/clock").json()["now"] == START.isoformat()
     assert client.post("/api/missions/clock/advance", json={"minutes": 150}).json()["jobs_run"] == 1
     detail = client.get(f"/api/missions/{mission_id}").json()
     assert detail["mission"]["state"] == "DONE"

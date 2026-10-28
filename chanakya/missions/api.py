@@ -89,6 +89,12 @@ async def next_mission() -> dict:
     return {"mission": mission.model_dump(mode="json") if mission else None}
 
 
+@router.get("/clock")
+async def clock() -> dict:
+    """The mission clock (real time plus any demo fast-forward)."""
+    return {"now": get_runtime().clock().isoformat()}
+
+
 @router.post("/signals")
 async def ingest_signal(signal: MerchantSignal) -> dict:
     """Open (or refresh) a mission from a signal through any of the three doors."""

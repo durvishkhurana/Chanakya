@@ -33,8 +33,28 @@ export function groupMissions(rows) {
   return { waiting, active, finished };
 }
 
-function time(iso) {
+/** 24-hour IST time of an ISO timestamp, e.g. "17:00". */
+export function time(iso) {
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" });
+}
+
+const LANGUAGES = { "hi-IN": "Hindi", "pa-IN": "Punjabi", "en-IN": "English", "bn-IN": "Bengali", "ta-IN": "Tamil", "te-IN": "Telugu", "mr-IN": "Marathi", "gu-IN": "Gujarati", "kn-IN": "Kannada", "ml-IN": "Malayalam", "od-IN": "Odia" };
+export const languageLabel = (code) => LANGUAGES[code] || code;
+
+const WAITING_ON_MERCHANT = new Set(["ACTION_PENDING", "AWAITING_CONFIRMATION", "VERIFYING"]);
+
+/** Headline counts for Mission Control, computed from the rows on screen. */
+export function missionCounts(rows, handoffs = []) {
+  const count = (test) => rows.filter((r) => test(r.mission.state, r)).length;
+  return {
+    ready: count((s, r) => WAITING.has(s) && r.queue?.ready),
+    waiting: count((s) => WAITING.has(s)),
+    talking: count((s) => s === "CONTACTING" || s === "IN_CONVERSATION"),
+    onMerchant: count((s) => WAITING_ON_MERCHANT.has(s)),
+    done: count((s) => s === "DONE"),
+    closed: count((s) => FINISHED.has(s) && s !== "DONE"),
+    handoffsOpen: handoffs.filter((h) => h.status !== "resolved").length,
+  };
 }
 
 /** One readable line per ledger event for the mission timeline. */

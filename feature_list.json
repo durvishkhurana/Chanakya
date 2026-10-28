@@ -406,9 +406,9 @@
       "dependencies": [
         "B5"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Seeded demo shows missions moving live with why-now reasons, ledger timeline and hand-off queue; mocks labelled.",
-      "evidence": ""
+      "evidence": "2026-10-29: frontend helper tests 15 passed, lint clean, build compiled; pytest passed; browser: demo feed -> 5 missions across 3 doors, selection, concern meter, live ledger, phone menu fold; design lint 0/0, inspector 0 FAIL 1 WARN (no-data-hue, hue on concern bars)."
     },
     {
       "id": "B9",
