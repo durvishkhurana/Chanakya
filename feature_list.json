@@ -275,9 +275,9 @@
       "dependencies": [
         "F0.2"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "SQLite mocks for Intake, CRM, Messaging, Onboarding, Field ops, Devices, Ticketing (Settlements read-only); every tool has happy and failure path tests; unknown tool names rejected.",
-      "evidence": "",
+      "evidence": "2026-10-29: pytest 63 passed (16 tools x happy and failure paths, unknown tool and bad args rejected, onboarding link to completion, seed idempotent, reproducible failures); ./init.sh passed.",
       "notes": "Tool list follows docs/IDEA.md 3.7 (updated); docs/TASKS.md still lists the old set."
     },
     {
