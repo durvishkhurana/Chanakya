@@ -37,6 +37,8 @@ Requires Python 3.12 and Node.js 20 or newer.
    .venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
    ```
 
+   On Windows, run `./init.sh` from Git Bash and use `.venv/Scripts/python.exe` in place of `.venv/bin/python`.
+
 4. In a second terminal, start the frontend:
 
    ```bash
