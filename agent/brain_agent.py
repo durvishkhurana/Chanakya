@@ -44,17 +44,25 @@ def inbound_card(thread_id: str, language: str) -> MissionCard:
 class BrainAgent:
     """Plans every reply as a typed move. Writes go through ``gate`` only with consent; without a gate they are blocked."""
 
-    def __init__(self, llm=None, planner=None, realizer=None, bus=None, gate=None, actions_enabled=False):
+    def __init__(self, llm=None, planner=None, realizer=None, bus=None, gate=None, actions_enabled=False,
+                 scorer=None):
         self.bank = default_bank()
         self.llm = llm
         self.planner = planner or RuleBasedPlanner(self.bank)
         self.realizer = realizer or (LLMRealizer(llm, self.bank) if llm is not None else TemplateRealizer(self.bank))
-        self.scorer = LLMScorer(llm, self.bank) if llm is not None else LexicalScorer(self.bank)
+        self.scorer = scorer or (LLMScorer(llm, self.bank) if llm is not None else LexicalScorer(self.bank))
         self.bus = bus
         self.gate = gate
         self.actions_enabled = actions_enabled
         self.threads: dict[str, DialogueState] = {}
         self._locks: dict[str, asyncio.Lock] = {}
+
+    def start(self, thread_id: str, card: MissionCard) -> DialogueState:
+        """Begin ``thread_id`` from a given mission card instead of the default inbound one."""
+        tracker = BayesianBeliefTracker(self.bank, scorer=self.scorer)
+        self.threads[thread_id] = DialogueState(card=card, belief=tracker.start(card.starting_worries),
+                                                transcript=Transcript(mission_id=card.mission_id))
+        return self.threads[thread_id]
 
     def state(self, thread_id: str, language: str) -> DialogueState:
         """The conversation state for ``thread_id``, created on first use."""
