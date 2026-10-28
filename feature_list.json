@@ -313,9 +313,9 @@
       "dependencies": [
         "F0.2"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Illegal transitions raise; a full mission can be replayed from its events.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 71 passed (transitions, full mission to DONE, replay after reopening the DB matches stored state, illegal advance leaves mission untouched, live subscribers); ./init.sh passed."
     },
     {
       "id": "B4",
