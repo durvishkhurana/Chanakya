@@ -219,7 +219,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** split screen: transcript and audio on the left; concern meter, look-ahead tree, willingness curve and action log on the right.
 - **Done when:** renders from recorded event fixtures and from a live call.
 
-#### [ ] B14 Mock product page and mock onboarding page
+#### [x] B14 Mock product page and mock onboarding page
 - **Branch:** `feat/B14-demo-pages`
 - **Owns:** `frontend/src/app/demo/`, `chanakya/missions/demo_api.py`
 - **Depends on:** B1, B5

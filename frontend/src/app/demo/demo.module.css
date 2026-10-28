@@ -1,0 +1,40 @@
+.shell { max-width: 1080px; margin: 0 auto; padding: 0 24px 48px; }
+.mockBar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+.mockTag { border: 1px dashed #b9c4b2; border-radius: 30px; padding: 6px 12px; letter-spacing: 1.2px; text-transform: uppercase; font-size: 10px; }
+.hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; padding: 56px 0 40px; }
+.hero h1 { font-size: clamp(38px, 4.6vw, 58px); margin: 14px 0 18px; }
+.lead { color: var(--muted); line-height: 1.75; font-size: 15px; max-width: 460px; margin: 0 0 24px; }
+.device { aspect-ratio: 1; border-radius: 28px; background: radial-gradient(circle at 35% 30%, #eaf4cf, #9abb7f 70%); display: grid; place-items: center; box-shadow: inset -12px -15px 32px #4e784330; }
+.device div { width: 46%; aspect-ratio: 1; border-radius: 50%; background: #1d3a30; display: grid; place-items: center; color: var(--mint); font-size: 13px; letter-spacing: 1px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.select { padding: 13px 14px; border-radius: 9px; border: 1px solid var(--line); background: white; font: inherit; font-size: 13px; color: var(--ink); min-width: 230px; }
+.primary { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; border: 0; color: white; border-radius: 9px; background: var(--green); font-size: 14px; text-decoration: none; }
+.primary:hover { background: #31654e; }
+.primary:disabled { opacity: .6; cursor: progress; }
+.secondary { display: inline-flex; padding: 13px 18px; border-radius: 9px; border: 1px solid var(--line); color: var(--ink); background: white; font-size: 13px; text-decoration: none; }
+.note { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.7; }
+.error { color: #9b2f2f; font-size: 13px; margin-top: 12px; }
+.card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-top: 8px; box-shadow: 0 10px 30px #16332608; }
+.cardTop { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.cardTop h2 { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 19px; margin: 0; letter-spacing: -.4px; }
+.pill { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; background: var(--mint); color: var(--green); border-radius: 30px; padding: 5px 10px; white-space: nowrap; }
+.why { font-size: 14px; margin: 14px 0 18px; line-height: 1.6; }
+.label { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.bar { display: grid; grid-template-columns: 150px 1fr 44px; gap: 10px; align-items: center; font-size: 12px; margin: 7px 0; }
+.track { height: 8px; background: #edf1e8; border-radius: 8px; overflow: hidden; }
+.fill { height: 100%; background: #6f9a5d; border-radius: 8px; transition: width .5s ease; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 18px 0 8px; }
+.fact { background: #f0f3ec; border: 1px solid #e7ebe2; border-radius: 10px; padding: 16px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.fact strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.form { display: grid; gap: 16px; max-width: 460px; }
+.field { display: grid; gap: 6px; font-size: 13px; }
+.field input, .field select { padding: 12px 13px; border-radius: 9px; border: 1px solid var(--line); font: inherit; background: white; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+.done { text-align: center; padding: 40px 20px; }
+.done h1 { font-size: 38px; margin: 12px 0; }
+.tick { width: 72px; height: 72px; border-radius: 50%; background: var(--mint); color: var(--green); display: grid; place-items: center; font-size: 34px; margin: 0 auto; }
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; padding-top: 32px; }
+  .device { max-width: 260px; }
+  .bar { grid-template-columns: 110px 1fr 40px; }
+}

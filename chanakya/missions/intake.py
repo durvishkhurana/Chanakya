@@ -35,7 +35,7 @@ class TriggerRule:
 # Starting worries are priors over Concern Bank ids; they must match ids in data/concerns (task A1).
 RULES: dict[SignalKind, TriggerRule] = {
     SignalKind.CALLBACK_REQUEST: TriggerRule(
-        Door.MERCHANT, MissionType.SALES, "Sell {product} -> verified onboarding",
+        Door.MERCHANT, MissionType.SALES, "Sell {product} → verified onboarding",
         "Requested a callback on the {product} page",
         {"hidden_charges": 0.5, "competitor_qr": 0.3, "just_busy": 0.2}, 0.6, 1.0, "soundbox", boost=1.5),
     SignalKind.ONBOARDING_STALLED: TriggerRule(
@@ -43,15 +43,15 @@ RULES: dict[SignalKind, TriggerRule] = {
         "Onboarding started {days} days ago and stopped at {step}",
         {"setup_hassle": 0.45, "data_privacy": 0.3, "trust_in_caller": 0.25}, 0.5, 1.0, "soundbox", boost=1.2),
     SignalKind.PRICE_QUESTION_DROPPED: TriggerRule(
-        Door.MERCHANT, MissionType.SALES, "Sell {product} -> verified onboarding",
+        Door.MERCHANT, MissionType.SALES, "Sell {product} → verified onboarding",
         "Asked the {product} price, then went quiet",
         {"swipe_charges": 0.55, "rental_cost": 0.3, "setup_hassle": 0.15}, 0.4, 1.0, "card_machine", boost=1.2),
     SignalKind.UPI_RISING_NO_SOUNDBOX: TriggerRule(
-        Door.DATA, MissionType.SALES, "Sell {product} -> verified onboarding",
+        Door.DATA, MissionType.SALES, "Sell {product} → verified onboarding",
         "UPI payments up {growth_pct}% this month, no Soundbox",
         {"competitor_qr": 0.5, "hidden_charges": 0.3, "not_needed": 0.2}, 0.35, 0.8, "soundbox"),
     SignalKind.CARD_ATTEMPTS_NO_POS: TriggerRule(
-        Door.DATA, MissionType.SALES, "Sell {product} -> verified onboarding",
+        Door.DATA, MissionType.SALES, "Sell {product} → verified onboarding",
         "{attempts} customers tried to pay by card this week, no card machine",
         {"swipe_charges": 0.55, "rental_cost": 0.3, "setup_hassle": 0.15}, 0.35, 1.0, "card_machine"),
     SignalKind.SOUNDBOX_UNUSED: TriggerRule(
@@ -63,7 +63,7 @@ RULES: dict[SignalKind, TriggerRule] = {
         "Device rental payment missed",
         {"cash_flow": 0.45, "rental_cost": 0.35, "not_needed": 0.2}, 0.4, 0.7, "soundbox"),
     SignalKind.LEAD_LIST_ASSIGNED: TriggerRule(
-        Door.HUMAN, MissionType.SALES, "Sell {product} -> verified onboarding",
+        Door.HUMAN, MissionType.SALES, "Sell {product} → verified onboarding",
         "From {assigned_by}'s lead list",
         {"hidden_charges": 0.4, "just_busy": 0.3, "trust_in_caller": 0.3}, 0.25, 0.8, "soundbox"),
     SignalKind.FIELD_AGENT_NOTE: TriggerRule(
@@ -75,6 +75,9 @@ RULES: dict[SignalKind, TriggerRule] = {
         "{agent}'s call dropped; continue where it left off",
         {"just_busy": 0.4, "trust_in_caller": 0.3, "hidden_charges": 0.3}, 0.5, 0.9, "soundbox", boost=1.2),
 }
+
+PRODUCT_NAMES = {"soundbox": "Soundbox", "card_machine": "card machine", "qr": "QR", "payment_gateway": "Payment Gateway",
+                 "payment_links": "Payment Links", "business_app": "Business app"}
 
 DEFAULT_DETAILS = {"days": "a few", "step": "an unfinished step", "growth_pct": "a lot of", "attempts": "Several",
                    "assigned_by": "a manager", "agent": "a colleague", "note": "follow up"}
@@ -91,7 +94,7 @@ def build_card(signal: MerchantSignal, merchant: Merchant) -> MissionCard:
     if signal.door != rule.door:
         raise ValueError(f"{signal.kind} arrives through the {rule.door} door, not {signal.door}")
     product = signal.details.get("product") or rule.product
-    details = _Details(signal.details | {"product": (product or "").replace("_", " ")})
+    details = _Details(signal.details | {"product": PRODUCT_NAMES.get(product, (product or "").replace("_", " "))})
     worries = signal.details.get("starting_worries") or rule.starting_worries
     return MissionCard(
         merchant_id=merchant.id, merchant_name=merchant.name, language=merchant.language, door=signal.door,

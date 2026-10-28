@@ -13,6 +13,7 @@ from chanakya.actions.systems.tools import complete_onboarding
 from chanakya.core.config import Settings
 from chanakya.humans.api import router as handoffs_router
 from chanakya.missions.api import router as missions_router
+from chanakya.missions.demo_api import router as demo_router
 from chanakya.missions.runtime import Runtime, set_runtime
 from chanakya.missions.scheduler import SimClock
 
@@ -26,7 +27,7 @@ def client(tmp_path, monkeypatch):
     runtime = Runtime.build(Settings(db_path=tmp_path / "ledger.db"), clock=SimClock(START))
     set_runtime(runtime)
     app = FastAPI()
-    for router in (missions_router, actions_router, handoffs_router):
+    for router in (missions_router, actions_router, handoffs_router, demo_router):
         app.include_router(router)
     with TestClient(app) as test_client:
         test_client.runtime = runtime
@@ -80,6 +81,24 @@ def test_full_mission_over_http_reaches_done(client):
     assert detail["mission"]["state"] == "DONE"
     assert [d["verdict"] for d in client.get(f"/api/actions/audit/{mission_id}").json()] == [
         "blocked", "executed", "executed"]  # blocked send, send, verification read
+
+
+def test_mock_onboarding_page_completes_and_verifies_the_mission(client):
+    mission_id = callback(client)
+    for state in ("CONTACTING", "IN_CONVERSATION"):
+        client.post(f"/api/missions/{mission_id}/advance", json={"state": state})
+    client.post(f"/api/missions/{mission_id}/events", json={"kind": "ai_disclosed", "payload": {}})
+    client.post(f"/api/missions/{mission_id}/events", json={"kind": "consent_given", "payload": {"tool": "send_onboarding_link"}})
+    client.post(f"/api/missions/{mission_id}/advance", json={"state": "ACTION_PENDING"})
+    session_id = submit(client, mission_id, "send_onboarding_link", product="soundbox")["result"]["data"]["session_id"]
+
+    page = client.get(f"/api/demo/onboarding/{session_id}").json()
+    assert page["session"]["status"] == "pending" and page["merchant"]["name"] == "Ramesh Kirana Store"
+    done = client.post(f"/api/demo/onboarding/{session_id}/complete").json()
+    assert done["session"]["status"] == "completed" and done["verified_missions"] == [mission_id]
+    assert client.get(f"/api/missions/{mission_id}").json()["mission"]["state"] == "DONE"
+    assert client.post(f"/api/demo/onboarding/{session_id}/complete").json()["verified_missions"] == []
+    assert client.get("/api/demo/onboarding/onb_missing").status_code == 404
 
 
 def test_errors_map_to_http_codes(client):

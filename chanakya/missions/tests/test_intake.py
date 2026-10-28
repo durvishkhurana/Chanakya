@@ -57,8 +57,8 @@ def test_every_kind_builds_a_complete_card(kind):
 
 def test_callback_card_matches_the_idea_example():
     card = build_card(callback(), RAMESH)
-    assert card.goal == "Sell soundbox -> verified onboarding"
-    assert card.why_now == "Requested a callback on the soundbox page"
+    assert card.goal == "Sell Soundbox → verified onboarding"
+    assert card.why_now == "Requested a callback on the Soundbox page"
     assert card.starting_worries == {"hidden_charges": 0.5, "competitor_qr": 0.3, "just_busy": 0.2}
     assert card.door == Door.MERCHANT and card.mission_type == MissionType.SALES
 
