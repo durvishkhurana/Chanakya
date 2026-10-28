@@ -148,9 +148,9 @@
       "dependencies": [
         "A4"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A browser call works with PLANNER_ENABLED on and off; existing voice tests still pass; TurnCompleted events carry belief and chosen move.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/realizer.py, agent/brain_agent.py, backend/main.py create_voice_agent(). Tests: chanakya/brain/tests/test_realizer.py (all templates safe in hi/en/pa, fallbacks on unsafe or claimed actions, consent must be a question), agent/test_brain_agent.py (offline call discloses, resolves, rejects bare haan, writes only via gate with consent, distress escalates, OTP refused, flag switch). Live: uvicorn backend.main:app with PLANNER_ENABLED=true and false, Sarvam TTS speech streamed into /api/voice/ws: Hindi transcribed, Chanakya disclosed and answered the hidden-charges question from the pricing source without a number, ~0.8 MB of reply audio each run. SKIP_INSTALL=1 FULL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 98 passed, Ruff clean, frontend 9/9, build compiled."
     },
     {
       "id": "A6",

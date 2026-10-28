@@ -37,11 +37,22 @@ def missing_configuration(provider="llm_batch"):
     return [name for name in required if not os.getenv(name, "").strip()]
 
 
+def create_voice_agent():
+    """The planning BrainAgent when PLANNER_ENABLED is on, otherwise the original retrieval agent."""
+    settings = provider_settings()
+    if settings.planner_enabled:
+        from agent.brain_agent import BrainAgent
+        from chanakya.core.llm import OpenAICompatibleLLM
+
+        return BrainAgent(llm=OpenAICompatibleLLM(settings), actions_enabled=settings.actions_enabled)
+    return Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
+
+
 @asynccontextmanager
 async def lifespan(app):
     global voice_agent_instance
     if os.getenv(llm_key_name(), "").strip():
-        voice_agent_instance = Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
+        voice_agent_instance = create_voice_agent()
     try:
         configure_telephony(app, voice_agent_instance, os.getenv("SARVAM_API_KEY", ""))
         if getattr(app.state, "telephony", None) and voice_agent_instance is None:

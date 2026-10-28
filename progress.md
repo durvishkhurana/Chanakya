@@ -20,6 +20,7 @@
 6. `feat/A2-twins`: Twin-A and Twin-B with a deterministic judge, walk-away calibration, adversarial personas
 7. `feat/A3-belief-tracker`: Bayesian belief tracker with lexical and LLM evidence scorers and hesitation cues
 8. `feat/A4-moves-baseline-planner`: typed move library with preconditions and the rule-and-belief baseline planner
+9. `feat/A5-realizer`: LLM and template realizers, BrainAgent voice integration behind PLANNER_ENABLED
 
 ## Status
 
@@ -35,6 +36,7 @@
 - [x] A2 merchant twins: deterministic judge (willingness rises only when a hidden concern is resolved without invented money claims; falls on pressure, repetition, ignored objections, sensitive-data requests), walk-away rule, template and LLM voices, Twin-B refuses planning personas; untreated agent loses 63% (planning) and 58% (evaluation) of merchants over 20 seeds
 - [x] A3 belief tracker: starts from the mission card prior (smoothed 15% toward uniform), Bayesian update with decay, likelihood from an LLM scorer (Groq) or an offline trigram-and-cue-word scorer, hesitation from pause, fillers, speech rate and short deflections; BeliefUpdated events carry latency
 - [x] A4 moves and baseline planner: preconditions (disclose first and once, write only with explicit consent for that exact tool, only closing moves after a clear no, unknown concerns/products/tools rejected), explicit-consent detector that never accepts a bare haan/okay, decline/distress/sensitive-request/denial signals; baseline planner wins 68.3% consent + 20.0% follow-up on Twin-A vs 38.7% consent for an untreated pitch
+- [x] A5 realizer and agent integration: LLM realizer grounded in the move's knowledge nodes plus the agent's sales rules, every line checked (sensitive data, invented money, pressure, claimed actions, unasked consent) with reviewed templates as fallback; BrainAgent plugs into the existing voice session behind PLANNER_ENABLED; TurnCompleted events carry belief and move; live voice calls verified with the flag on and off
 
 ### What's In Progress
 

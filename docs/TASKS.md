@@ -101,7 +101,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Rule-and-belief baseline planner: picks a move from belief and mission goal. This is the fallback for the look-ahead planner.
 - **Done when:** precondition tests pass; planner never proposes a write without consent.
 
-#### [ ] A5 Realizer and agent integration
+#### [x] A5 Realizer and agent integration
 - **Branch:** `feat/A5-realizer`
 - **Owns:** `chanakya/brain/realizer.py`, `agent/`, `backend/` voice session hook
 - **Depends on:** A4
