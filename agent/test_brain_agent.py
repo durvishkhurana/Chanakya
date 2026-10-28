@@ -90,7 +90,9 @@ class FlagTests(unittest.TestCase):
 
         env = {"OPENROUTER_API_KEY": "", "GROQ_API_KEY": "test-key", "LLM_PROVIDER": ""}
         with patch.dict("os.environ", {**env, "PLANNER_ENABLED": "true"}):
-            self.assertIsInstance(main.create_voice_agent(), BrainAgent)
+            agent = main.create_voice_agent()
+            self.assertIsInstance(agent, BrainAgent)
+            self.assertEqual(type(agent.planner).__name__, "NRPAPlanner")
         with patch.dict("os.environ", {**env, "PLANNER_ENABLED": "false"}):
             self.assertNotIsInstance(main.create_voice_agent(), BrainAgent)
 

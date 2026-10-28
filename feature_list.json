@@ -166,9 +166,9 @@
         "A2",
         "A4"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Beats the baseline planner on a fixed Twin-A set; stays inside its time budget with fallback; PlanComputed events include the search tree.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/planner_nrpa.py; backend/main.py uses NRPAPlanner when PLANNER_ENABLED. Measured with the text-mode converse() helper from chanakya/brain/tests/test_planner_rules.py and the template Twin-A (30 planning personas x seeds 0-9 = 300 calls): NRPA consent 0.897 (success 0.897) vs baseline 0.683 consent + 0.200 follow-up, mean agent turns 4.7 vs 6.7. Held-out evaluation personas, template twin, seeds 0-4 (150 calls): NRPA 0.947 vs baseline 0.873 consent. Time budget 300 ms: 159 searched plans p50 74 ms, p90 86 ms, max 109 ms, 0 fallbacks. Tests: chanakya/brain/tests/test_planner_nrpa.py (determinism, forced rules, END scored, budget fallback, outcome ordering, beats baseline on a fixed Twin-A set). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 104 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "A7",

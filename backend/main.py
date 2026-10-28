@@ -42,9 +42,11 @@ def create_voice_agent():
     settings = provider_settings()
     if settings.planner_enabled:
         from agent.brain_agent import BrainAgent
+        from chanakya.brain.planner_nrpa import NRPAPlanner
         from chanakya.core.llm import OpenAICompatibleLLM
 
-        return BrainAgent(llm=OpenAICompatibleLLM(settings), actions_enabled=settings.actions_enabled)
+        return BrainAgent(llm=OpenAICompatibleLLM(settings), planner=NRPAPlanner(),
+                          actions_enabled=settings.actions_enabled)
     return Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
 
 

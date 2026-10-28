@@ -21,6 +21,7 @@
 7. `feat/A3-belief-tracker`: Bayesian belief tracker with lexical and LLM evidence scorers and hesitation cues
 8. `feat/A4-moves-baseline-planner`: typed move library with preconditions and the rule-and-belief baseline planner
 9. `feat/A5-realizer`: LLM and template realizers, BrainAgent voice integration behind PLANNER_ENABLED
+10. `feat/A6-lookahead-planner`: NRPA look-ahead planner over belief-sampled Twin-A merchants, now the voice planner when PLANNER_ENABLED
 
 ## Status
 
@@ -37,6 +38,7 @@
 - [x] A3 belief tracker: starts from the mission card prior (smoothed 15% toward uniform), Bayesian update with decay, likelihood from an LLM scorer (Groq) or an offline trigram-and-cue-word scorer, hesitation from pause, fillers, speech rate and short deflections; BeliefUpdated events carry latency
 - [x] A4 moves and baseline planner: preconditions (disclose first and once, write only with explicit consent for that exact tool, only closing moves after a clear no, unknown concerns/products/tools rejected), explicit-consent detector that never accepts a bare haan/okay, decline/distress/sensitive-request/denial signals; baseline planner wins 68.3% consent + 20.0% follow-up on Twin-A vs 38.7% consent for an untreated pitch
 - [x] A5 realizer and agent integration: LLM realizer grounded in the move's knowledge nodes plus the agent's sales rules, every line checked (sensitive data, invented money, pressure, claimed actions, unasked consent) with reviewed templates as fallback; BrainAgent plugs into the existing voice session behind PLANNER_ENABLED; TurnCompleted events carry belief and move; live voice calls verified with the flag on and off
+- [x] A6 look-ahead planner: candidates are the baseline move plus the strongest alternatives (consent question and stopping always included), merchants sampled from the belief, NRPA level 2 adapts the two-turn follow-up policy against Twin-A's judge, candidates scored by the mean of fresh rollouts (expected value, not a lucky best rollout); safety and consent rules bypass search; 300 ms budget with baseline fallback. On 300 Twin-A calls: consent 0.897 vs baseline 0.683 in 4.7 vs 6.7 agent turns
 
 ### What's In Progress
 

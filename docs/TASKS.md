@@ -161,7 +161,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track A
 
-#### [ ] A6 Look-ahead planner (NRPA with Twin-A)
+#### [x] A6 Look-ahead planner (NRPA with Twin-A)
 - **Branch:** `feat/A6-lookahead-planner`
 - **Owns:** `chanakya/brain/planner_nrpa.py`
 - **Depends on:** A2, A4
