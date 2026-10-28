@@ -1,0 +1,55 @@
+"""Seed the mock systems with demo merchants. Fictional data only.
+
+Run: ``python -m chanakya.actions.systems.seed [db_path]``
+"""
+
+from __future__ import annotations
+
+import sys
+from datetime import UTC, datetime, timedelta
+
+from chanakya.actions.systems.db import MockDB
+from chanakya.core.config import Settings
+
+# id, name, business type, city, language, window, do_not_call, soundbox, card machine, phone last 4
+MERCHANTS = [
+    ("mer_ramesh", "Ramesh Kirana Store", "kirana", "Patiala", "hi-IN", (14, 17), 0, 0, 0, "4821"),
+    ("mer_gurpreet", "Gurpreet Medical Hall", "pharmacy", "Ludhiana", "pa-IN", (10, 13), 0, 1, 0, "1907"),
+    ("mer_anita", "Anita Sweets", "sweet shop", "Jaipur", "hi-IN", (11, 19), 0, 1, 0, "6634"),
+    ("mer_imran", "Imran Mobile Point", "mobile accessories", "Lucknow", "hi-IN", (12, 20), 0, 0, 0, "2290"),
+    ("mer_lakshmi", "Lakshmi Tailors", "tailoring", "Chennai", "en-IN", (10, 18), 0, 1, 0, "7712"),
+    ("mer_sharma", "Sharma General Store", "general store", "Delhi", "hi-IN", (9, 21), 0, 0, 0, "3345"),
+    ("mer_baldev", "Baldev Dhaba", "restaurant", "Amritsar", "pa-IN", (15, 18), 1, 0, 0, "5508"),
+]
+
+
+def _ago(days: int) -> str:
+    return (datetime.now(UTC) - timedelta(days=days)).isoformat(timespec="seconds")
+
+
+def seed(db: MockDB) -> None:
+    """Insert demo merchants, devices, settlements and one stalled onboarding. Safe to run twice."""
+    with db.conn:
+        for m in MERCHANTS:
+            merchant_id, name, kind, city, language, (start, end), dnc, soundbox, pos, last4 = m
+            db.conn.execute("INSERT OR IGNORE INTO merchants VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            (merchant_id, name, kind, city, language, start, end, dnc, soundbox, pos, last4))
+        devices = [
+            ("dev_gurpreet_sb", "mer_gurpreet", "soundbox", "online", _ago(8), "paid"),
+            ("dev_anita_sb", "mer_anita", "soundbox", "online", _ago(0), "paid"),
+            ("dev_lakshmi_sb", "mer_lakshmi", "soundbox", "online", _ago(1), "overdue"),
+        ]
+        db.conn.executemany("INSERT OR IGNORE INTO devices VALUES (?, ?, ?, ?, ?, ?)", devices)
+        settlements = [
+            ("set_anita_1", "mer_anita", 18450, "settled", _ago(1)[:10], None),
+            ("set_lakshmi_1", "mer_lakshmi", 6200, "delayed", _ago(2)[:10], "bank holiday at partner bank"),
+        ]
+        db.conn.executemany("INSERT OR IGNORE INTO settlements VALUES (?, ?, ?, ?, ?, ?)", settlements)
+        db.conn.execute("INSERT OR IGNORE INTO onboarding_sessions VALUES (?, ?, NULL, ?, 'pending', ?, NULL)",
+                        ("onb_imran_stalled", "mer_imran", "soundbox", _ago(2)))
+
+
+if __name__ == "__main__":
+    path = sys.argv[1] if len(sys.argv) > 1 else Settings.from_env().db_path
+    seed(MockDB(path))
+    print(f"Seeded mock systems in {path}")

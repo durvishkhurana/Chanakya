@@ -113,7 +113,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track B
 
-#### [ ] B1 Mock business systems and tool registry
+#### [x] B1 Mock business systems and tool registry
 - **Branch:** `feat/B1-mock-systems`
 - **Owns:** `chanakya/actions/systems/`, `chanakya/actions/registry.py`
 - **Build:**
