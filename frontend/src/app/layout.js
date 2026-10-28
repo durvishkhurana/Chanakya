@@ -1,9 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Chanakya | Let’s talk business",
+  title: "Chanakya | AI teammate for merchant sales and service",
   description:
-    "Meet Chanakya, an independent AI voice advisor for Paytm payment products.",
+    "Chanakya calls merchants in their own language, hears the worry they do not say, plans its next move and checks the job is really done. An independent hackathon project.",
 };
 
 export default function RootLayout({ children }) {

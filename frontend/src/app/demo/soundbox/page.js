@@ -38,7 +38,6 @@ export default function SoundboxMockPage() {
     <div className={styles.mockBar}><span>Demo storefront for Chanakya</span><span className={styles.mockTag}>Mock page · not affiliated with Paytm</span></div>
     <section className={styles.hero}>
       <div>
-        <p className="eyebrow"><span className="small-dot" /> FOR SHOPS THAT TAKE UPI</p>
         <h1>Hear every payment the moment it lands.</h1>
         <p className={styles.lead}>A Soundbox speaks each received in-store payment out loud, so you never have to check your phone at a busy counter.</p>
         <div className={styles.row}>
