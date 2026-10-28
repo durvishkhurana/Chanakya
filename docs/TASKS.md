@@ -122,7 +122,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Seed script that creates merchants, devices, settlements and orders matching the personas.
 - **Done when:** every tool has a happy-path and failure-path test; unknown tool names are rejected.
 
-#### [ ] B2 Safety gate, policy graph and audit log
+#### [x] B2 Safety gate, policy graph and audit log
 - **Branch:** `feat/B2-safety-gate`
 - **Owns:** `chanakya/actions/gate.py`, `chanakya/actions/policy.py`, `chanakya/actions/audit.py`
 - **Depends on:** B1
