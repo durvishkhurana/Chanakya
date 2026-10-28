@@ -3,12 +3,18 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** none. Next up: F0.2 (Track B, Gurnoor), then Track A starts A1 (Durvish)
+**Active Feature:** Track A stack (Durvish). F0.2 was built on Track A's side so Track A could start; Gurnoor reviews it before merge.
 
 | Track | Owner | Active task | Status |
 |---|---|---|---|
-| A: brain, sim, eval, voice | Durvish Khurana | A1 concerns and personas | waiting on F0.2 |
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2 core contracts | not started |
+| A: brain, sim, eval, voice | Durvish Khurana | Track A tasks on stacked branches | in progress |
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | B1 onwards; review F0.2 first | not started |
+
+### Stacked branches (merge in this order; each is cut from the one above)
+
+1. `fix/windows-init`: `init.sh` works on Windows (Git Bash) and requires Python 3.12
+2. `feat/F0.3-ci`: GitHub Actions runs `FULL=1 ./init.sh`
+3. `feat/F0.2-core-contracts`: `chanakya/core` (needs Gurnoor's review: shared contracts)
 
 ## Status
 
@@ -18,6 +24,7 @@
 - [x] Idea finalised in `docs/IDEA.md`, with Step A as a three-door mission intake
 - [x] API keys verified: Sarvam STT/TTS round trip; OpenRouter with `deepseek/deepseek-v4-flash` and `openai/gpt-6-luna`
 - [x] Harness: `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`
+- [x] F0.2 core contracts: schemas, interfaces, typed event bus, settings with flags off, OpenRouter/Groq LLM client with five roles, fakes for every interface. Groq is the provider for now (`LLM_PROVIDER=groq`) while OpenRouter credits are arranged
 
 ### What's In Progress
 
@@ -25,7 +32,7 @@
 
 ### What's Next
 
-1. F0.2: shared contracts in `chanakya/core/`, including `MissionCard` with `why_now` and `starting_worries`
+1. Gurnoor: review `feat/F0.2-core-contracts`, then start B1 against `chanakya/core`
 2. Update `docs/TASKS.md` to match the new Step A: B1 tool list, B6 intake, new B14 demo pages (already reflected in `feature_list.json`)
 3. From now on every change lands through a `feat/<ID>-<slug>` branch and a PR
 

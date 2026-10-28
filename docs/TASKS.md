@@ -37,7 +37,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - `.gitignore`, `.env.example` (blank values), `README.md` with run instructions, `pyproject.toml` with Ruff config.
 - **Done when:** backend starts, `/api/health` responds, the browser voice page loads, and the inherited unit tests pass.
 
-### [ ] F0.2 Shared contracts
+### [x] F0.2 Shared contracts
 - **Branch:** `feat/F0.2-core-contracts`
 - **Owner:** Member B (reviewed by Member A before merge)
 - **Owns:** `chanakya/core/`

@@ -24,7 +24,7 @@ The Chanakya brain (belief tracker, Strategy Forest, look-ahead planner), missio
 
 Requires Python 3.12 and Node.js 20 or newer.
 
-1. Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY` and `SARVAM_API_KEY`.
+1. Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY` and `SARVAM_API_KEY`. The Chanakya modules can use Groq instead: set `GROQ_API_KEY` and `LLM_PROVIDER=groq`.
 2. Install and verify everything:
 
    ```bash
@@ -56,6 +56,10 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 ```bash
 .venv/bin/python -m backend.call_chanakya --help
 ```
+
+### Feature flags
+
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. Shared contracts, the event bus, settings and the LLM client live in `chanakya/core/`; `chanakya/core/fakes.py` has in-memory fakes for tests.
 
 ## Verify
 

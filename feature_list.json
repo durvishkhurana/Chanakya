@@ -38,9 +38,9 @@
         "chanakya/core/"
       ],
       "dependencies": [],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Schemas round-trip to JSON, fakes satisfy every protocol, tests pass. Includes MissionCard with why_now and starting_worries (docs/IDEA.md 3.2).",
-      "evidence": ""
+      "evidence": "2026-10-29 (built in Durvish's session at the user's request, so Track A could start; needs Gurnoor's review before merge): chanakya/core with schemas (incl. MissionCard why_now/starting_worries, Persona, DialogueState, TwinReply), interfaces, typed event bus persisting through MissionStore, Settings with flags off by default and openrouter/groq providers, OpenAI-compatible LLM client with roles main/rollout/twin_a/twin_b/judge, fakes for every interface. SKIP_INSTALL=1 ./init.sh passed: agent 94 OK, backend 94 OK, pytest 15 passed, Ruff clean, frontend 9/9. Live check: all five roles answered JSON on Groq (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b)."
     },
     {
       "id": "F0.3",
