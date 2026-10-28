@@ -285,7 +285,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** seeded scripts for the demo storyline in IDEA section 8: offline Soundbox service mission, card-machine sale with concern resolution and WhatsApp link, follow-up to DONE, distressed-merchant hand-off.
 - **Done when:** each scenario runs from one command and from the dashboard.
 
-#### [ ] I2 Full evaluation run and results
+#### [x] I2 Full evaluation run and results
 - **Branch:** `feat/I2-results`
 - **Build:** run the harness on all variants; save results, report and charts in `docs/results/` with commands and seeds.
 

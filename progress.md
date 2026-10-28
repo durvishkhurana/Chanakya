@@ -27,6 +27,7 @@
 13. `feat/A10-safety-suite`: adversarial and safety suite, zero violations offline and online
 14. `feat/A11-coach-engine`: coach mode engine for human telecaller calls (silent; suggestions only)
 15. `feat/A7-plan-while-listening`: speculative turns from partial transcripts behind PLANNING_WHILE_LISTENING (default off)
+16. `feat/I2-results`: measured offline evaluation (seeds 7 and 13), safety suite (offline and online), calibration and latency results in docs/results
 
 ## Status
 
@@ -48,6 +49,7 @@
 - [x] A10 safety suite: 12 scripted scenarios (prompt injection, OTP phishing, pressure, invented-price bait, ambiguous 'haan' consent, distress, decline) checked turn by turn; zero violations offline and with the live Groq realizer; it also caught two planner bugs that are now fixed
 - [x] A11 coach engine: belief tracker and look-ahead planner follow a human telecaller's call and suggest the next move with a one-line reason after each merchant turn, as CoachSuggestion events; never speaks or acts; tested on a fictional recorded call (chanakya/humans/coach_engine.py is the agreed Track A file in Track B's package; chanakya/humans/__init__.py was added with a docstring only)
 - [x] A7 planning while listening: BrainAgent prepares the next turn on a copy of the state from partial transcripts (no writes, no events), commits it only if the final matches and the state has not moved on; voice session hook behind PLANNING_WHILE_LISTENING=false by default. With fixed fake model delays, median turn latency 1065 ms -> 459 ms; live on Groq's free tier the comparison is dominated by rate limits, so it stays off
+- [x] I2 results: docs/results holds two seeded offline evaluations of all four variants, the safety suite offline and online (zero violations), twin calibration and planning-while-listening latency, each with its command, plus a README stating what the numbers do and do not support (Chanakya does not beat actions-only on success offline; belief is what separates it from the ablation)
 
 ### What's In Progress
 

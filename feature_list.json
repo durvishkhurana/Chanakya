@@ -559,9 +559,9 @@
         "A8",
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Results, report and charts saved in docs/results/ with commands and seeds.",
-      "evidence": ""
+      "evidence": "2026-10-29: docs/results/offline-seed7 and offline-seed13 (python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7/13): success reactive 0.00/0.00, actions_only 0.99/1.00, chanakya 0.97/0.97, chanakya_no_belief 0.54/0.48, zero safety violations and wrong actions. docs/results/safety-offline and safety-online: 12 scenarios, 0 violations each. docs/results/twin-calibration.txt: untreated agent 67.3% decline. docs/results/latency-planning-while-listening.json: p50 1065 -> 457 ms with fake delays. Full online evaluation not run: Groq free-tier rate limits (documented in docs/results/README.md)."
     },
     {
       "id": "I3",
