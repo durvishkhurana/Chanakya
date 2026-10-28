@@ -1,0 +1,84 @@
+// Pure helpers that turn missions and ledger events into what the screens show. Tested in missionView.test.mjs.
+
+export const WAITING = new Set(["CREATED", "SCHEDULED"]);
+export const FINISHED = new Set(["DONE", "ESCALATED", "CLOSED_NOT_INTERESTED", "CLOSED_UNREACHABLE", "FAILED"]);
+
+const DOORS = { merchant: "Merchant raised a hand", data: "Data says so", human: "Handed over by a colleague" };
+const WORRIES = {
+  hidden_charges: "Hidden charges", competitor_qr: "Already has a QR", just_busy: "Just busy",
+  setup_hassle: "Setup hassle", data_privacy: "Data privacy", trust_in_caller: "Trust in caller",
+  swipe_charges: "Swipe charges", rental_cost: "Rental cost", not_needed: "Not needed",
+  customers_pay_cash: "Customers pay cash", device_reliability: "Device reliability", cash_flow: "Cash flow",
+  settlement_delay: "Settlement delay",
+};
+
+export const doorLabel = (door) => DOORS[door] || door;
+export const worryLabel = (id) => WORRIES[id] || id.replaceAll("_", " ");
+export const percent = (p) => `${Math.round((p || 0) * 100)}%`;
+export const stateLabel = (state) => state.toLowerCase().replaceAll("_", " ");
+
+/** Top ``n`` entries of a probability map, highest first, as [id, p] pairs. */
+export function topWorries(probabilities, n = 3) {
+  return Object.entries(probabilities || {}).sort((a, b) => b[1] - a[1]).slice(0, n);
+}
+
+/** Split API mission rows into waiting (ready first, then priority), active, and finished (newest first). */
+export function groupMissions(rows) {
+  const waiting = [], active = [], finished = [];
+  for (const row of rows) {
+    const state = row.mission.state;
+    (WAITING.has(state) ? waiting : FINISHED.has(state) ? finished : active).push(row);
+  }
+  waiting.sort((a, b) => (b.queue?.ready ? 1 : 0) - (a.queue?.ready ? 1 : 0) || b.mission.card.priority - a.mission.card.priority);
+  return { waiting, active, finished };
+}
+
+function time(iso) {
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Kolkata" });
+}
+
+/** One readable line per ledger event for the mission timeline. */
+export function eventSummary(event) {
+  const p = event.payload || {};
+  switch (event.kind) {
+    case "mission_created": return `Mission opened: ${p.card?.goal}`;
+    case "mission_updated": return `Card refreshed (${p.reason})`;
+    case "signal_received": return `Signal: ${String(p.kind).replaceAll("_", " ")} from ${p.source}`;
+    case "state_changed": return `${stateLabel(p.from)} → ${stateLabel(p.to)}${p.reason ? ` (${p.reason})` : ""}`;
+    case "turn_completed": return `${p.speaker === "agent" ? "Chanakya" : p.speaker === "merchant" ? "Merchant" : "Human"}: “${p.text}”`;
+    case "belief_updated": return `Concern meter: ${topWorries(p.probabilities, 2).map(([id, v]) => `${worryLabel(id)} ${percent(v)}`).join(", ")}`;
+    case "plan_computed": return `Planned move: ${p.chosen?.type}${p.fallback ? " (fallback)" : ""}`;
+    case "ai_disclosed": return "Told the merchant it is an AI assistant";
+    case "consent_given": return `Merchant said yes${p.utterance ? `: “${p.utterance}”` : ""}`;
+    case "consent_declined": return `Merchant said no${p.utterance ? `: “${p.utterance}”` : ""}`;
+    case "action_decision": return `${p.call?.tool}: ${p.verdict}${p.verdict === "executed" ? "" : ` (${p.reason})`}`;
+    case "followup_scheduled": return `Scheduled ${p.kind} for ${time(p.due_at)} IST`;
+    case "verification_checked": return `Checked onboarding: ${p.status}`;
+    case "handoff_created": return `Handed to a human: ${p.reason}`;
+    case "handoff_claimed": return `Hand-off claimed by ${p.agent}`;
+    case "handoff_resolved": return `Hand-off resolved: ${p.resolution}`;
+    default: return p.text || event.kind;
+  }
+}
+
+/** Everything the Live Call View shows, derived from one mission's ledger events. */
+export function deriveCallView(events, card = null) {
+  const view = { card, state: "CREATED", transcript: [], concerns: card?.starting_worries || {}, plans: [], willingness: [], actions: [], consent: null };
+  for (const event of events) {
+    const p = event.payload || {};
+    if (event.kind === "mission_created" || event.kind === "mission_updated") {
+      view.card = p.card;
+      if (!view.transcript.length) view.concerns = p.card.starting_worries;
+    } else if (event.kind === "state_changed") view.state = p.to;
+    else if (event.kind === "turn_completed") view.transcript.push({ speaker: p.speaker, text: p.text, move: p.move?.type || null });
+    else if (event.kind === "belief_updated") view.concerns = p.probabilities;
+    else if (event.kind === "plan_computed") {
+      view.plans.push(p);
+      const chosen = (p.candidates || []).find((c) => c.move.type === p.chosen?.type && c.move.concern_id === p.chosen?.concern_id);
+      if (chosen) view.willingness.push({ turn: view.plans.length, value: chosen.score });
+    } else if (event.kind === "consent_given") view.consent = "given";
+    else if (event.kind === "consent_declined") view.consent = "declined";
+    else if (event.kind === "action_decision") view.actions.push({ tool: p.call?.tool, verdict: p.verdict, reason: p.reason, data: p.result?.data || {} });
+  }
+  return view;
+}

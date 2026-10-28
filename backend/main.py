@@ -100,3 +100,6 @@ if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes"
     app.include_router(missions_router)
     app.include_router(actions_router)
     app.include_router(handoffs_router)
+    from chanakya.missions.demo_api import router as demo_router
+
+    app.include_router(demo_router)

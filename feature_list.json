@@ -516,9 +516,9 @@
         "B1",
         "B5"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Tapping 'Request a callback' opens a Door 1 mission; completing the mock onboarding page updates the Onboarding system so the mission verifies DONE.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 129 passed (onboarding endpoints complete -> DONE); frontend 14 node tests, lint clean, build compiled; browser check against live backend: callback button -> mission card -> link sent -> mock onboarding completed -> ledger DONE verified by onboarding system."
     },
     {
       "id": "I1",
