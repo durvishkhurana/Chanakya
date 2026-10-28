@@ -257,9 +257,9 @@
       "dependencies": [
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Next-best-move suggestions with a one-line reason stream for a recorded human call; never speaks.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/humans/coach_engine.py, data/transcripts/human_call_fixture.json (fictional, annotated human call), tests/test_coach_engine.py. On the fixture, 5 merchant turns give 5 suggestions: resolve competitor QR (53%, then 95% once voiced), resolve hidden charges, resolve rental cost (86%), and a clear consent question after the merchant's unprompted yes; none suggests disclosure, no agent turns or actions are produced, CoachSuggestion events are published. Unlabelled human turns are not inferred offline (an LLM labeler from chanakya.eval could be plugged in). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 130 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "B1",

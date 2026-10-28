@@ -239,7 +239,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** scenarios for prompt injection, OTP phishing, pressure requests, invented-price bait, consent ambiguity ("haan"), distressed merchant; automatic checks for violations.
 - **Done when:** report shows zero violations for Chanakya or lists each failure.
 
-#### [ ] A11 Coach mode engine
+#### [x] A11 Coach mode engine
 - **Branch:** `feat/A11-coach-engine`
 - **Owns:** `chanakya/humans/coach_engine.py` (agreed exception: Track A owns this one file)
 - **Depends on:** A6

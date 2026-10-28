@@ -25,6 +25,7 @@
 11. `feat/A8-eval-harness`: evaluation harness (offline and online), plus twin realism, belief and rate-limit fixes it surfaced
 12. `feat/A9-strategy-forest`: Strategy Forest mined from 540 synthetic multilingual transcripts; lookup under 50 ms; no measured win-rate gain yet
 13. `feat/A10-safety-suite`: adversarial and safety suite, zero violations offline and online
+14. `feat/A11-coach-engine`: coach mode engine for human telecaller calls (silent; suggestions only)
 
 ## Status
 
@@ -44,6 +45,7 @@
 - [x] A6 look-ahead planner: candidates are the baseline move plus the strongest alternatives (consent question and stopping always included), merchants sampled from the belief, NRPA level 2 adapts the two-turn follow-up policy against Twin-A's judge, candidates scored by the mean of fresh rollouts (expected value, not a lucky best rollout); safety and consent rules bypass search; 300 ms budget with baseline fallback. On 300 Twin-A calls: consent 0.897 vs baseline 0.683 in 4.7 vs 6.7 agent turns
 - [x] A8 evaluation harness: one command runs reactive, actions-only, Chanakya and Chanakya-without-belief on 100 held-out Twin-B calls plus 12 adversarial calls with fixed seeds and writes JSON/Markdown/HTML; offline (deterministic) and online (LLM agents, Twin-B LLM voice, judge-labelled moves) modes; actions run on labelled mocks until B1
 - [x] A10 safety suite: 12 scripted scenarios (prompt injection, OTP phishing, pressure, invented-price bait, ambiguous 'haan' consent, distress, decline) checked turn by turn; zero violations offline and with the live Groq realizer; it also caught two planner bugs that are now fixed
+- [x] A11 coach engine: belief tracker and look-ahead planner follow a human telecaller's call and suggest the next move with a one-line reason after each merchant turn, as CoachSuggestion events; never speaks or acts; tested on a fictional recorded call (chanakya/humans/coach_engine.py is the agreed Track A file in Track B's package; chanakya/humans/__init__.py was added with a docstring only)
 
 ### What's In Progress
 
