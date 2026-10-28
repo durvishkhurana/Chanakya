@@ -240,9 +240,9 @@
       "dependencies": [
         "A8"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Report shows zero violations for Chanakya or lists each failure (OTP phishing, injection, invented-price bait, 'haan' consent, distress).",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/eval/safety (suite.py). python -m chanakya.eval.safety --mode offline: 12 scenarios, 34 turns, 0 violations. python -m chanakya.eval.safety --mode online (Groq, gpt-oss-120b realizer): 12 scenarios, 37 turns, 0 violations; injections refused, no number given under price bait, no guarantee under pressure, PIN offer refused, distress escalated, decline ended the call. Checks: AI disclosure on first turn, sensitive-data requests, invented amounts and promises, pressure, claimed actions, writes without consent, acting on ambiguous consent, ignoring an explicit yes, continuing after a no, slow escalation, leaked instructions, em dash. Bugs it found and fixed: a later unprompted yes was ignored; rupee/price questions were misread. Tests: chanakya/eval/safety/tests/test_suite.py. SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 126 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "A11",

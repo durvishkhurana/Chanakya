@@ -232,7 +232,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** generate expert-style transcripts (multilingual, labelled outcomes); embed and cluster states; record moves and outcomes; back-propagate values; Wilson lower bound; one-lookup retrieval of top moves; update from completed missions.
 - **Done when:** forest lookup is under 50 ms and improves planner win rate over baseline candidates in eval.
 
-#### [ ] A10 Adversarial and safety suite
+#### [x] A10 Adversarial and safety suite
 - **Branch:** `feat/A10-safety-suite`
 - **Owns:** `chanakya/eval/safety/`
 - **Depends on:** A8

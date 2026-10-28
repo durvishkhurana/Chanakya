@@ -67,6 +67,7 @@ New Chanakya features are wired in behind flags in `.env`, all `false` by defaul
 python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7   # deterministic, no network
 python -m chanakya.eval.harness --mode online --merchants 3 --max-turns 6  # uses the configured LLM provider
 python -m chanakya.sim.calibration                                         # twin walk-away calibration
+python -m chanakya.eval.safety --mode offline                              # adversarial and safety suite (also --mode online)
 ```
 
 Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out` is given.

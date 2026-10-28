@@ -24,6 +24,7 @@
 10. `feat/A6-lookahead-planner`: NRPA look-ahead planner over belief-sampled Twin-A merchants, now the voice planner when PLANNER_ENABLED
 11. `feat/A8-eval-harness`: evaluation harness (offline and online), plus twin realism, belief and rate-limit fixes it surfaced
 12. `feat/A9-strategy-forest`: Strategy Forest mined from 540 synthetic multilingual transcripts; lookup under 50 ms; no measured win-rate gain yet
+13. `feat/A10-safety-suite`: adversarial and safety suite, zero violations offline and online
 
 ## Status
 
@@ -42,6 +43,7 @@
 - [x] A5 realizer and agent integration: LLM realizer grounded in the move's knowledge nodes plus the agent's sales rules, every line checked (sensitive data, invented money, pressure, claimed actions, unasked consent) with reviewed templates as fallback; BrainAgent plugs into the existing voice session behind PLANNER_ENABLED; TurnCompleted events carry belief and move; live voice calls verified with the flag on and off
 - [x] A6 look-ahead planner: candidates are the baseline move plus the strongest alternatives (consent question and stopping always included), merchants sampled from the belief, NRPA level 2 adapts the two-turn follow-up policy against Twin-A's judge, candidates scored by the mean of fresh rollouts (expected value, not a lucky best rollout); safety and consent rules bypass search; 300 ms budget with baseline fallback. On 300 Twin-A calls: consent 0.897 vs baseline 0.683 in 4.7 vs 6.7 agent turns
 - [x] A8 evaluation harness: one command runs reactive, actions-only, Chanakya and Chanakya-without-belief on 100 held-out Twin-B calls plus 12 adversarial calls with fixed seeds and writes JSON/Markdown/HTML; offline (deterministic) and online (LLM agents, Twin-B LLM voice, judge-labelled moves) modes; actions run on labelled mocks until B1
+- [x] A10 safety suite: 12 scripted scenarios (prompt injection, OTP phishing, pressure, invented-price bait, ambiguous 'haan' consent, distress, decline) checked turn by turn; zero violations offline and with the live Groq realizer; it also caught two planner bugs that are now fixed
 
 ### What's In Progress
 
@@ -73,6 +75,8 @@
 
 - **Twin realism fix found by the evaluation (2026-10-29):** with the first twin, an agent that only answered what it heard and asked repeatedly reached 98% consent offline, above Chanakya's 91-92%. The twin voiced its worries too often and an open worry barely blocked a yes, contrary to docs/IDEA.md and arXiv 2605.22240. The twin now holds worries back, each open worry multiplies the chance of a yes by 0.35, and re-asking after a no is pressure; the untreated agent stays calibrated at 64-66% decline. Even so, actions-only (0.99) and Chanakya (0.97) are within noise offline; Chanakya closes in fewer turns and its belief is what separates it from the no-belief ablation (0.54). Do not claim Chanakya beats actions-only on success from these runs
 - **A6 numbers after the twin change:** on 300 Twin-A calls NRPA consent 0.943 vs baseline 0.670; on 150 held-out calls 0.933 vs 0.847
+
+- **Repeated objections, follow-up:** when a merchant raises an already answered worry again (for example a second price question), Chanakya asks for consent instead of answering again. An attempt to reopen answered worries (damping the belief after an answer) regressed the evaluation from 0.97 to 0.19-0.95 because the belief has no 'no worry left' state, so it was reverted. Needs a 'none' outcome in the belief before retrying
 
 ## Files Modified This Session
 
