@@ -26,7 +26,6 @@
 ### What's Next
 
 1. F0.2: shared contracts in `chanakya/core/`, including `MissionCard` with `why_now` and `starting_worries`
-2. Update `docs/TASKS.md` to match the new Step A: B1 tool list, B6 intake, new B14 demo pages (already reflected in `feature_list.json`)
 3. From now on every change lands through a `feat/<ID>-<slug>` branch and a PR
 
 ## Blockers / Risks
@@ -34,7 +33,6 @@
 - [ ] OpenRouter account shows $0 credits. Calls still succeed, but may start failing with HTTP 402. Add credits before the eval run (I2)
 - [ ] OpenRouter key expires 2026-11-04 and has a $50/day limit
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
-- [ ] `docs/TASKS.md` still describes the old trigger engine (B6) and tool set (B1); `feature_list.json` and `docs/IDEA.md` are newer
 - [ ] Scope: 32 tasks is large for the time available. Tasks with "Roadmap candidate" notes are the first to cut
 
 ## Decisions Made

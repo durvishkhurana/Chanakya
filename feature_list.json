@@ -277,8 +277,7 @@
       ],
       "status": "done",
       "done_when": "SQLite mocks for Intake, CRM, Messaging, Onboarding, Field ops, Devices, Ticketing (Settlements read-only); every tool has happy and failure path tests; unknown tool names rejected.",
-      "evidence": "2026-10-29: pytest 63 passed (16 tools x happy and failure paths, unknown tool and bad args rejected, onboarding link to completion, seed idempotent, reproducible failures); ./init.sh passed.",
-      "notes": "Tool list follows docs/IDEA.md 3.7 (updated); docs/TASKS.md still lists the old set."
+      "evidence": "2026-10-29: pytest 63 passed (16 tools x happy and failure paths, unknown tool and bad args rejected, onboarding link to completion, seed idempotent, reproducible failures); ./init.sh passed."
     },
     {
       "id": "B2",
@@ -370,10 +369,9 @@
       "dependencies": [
         "B3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A seeded callback request, a Door 2 signal and a Door 3 hand-over each open one mission card with why-now and starting worries; repeats update the existing mission; queue orders by chance x value inside contact windows.",
-      "evidence": "",
-      "notes": "Replaces the old 'trigger engine' (docs/IDEA.md 3.2). docs/TASKS.md not yet updated."
+      "evidence": "2026-10-29: pytest 113 passed (card for every signal kind across 3 doors, dedupe refresh, do-not-call closed once, demo feed idempotent with 6 missions, queue ordering and calling-hour readiness); ./init.sh passed."
     },
     {
       "id": "B7",
@@ -506,12 +504,13 @@
     {
       "id": "B14",
       "name": "Mock product page and mock onboarding page",
-      "description": "Full spec: docs/IDEA.md sections 3.7, 3.8 and 8 (not yet in docs/TASKS.md)",
+      "description": "Full spec: docs/TASKS.md, task B14",
       "track": "B",
       "owner": "Gurnoor Singh Pannu",
       "branch": "feat/B14-demo-pages",
       "owns": [
-        "frontend/src/app/demo/"
+        "frontend/src/app/demo/",
+        "chanakya/missions/demo_api.py"
       ],
       "dependencies": [
         "B1",
@@ -519,8 +518,7 @@
       ],
       "status": "not-started",
       "done_when": "Tapping 'Request a callback' opens a Door 1 mission; completing the mock onboarding page updates the Onboarding system so the mission verifies DONE.",
-      "evidence": "",
-      "notes": "New task required by the updated demo (docs/IDEA.md section 8); not in docs/TASKS.md yet."
+      "evidence": ""
     },
     {
       "id": "I1",
