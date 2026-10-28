@@ -63,7 +63,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track A
 
-#### [ ] A1 Concern Bank and merchant personas
+#### [x] A1 Concern Bank and merchant personas
 - **Branch:** `feat/A1-concerns-personas`
 - **Owns:** `data/concerns/`, `data/personas/`, `chanakya/brain/concern_bank.py`
 - **Build:**

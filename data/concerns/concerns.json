@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "description": "Concern Bank: hidden merchant worries Chanakya tracks during a call. Resolve conditions only point to sourced knowledge nodes in data/knowledge/; none of them quote a price, fee, timeline or offer.",
+    "reviewed_at": "2026-10-29",
+    "languages": ["hindi", "hinglish", "punjabi", "english"]
+  },
+  "concerns": [
+    {
+      "concern_id": "hidden_charges",
+      "description": "Suspects there are charges nobody mentions up front.",
+      "phrasings": {
+        "hindi": ["इसमें कोई छुपा हुआ चार्ज तो नहीं है?", "बाद में कोई और पैसा तो नहीं कटेगा?"],
+        "hinglish": ["Koi hidden charge toh nahi hai na?", "Baad mein extra paisa toh nahi katega?"],
+        "punjabi": ["ਇਸ ਵਿੱਚ ਕੋਈ ਲੁਕਿਆ ਹੋਇਆ ਚਾਰਜ ਤਾਂ ਨਹੀਂ?", "ਬਾਅਦ ਵਿੱਚ ਹੋਰ ਪੈਸੇ ਤਾਂ ਨਹੀਂ ਕੱਟਣਗੇ?"],
+        "english": ["Are there any hidden charges?", "Will extra money get deducted later?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Say plainly that exact charges, rental and taxes are listed on Paytm's official pricing page and must be confirmed with Paytm before ordering; Chanakya never quotes, estimates or denies a charge.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "rental_cost",
+      "description": "Worried the monthly device rental is too high for the business.",
+      "phrasings": {
+        "hindi": ["इसका महीने का किराया कितना है?", "किराया बहुत ज़्यादा तो नहीं होगा?"],
+        "hinglish": ["Iska monthly rent kitna hai?", "Rent zyada toh nahi padega?"],
+        "punjabi": ["ਇਸਦਾ ਮਹੀਨੇ ਦਾ ਕਿਰਾਇਆ ਕਿੰਨਾ ਹੈ?", "ਕਿਰਾਇਆ ਬਹੁਤ ਜ਼ਿਆਦਾ ਤਾਂ ਨਹੀਂ?"],
+        "english": ["How much is the monthly rental?", "Isn't the rent too much for a small shop?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Explain that rental and purchase price are not fixed in Chanakya's sources and that current charges and models are shown on Paytm's official Soundbox and pricing pages; offer to send the official onboarding link so the merchant can check before committing.",
+          "knowledge_node_ids": ["soundbox", "onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "per_swipe_charges",
+      "description": "Worried about a charge on every card payment.",
+      "phrasings": {
+        "hindi": ["हर कार्ड पेमेंट पर कितना कटेगा?", "स्वाइप करने पर चार्ज लगता है क्या?"],
+        "hinglish": ["Har card payment pe kitna katega?", "Swipe karne pe charge lagta hai kya?"],
+        "punjabi": ["ਹਰ ਕਾਰਡ ਪੇਮੈਂਟ ਤੇ ਕਿੰਨਾ ਕੱਟੇਗਾ?", "ਸਵਾਈਪ ਕਰਨ ਤੇ ਚਾਰਜ ਲੱਗਦਾ ਹੈ?"],
+        "english": ["How much is cut on every card payment?", "Is there a charge per swipe?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Say that transaction charges depend on the chosen device and merchant terms and are confirmed through Paytm's official card machine and pricing pages; never state a rate.",
+          "knowledge_node_ids": ["card_machine", "onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "setup_hassle",
+      "description": "Expects onboarding and setup to be slow, confusing or paperwork-heavy.",
+      "phrasings": {
+        "hindi": ["इसे लगाने में बहुत झंझट होगा।", "कागज़ी काम बहुत लगेगा क्या?"],
+        "hinglish": ["Setup mein bahut jhanjhat hoga.", "Bahut paperwork lagega kya?"],
+        "punjabi": ["ਇਹ ਲਗਵਾਉਣ ਵਿੱਚ ਬਹੁਤ ਝੰਜਟ ਹੋਵੇਗਾ।", "ਕਾਗਜ਼ੀ ਕੰਮ ਬਹੁਤ ਲੱਗੇਗਾ?"],
+        "english": ["Setting this up sounds like a hassle.", "Is there a lot of paperwork?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Describe the official route: onboarding happens through the Paytm for Business app or official site, and Chanakya can send the official onboarding link so the merchant can start when convenient; make no promise about how long approval takes.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "competitor_qr",
+      "description": "Already uses another provider's QR and sees no reason to change.",
+      "phrasings": {
+        "hindi": ["मेरे पास पहले से दूसरा QR है।", "मैं पहले से दूसरे ऐप से पेमेंट लेता हूँ।"],
+        "hinglish": ["Mere paas pehle se dusra QR hai.", "Main already doosre app se payment leta hoon."],
+        "punjabi": ["ਮੇਰੇ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਹੋਰ QR ਹੈ।", "ਮੈਂ ਪਹਿਲਾਂ ਹੀ ਹੋਰ ਐਪ ਨਾਲ ਪੇਮੈਂਟ ਲੈਂਦਾ ਹਾਂ।"],
+        "english": ["I already have another company's QR.", "I already take payments on a different app."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Acknowledge the existing setup without criticising any competitor, then explain the sourced benefit that fits the shop: the All-in-One QR accepts payments from UPI apps, and Soundbox gives an instant spoken confirmation while serving customers.",
+          "knowledge_node_ids": ["qr", "soundbox"]
+        }
+      ]
+    },
+    {
+      "concern_id": "settlement_delay",
+      "description": "Worried money will take too long to reach the bank account.",
+      "phrasings": {
+        "hindi": ["पैसा बैंक में कब तक आएगा?", "पैसा अटक तो नहीं जाएगा?"],
+        "hinglish": ["Paisa bank mein kab tak aayega?", "Paisa atak toh nahi jayega?"],
+        "punjabi": ["ਪੈਸਾ ਬੈਂਕ ਵਿੱਚ ਕਦੋਂ ਤੱਕ ਆਵੇਗਾ?", "ਪੈਸਾ ਅਟਕ ਤਾਂ ਨਹੀਂ ਜਾਵੇਗਾ?"],
+        "english": ["When will the money reach my bank?", "Will my money get stuck?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Explain that the Paytm for Business app lets merchants track payments and view bank settlements, and that settlement schedules are confirmed with Paytm; never promise a settlement time.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "trust_in_caller",
+      "description": "Unsure whether a phone caller about payments can be trusted.",
+      "phrasings": {
+        "hindi": ["आप सच में Paytm से हो?", "फ़ोन पर ऐसे कॉल पर भरोसा नहीं होता।"],
+        "hinglish": ["Aap sach mein Paytm se ho?", "Aise phone calls pe bharosa nahi hota."],
+        "punjabi": ["ਤੁਸੀਂ ਸੱਚਮੁੱਚ Paytm ਤੋਂ ਹੋ?", "ਫ਼ੋਨ ਤੇ ਇਹੋ ਜਿਹੀਆਂ ਕਾਲਾਂ ਤੇ ਭਰੋਸਾ ਨਹੀਂ ਹੁੰਦਾ।"],
+        "english": ["Are you really from Paytm?", "I don't trust calls like this."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Repeat that Chanakya is an AI assistant, that it will never ask for an OTP, UPI PIN, CVV or password, and that onboarding and any payment happen only through official Paytm channels the merchant can open themselves.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "just_busy",
+      "description": "Busy with customers and has no time to talk now.",
+      "phrasings": {
+        "hindi": ["अभी दुकान पर ग्राहक हैं, बाद में बात करो।", "अभी टाइम नहीं है।"],
+        "hinglish": ["Abhi customers hain, baad mein baat karo.", "Abhi time nahi hai bhai."],
+        "punjabi": ["ਹੁਣੇ ਦੁਕਾਨ ਤੇ ਗਾਹਕ ਹਨ, ਬਾਅਦ ਵਿੱਚ ਗੱਲ ਕਰੋ।", "ਹੁਣੇ ਟਾਈਮ ਨਹੀਂ ਹੈ।"],
+        "english": ["I have customers right now, call later.", "I don't have time now."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Respect the time: offer one short summary or a follow-up at a time the merchant chooses, and mention that the official app and site are available whenever convenient.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "device_issue",
+      "description": "The device seems faulty or unreliable, or features did not match expectations.",
+      "phrasings": {
+        "hindi": ["Soundbox ठीक से नहीं बोलता।", "मशीन बार-बार बंद हो जाती है।"],
+        "hinglish": ["Soundbox theek se bolta nahi.", "Machine baar baar band ho jaati hai."],
+        "punjabi": ["Soundbox ਠੀਕ ਤਰ੍ਹਾਂ ਨਹੀਂ ਬੋਲਦਾ।", "ਮਸ਼ੀਨ ਵਾਰ-ਵਾਰ ਬੰਦ ਹੋ ਜਾਂਦੀ ਹੈ।"],
+        "english": ["The Soundbox doesn't announce properly.", "The machine keeps switching off."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Do not troubleshoot hardware on the call: note that features vary by model, offer a technician visit through field operations, and set a follow-up to check the device works.",
+          "knowledge_node_ids": ["soundbox", "card_machine"]
+        }
+      ]
+    },
+    {
+      "concern_id": "language_comfort",
+      "description": "Not comfortable with English menus or announcements.",
+      "phrasings": {
+        "hindi": ["मुझे अंग्रेज़ी समझ नहीं आती।", "क्या ये हिंदी में बोलेगा?"],
+        "hinglish": ["Mujhe English samajh nahi aati.", "Kya yeh Hindi mein bolega?"],
+        "punjabi": ["ਮੈਨੂੰ ਅੰਗਰੇਜ਼ੀ ਸਮਝ ਨਹੀਂ ਆਉਂਦੀ।", "ਕੀ ਇਹ ਪੰਜਾਬੀ ਵਿੱਚ ਬੋਲੇਗਾ?"],
+        "english": ["I don't understand English well.", "Will it speak in my language?"]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Continue in the merchant's language and explain that Paytm's Business homepage describes multilingual support for Soundbox; specific languages per model are confirmed with Paytm.",
+          "knowledge_node_ids": ["soundbox"]
+        }
+      ]
+    },
+    {
+      "concern_id": "data_privacy",
+      "description": "Worried about sharing business or personal details.",
+      "phrasings": {
+        "hindi": ["मेरी जानकारी का क्या करोगे?", "मैं अपने डॉक्यूमेंट फ़ोन पर नहीं दूँगा।"],
+        "hinglish": ["Meri details ka kya karoge?", "Main apne documents phone pe nahi dunga."],
+        "punjabi": ["ਮੇਰੀ ਜਾਣਕਾਰੀ ਦਾ ਕੀ ਕਰੋਗੇ?", "ਮੈਂ ਆਪਣੇ ਕਾਗਜ਼ ਫ਼ੋਨ ਤੇ ਨਹੀਂ ਦੇਵਾਂਗਾ।"],
+        "english": ["What will you do with my details?", "I won't share documents over the phone."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Confirm that Chanakya never asks for identity documents, OTPs, PINs or card numbers on a call, and that any onboarding details go only into Paytm's official app or site.",
+          "knowledge_node_ids": ["onboarding"]
+        }
+      ]
+    },
+    {
+      "concern_id": "not_needed",
+      "description": "Does not see a need for the product in this business.",
+      "phrasings": {
+        "hindi": ["मुझे इसकी ज़रूरत नहीं है।", "मेरे यहाँ सब नकद चलता है।"],
+        "hinglish": ["Mujhe iski zarurat nahi hai.", "Mera kaam aise hi chal raha hai."],
+        "punjabi": ["ਮੈਨੂੰ ਇਸਦੀ ਲੋੜ ਨਹੀਂ।", "ਮੇਰਾ ਕੰਮ ਇਵੇਂ ਹੀ ਚੱਲ ਰਿਹਾ ਹੈ।"],
+        "english": ["I don't need this.", "My business works fine as it is."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Ask how customers pay and match one product to the stated need only: QR for scan-and-pay at the counter, Payment Links for remote orders without a website, Payment Gateway for a website or app. If there is no need, accept it and end politely.",
+          "knowledge_node_ids": ["qr", "payment_links", "gateway"]
+        }
+      ]
+    },
+    {
+      "concern_id": "customers_pay_cash",
+      "description": "Most customers pay in cash, so a digital payment device seems pointless.",
+      "phrasings": {
+        "hindi": ["मेरे ग्राहक तो कैश देते हैं।", "यहाँ कोई UPI से नहीं देता।"],
+        "hinglish": ["Mere customers toh cash dete hain.", "Yahan koi UPI se nahi deta."],
+        "punjabi": ["ਮੇਰੇ ਗਾਹਕ ਤਾਂ ਕੈਸ਼ ਦਿੰਦੇ ਹਨ।", "ਇੱਥੇ ਕੋਈ UPI ਨਾਲ ਨਹੀਂ ਦਿੰਦਾ।"],
+        "english": ["My customers pay cash.", "Nobody here pays by UPI."]
+      },
+      "resolve_conditions": [
+        {
+          "description": "Accept cash as valid, then mention only the sourced option for customers who do want to pay digitally: the All-in-One QR accepts payments from UPI apps. Do not claim any increase in sales.",
+          "knowledge_node_ids": ["qr"]
+        }
+      ]
+    }
+  ]
+}

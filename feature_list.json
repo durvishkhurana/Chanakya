@@ -76,9 +76,9 @@
         "F0.1",
         "F0.2"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Loaders validate against core schemas; every resolve condition points to an existing knowledge node; each intake trigger type has a starting-worries prior.",
-      "evidence": ""
+      "evidence": "2026-10-29: data/concerns/concerns.json (13 concerns), data/concerns/priors.json (all 11 TriggerTypes), data/personas/personas.json (68 personas from data/personas/generate_personas.py, seed 20261029: 34 planning, 34 evaluation, 4 adversarial kinds each), chanakya/brain/concern_bank.py loaders validating against core schemas. Tests: chanakya/brain/tests/test_concern_bank.py checks every resolve condition points to an existing knowledge node, every trigger has a prior, the generator reproduces the committed file. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 24 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "A2",
