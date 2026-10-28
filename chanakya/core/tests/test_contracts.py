@@ -163,6 +163,20 @@ def test_event_bus_persists_then_delivers_to_matching_subscribers():
     assert bus.subscriber_count == 0
 
 
+def test_subscription_receives_events_published_before_its_first_read():
+    async def scenario():
+        bus = InProcessEventBus(InMemoryMissionStore())
+        subscription = bus.subscribe()
+        await bus.publish(MissionEvent.of("m1", EventKind.NOTE))
+        await bus.publish(MissionEvent.of("m1", EventKind.NOTE))
+        got = [await anext(subscription), await anext(subscription)]
+        await subscription.aclose()
+        return got, bus.subscriber_count
+
+    got, remaining = asyncio.run(scenario())
+    assert [e.seq for e in got] == [1, 2] and remaining == 0
+
+
 def test_flags_default_off(monkeypatch):
     for name in ("PLANNER_ENABLED", "ACTIONS_ENABLED", "MISSIONS_ENABLED", "COACH_ENABLED"):
         monkeypatch.delenv(name, raising=False)
