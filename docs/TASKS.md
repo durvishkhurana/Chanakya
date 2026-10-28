@@ -212,7 +212,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** mission list with states and priorities, mission detail with the ledger timeline, signals feed, hand-off queue, approval buttons. Mock systems clearly labelled.
 - **Done when:** a seeded demo shows missions moving live.
 
-#### [ ] B9 Live Call View
+#### [x] B9 Live Call View
 - **Branch:** `feat/B9-live-call-view`
 - **Owns:** `frontend/src/app/call/`, `frontend/src/components/call/`
 - **Depends on:** B5 (consumes `BeliefUpdated`, `PlanComputed`, `ActionDecision` events)

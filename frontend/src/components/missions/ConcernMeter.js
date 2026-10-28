@@ -13,7 +13,7 @@ export default function ConcernMeter({ current, starting, limit = 4 }) {
   const ref = useRef(null);
   const Charts = useCharts();
   const ids = topWorries(current, limit).map(([id]) => id);
-  const rows = ids.map((id) => ({ label: worryLabel(id), value: current[id] || 0, target: starting?.[id] || 0 }));
+  const rows = ids.map((id) => ({ label: worryLabel(id), value: current[id] || 0, target: starting?.[id] || 0, tolerance: 2 }));  // a shift in belief is neither good nor bad: keep it grey
   const key = JSON.stringify(rows);
 
   useEffect(() => {

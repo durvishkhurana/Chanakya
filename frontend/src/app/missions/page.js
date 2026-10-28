@@ -80,7 +80,7 @@ function MissionControl() {
 
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>Couldn’t reach the mission service. {error}</span><button className="text-action" onClick={load}>Retry</button></div>}
 
-    <div className="kpis" aria-label="Mission counts">
+    <div className="kpis notes-optional" aria-label="Mission counts">
       <Kpi label="Ready to call" value={counts.ready} note={`of ${counts.waiting} waiting in the queue`} loading={rows === null} />
       <Kpi label="In conversation" value={counts.talking} note="calls running now" loading={rows === null} />
       <Kpi label="Waiting on the merchant" value={counts.onMerchant} note="link sent, being verified" loading={rows === null} />

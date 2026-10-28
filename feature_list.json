@@ -424,9 +424,9 @@
       "dependencies": [
         "B5"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Split screen renders from recorded event fixtures and from a live call: transcript, concern meter, look-ahead tree, willingness curve, action log.",
-      "evidence": ""
+      "evidence": "2026-10-29: frontend 15 node tests, lint clean, build compiled; browser: recorded call plays through (concern 50->62->22%, willingness 0.30->0.80), live mode replays a real mission's ledger and shows new events without refresh; design lint 0/0, inspector 0 FAIL 0 WARN at 1440/768/390."
     },
     {
       "id": "B10",

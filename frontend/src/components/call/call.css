@@ -1,0 +1,32 @@
+/* Live Call View: the call on the left, Chanakya's thinking on the right. Builds on src/styles/app.css (.cx). */
+.cx .call-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.cx .call-transcript { display: grid; gap: 10px; }
+.cx .turn { max-width: 88%; padding: 10px 12px; border-radius: 10px; line-height: 20px; }
+.cx .turn.agent { background: var(--raised); }
+.cx .turn.merchant { justify-self: end; background: #e3eef1; }
+.cx .turn .who { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 2px; }
+.cx .turn .move { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.cx .turn .cue { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.cx .turn.arrive { animation: call-arrive 420ms var(--ease-out); }
+@keyframes call-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.cx .tree { display: grid; gap: 10px; }
+.cx .branch { display: grid; grid-template-columns: minmax(150px, 40%) minmax(0, 1fr) 64px; gap: 12px; align-items: center; font-size: 14px; }
+.cx .branch .label { line-height: 18px; }
+.cx .branch .label small { display: block; font-size: 13px; color: var(--muted); }
+.cx .branch .track { position: relative; height: 10px; background: var(--rule); border-radius: 2px; }
+.cx .branch .fill { position: absolute; inset: 0 auto 0 0; background: var(--chart-muted); border-radius: 2px; transition: width 500ms var(--ease-out); }
+.cx .branch.chosen .fill { background: var(--chart-1); }
+.cx .branch.chosen .label { font-weight: 600; }
+.cx .branch .score { text-align: right; font-variant-numeric: tabular-nums; }
+.cx .branch .score small { display: block; font-size: 13px; color: var(--muted); }
+
+.cx .checks li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+.cx .checks li:first-child { border-top: 0; }
+.cx .checks .ok { color: var(--positive); font-weight: 500; }
+.cx .checks .no { color: var(--muted); }
+.cx .playback { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.cx .note { padding: 10px 12px; border-radius: 8px; background: var(--pill-warning-bg); color: var(--pill-warning-ink); font-size: 13px; line-height: 18px; margin-bottom: var(--gap); }
+
+@media (max-width: 1180px) { .cx .call-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) { .cx .branch { grid-template-columns: minmax(0, 1fr) 72px; } .cx .branch .track { grid-column: 1 / -1; grid-row: 2; } .cx .turn { max-width: 100%; } }
