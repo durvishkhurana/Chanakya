@@ -55,9 +55,9 @@
       "dependencies": [
         "F0.1"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "CI runs ./init.sh on every PR and is green on main.",
-      "evidence": "",
+      "evidence": "2026-10-29: .github/workflows/ci.yml runs FULL=1 ./init.sh on Ubuntu (Python 3.12, Node 20) for every push and pull request. Locally FULL=1 ./init.sh passed on Windows with Python 3.12.13: agent 94 OK, backend 94 OK, Ruff clean, frontend 9/9 pass, lint clean, build compiled. Not done yet: the first GitHub Actions run is not visible from this machine (private repo, no gh CLI); mark done once CI is green on main.",
       "notes": "Optional for the hackathon; roadmap if time is short."
     },
     {

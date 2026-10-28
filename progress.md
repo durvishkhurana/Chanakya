@@ -21,7 +21,7 @@
 
 ### What's In Progress
 
-- [ ] Nothing in progress
+- [ ] F0.3 CI (`feat/F0.3-ci`): workflow runs `FULL=1 ./init.sh` on every push and PR; passes locally, waiting for the first green GitHub Actions run on `main`
 
 ### What's Next
 
