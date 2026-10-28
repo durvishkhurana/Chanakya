@@ -14,6 +14,7 @@ from langchain_core.tracers.langchain import wait_for_all_tracers
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from agent.graph import Agent
+from agent.models import provider_settings
 from agent.prompts.prompts import voice_assistant_system_prompt
 from backend.twilio_routes import configure_telephony
 from backend.twilio_routes import router as telephony_router
@@ -21,8 +22,16 @@ from backend.twilio_routes import router as telephony_router
 voice_agent_instance = None
 
 
+def llm_key_name():
+    """The API key the voice agent needs: OpenRouter, or Groq while OpenRouter is unavailable."""
+    return "GROQ_API_KEY" if provider_settings().llm_provider == "groq" else "OPENROUTER_API_KEY"
+
+
 def missing_configuration(provider="llm_batch"):
-    required = ["OPENROUTER_API_KEY", "SARVAM_API_KEY"]
+    required = [llm_key_name(), "SARVAM_API_KEY"]
+    # Decisions retrieval is an OpenRouter-only API.
+    if provider == "decisions" and "OPENROUTER_API_KEY" not in required:
+        required.append("OPENROUTER_API_KEY")
     if provider == "jev" or os.getenv("VOICE_INTERRUPTION_ENABLED", "false").lower() in {"true", "1", "yes"}:
         required.append("TYPESAFE_API_KEY")
     return [name for name in required if not os.getenv(name, "").strip()]
@@ -31,12 +40,12 @@ def missing_configuration(provider="llm_batch"):
 @asynccontextmanager
 async def lifespan(app):
     global voice_agent_instance
-    if os.getenv("OPENROUTER_API_KEY", "").strip():
+    if os.getenv(llm_key_name(), "").strip():
         voice_agent_instance = Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
     try:
         configure_telephony(app, voice_agent_instance, os.getenv("SARVAM_API_KEY", ""))
         if getattr(app.state, "telephony", None) and voice_agent_instance is None:
-            raise ValueError("OPENROUTER_API_KEY is required for phone calling")
+            raise ValueError(f"{llm_key_name()} is required for phone calling")
         yield
     finally:
         try:

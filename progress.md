@@ -15,6 +15,7 @@
 1. `fix/windows-init`: `init.sh` works on Windows (Git Bash) and requires Python 3.12
 2. `feat/F0.3-ci`: GitHub Actions runs `FULL=1 ./init.sh`
 3. `feat/F0.2-core-contracts`: `chanakya/core` (needs Gurnoor's review: shared contracts)
+4. `fix/voice-llm-provider`: voice agent runs on Groq while only `GROQ_API_KEY` is set; OpenRouter behaviour unchanged when its key is present
 
 ## Status
 
@@ -25,6 +26,7 @@
 - [x] API keys verified: Sarvam STT/TTS round trip; OpenRouter with `deepseek/deepseek-v4-flash` and `openai/gpt-6-luna`
 - [x] Harness: `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`
 - [x] F0.2 core contracts: schemas, interfaces, typed event bus, settings with flags off, OpenRouter/Groq LLM client with five roles, fakes for every interface. Groq is the provider for now (`LLM_PROVIDER=groq`) while OpenRouter credits are arranged
+- [x] Voice agent on Groq: live text turns verified (English greeting, Hindi Soundbox question answered from the source with no invented rental, fake-staff OTP request refused); Sarvam key verified with one Hindi TTS call; em dashes stripped from spoken text in code
 
 ### What's In Progress
 
