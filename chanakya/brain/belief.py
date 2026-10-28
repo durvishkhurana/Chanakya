@@ -37,7 +37,7 @@ KEYWORDS: dict[str, tuple[str, ...]] = {
 EPSILON = 0.03
 HESITATION_WEIGHT = 0.6
 # Squaring the support makes a clear statement count far more than a weak lexical overlap.
-SHARPNESS = 2.0
+SHARPNESS = 3.0
 # Share of the starting belief spread evenly, so the live call can correct the card's guess.
 START_SMOOTHING = 0.15
 
