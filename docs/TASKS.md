@@ -148,7 +148,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** build a `HandoffCard` from the mission: merchant profile, top concerns, tried moves, actions, one-line LLM summary; human queue with claim/resolve.
 - **Done when:** card generation tested on a recorded mission; queue endpoints work.
 
-#### [ ] B5 Backend API for missions, actions and hand-offs
+#### [x] B5 Backend API for missions, actions and hand-offs
 - **Branch:** `feat/B5-api`
 - **Owns:** `chanakya/missions/api.py`, `chanakya/actions/api.py`, `chanakya/humans/api.py` (registered in `backend/main.py` with one appended line each)
 - **Depends on:** B2, B3, B4

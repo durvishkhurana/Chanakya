@@ -350,9 +350,9 @@
         "B3",
         "B4"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "API tests pass; ledger events stream to a test client over WebSocket.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 128 passed (HTTP mission callback -> verified DONE, error codes, hand-offs, WebSocket replay + live events, routes mounted only with MISSIONS_ENABLED); live uvicorn smoke: demo feed, link sent, 7 live WS events, fast-forward check, 0 server errors; ./init.sh passed."
     },
     {
       "id": "B6",
