@@ -129,9 +129,9 @@
       "dependencies": [
         "A3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Precondition tests pass; planner never proposes a write without CONFIRM_CONSENT; DISCLOSE_AND_GREET always first.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/moves.py, chanakya/brain/planner_rules.py. Tests (chanakya/brain/tests/test_planner_rules.py): every precondition; explicit consent in Hinglish/Hindi/Punjabi/English while 'Haan.', 'Okay.', 'Theek hai.' are rejected; property check over 170 simulated Twin-A calls (34 personas x 5 seeds incl. adversarial): DISCLOSE_AND_GREET always first, no write without consent, only closing moves after a decline; baseline beats the untreated pitch. Measured over 300 Twin-A calls (30 personas x 10 seeds, template voice): consent 0.683, follow-up 0.200. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 81 passed, Ruff clean, frontend 9/9."
     },
     {
       "id": "A5",

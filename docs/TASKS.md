@@ -92,7 +92,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Bayesian update with decay; emits `BeliefUpdated` events.
 - **Done when:** unit tests on scripted utterances move the right concern to the top; latency per update is logged.
 
-#### [ ] A4 Move library and baseline planner
+#### [x] A4 Move library and baseline planner
 - **Branch:** `feat/A4-moves-baseline-planner`
 - **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`
 - **Depends on:** A3
