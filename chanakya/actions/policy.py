@@ -56,14 +56,23 @@ def ai_disclosed(f: Facts) -> str | None:
     return None
 
 
+def _consent_tools(payload: dict) -> set[str] | None:
+    """Tools a consent event covers; None means every tool (only allowed for declines)."""
+    tools = set(payload.get("tools") or [])
+    if payload.get("tool"):
+        tools.add(payload["tool"])
+    return tools or None
+
+
 def explicit_consent(f: Facts) -> str | None:
-    """A write needs a recorded yes for this tool, not withdrawn since."""
+    """A write needs a recorded yes covering this tool, not withdrawn since. A decline naming no tool covers all."""
     for event in reversed(f.events):
-        if event.payload.get("tool") != f.call.tool:
+        if event.kind not in (EventKind.CONSENT_GIVEN, EventKind.CONSENT_DECLINED):
             continue
-        if event.kind == EventKind.CONSENT_DECLINED:
+        tools = _consent_tools(event.payload)
+        if event.kind == EventKind.CONSENT_DECLINED and (tools is None or f.call.tool in tools):
             return "merchant declined"
-        if event.kind == EventKind.CONSENT_GIVEN:
+        if event.kind == EventKind.CONSENT_GIVEN and tools is not None and f.call.tool in tools:
             return None
     return "no explicit consent for this action"
 

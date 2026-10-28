@@ -18,7 +18,9 @@ ALLOWED: dict[MissionState, frozenset[MissionState]] = {
     S.AWAITING_CONFIRMATION: frozenset(
         {S.VERIFYING, S.SCHEDULED, S.ESCALATED, S.CLOSED_NOT_INTERESTED, S.FAILED}
     ),
-    S.VERIFYING: frozenset({S.DONE, S.AWAITING_CONFIRMATION, S.SCHEDULED, S.ESCALATED, S.FAILED}),
+    S.VERIFYING: frozenset(
+        {S.DONE, S.AWAITING_CONFIRMATION, S.SCHEDULED, S.ESCALATED, S.CLOSED_NOT_INTERESTED, S.FAILED}
+    ),
     **{terminal: frozenset() for terminal in TERMINAL_STATES},
 }
 

@@ -388,9 +388,9 @@
         "B1",
         "B3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "End-to-end test drives a mission from link sent to onboarding complete with the simulated clock; DONE only on system confirmation.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 121 passed; end-to-end on SimClock: link sent -> pending check -> WhatsApp reminder -> onboarding completed -> verified DONE, replay matches; never DONE without confirmation; 2 reminders then back to queue held until callback time; night reminder waits to 09:00 IST; consent and stop respected; broken messaging terminates; ./init.sh passed."
     },
     {
       "id": "B8",

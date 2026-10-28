@@ -198,7 +198,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** the three doors from IDEA 3.2 (merchant raises a hand, data says so, human hands over); every signal becomes a mission card with goal, why-now reason, starting worries (priors over Concern Bank ids) and priority (chance x value); repeat signals refresh the open mission; do-not-call merchants are closed, never contacted; a queue ranks waiting missions and checks calling hours and the merchant's window; a simulated signal feed for the demo merchants.
 - **Done when:** a callback request, a Door 2 signal and a Door 3 hand-over each open one mission card; duplicates update the existing mission; the queue orders by priority inside contact windows.
 
-#### [ ] B7 Scheduler, follow-ups and verification
+#### [x] B7 Scheduler, follow-ups and verification
 - **Branch:** `feat/B7-followups`
 - **Owns:** `chanakya/missions/scheduler.py`, `chanakya/missions/verifier.py`
 - **Depends on:** B1, B3

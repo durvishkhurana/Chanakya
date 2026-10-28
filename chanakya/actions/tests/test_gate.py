@@ -88,6 +88,18 @@ def test_consent_is_per_tool_and_can_be_withdrawn():
     assert rig.submit("send_onboarding_link", **link_args()).reason == "merchant declined"
 
 
+def test_one_consent_can_cover_named_tools_and_a_blanket_decline_covers_all():
+    rig = Rig()
+    rig.disclose()
+    run(rig.ledger.record(rig.mission.id, EventKind.CONSENT_GIVEN,
+                          {"tools": ["send_onboarding_link", "send_summary"], "utterance": "Haan, bhejo aur yaad dila dena"}))
+    assert rig.submit("send_onboarding_link", **link_args()).verdict == Verdict.EXECUTED
+    assert rig.submit("send_summary", text="Reminder").verdict == Verdict.EXECUTED
+    assert rig.submit("book_callback", due_at="2026-10-30T10:00:00+00:00").reason == "no explicit consent for this action"
+    run(rig.ledger.record(rig.mission.id, EventKind.CONSENT_DECLINED, {"utterance": "Ab mat bhejna kuch"}))
+    assert rig.submit("send_summary", text="Reminder").reason == "merchant declined"
+
+
 def test_calling_hours_and_do_not_call_block_contact():
     night = Rig(clock=NIGHT_IST)
     night.disclose()
