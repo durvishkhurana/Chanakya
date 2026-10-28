@@ -213,3 +213,10 @@ def test_an_unprompted_yes_gets_a_clear_consent_question_first():
     move = plan(state)
     assert move.type == MoveType.CONFIRM_CONSENT and move.tool == "send_onboarding_link"
     assert state.transcript.consents == []
+
+
+def test_a_later_unprompted_yes_is_still_confirmed():
+    asked = Move(type=MoveType.CONFIRM_CONSENT, tool="send_onboarding_link")
+    state = with_turns(Turn(speaker="merchant", text="Haan, bhej do link."),
+                       moves=[GREETED, asked, Move(type=MoveType.DISCOVER_NEED)])
+    assert plan(state).type == MoveType.CONFIRM_CONSENT

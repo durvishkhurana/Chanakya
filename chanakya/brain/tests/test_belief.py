@@ -128,3 +128,4 @@ def test_latency_is_recorded_for_every_update():
     tracker = BayesianBeliefTracker(BANK)
     run(tracker, {"hidden_charges": 1.0}, merchant("Koi hidden charge?"))
     assert tracker.last_latency_ms >= 0 and tracker.last_evidence["hidden_charges"] > 0
+

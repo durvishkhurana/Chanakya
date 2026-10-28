@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 # Short cue words per concern that paraphrases tend to keep, across scripts.
 KEYWORDS: dict[str, tuple[str, ...]] = {
     "hidden_charges": ("hidden", "charge", "chupa", "छुप", "चार्ज", "ਚਾਰਜ", "extra", "कटेगा", "katega", "fees"),
-    "rental_cost": ("rent", "rental", "kiraya", "किराया", "ਕਿਰਾਇਆ", "monthly", "mahina", "महीने"),
+    "rental_cost": ("rent", "rental", "kiraya", "किराया", "ਕਿਰਾਇਆ", "monthly", "mahina", "महीने", "rupaye", "rupees",
+                    "रुपये", "ਰੁਪਏ", "kitne mein", "price", "daam", "कीमत", "free hai", "फ्री"),
     "per_swipe_charges": ("swipe", "स्वाइप", "ਸਵਾਈਪ", "per card", "card payment", "mdr", "har card", "हर कार्ड"),
     "setup_hassle": ("setup", "jhanjhat", "झंझट", "ਝੰਜਟ", "paperwork", "kagaz", "कागज़", "lagane", "install"),
     "competitor_qr": ("already", "pehle se", "पहले से", "ਪਹਿਲਾਂ", "dusra", "doosre", "दूसरा", "other app", "another"),
