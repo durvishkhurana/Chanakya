@@ -117,7 +117,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Branch:** `feat/B1-mock-systems`
 - **Owns:** `chanakya/actions/systems/`, `chanakya/actions/registry.py`
 - **Build:**
-  - SQLite-backed mocks: CRM, Messaging (WhatsApp/SMS outbox), Field ops, Devices, Settlements, Ticketing. Configurable failure rates and delays.
+  - SQLite-backed mocks: Intake, CRM, Messaging (WhatsApp/SMS outbox), Onboarding, Field ops, Devices, Ticketing, Settlements (read-only). Configurable failure rates and delays.
   - Typed tools from IDEA 3.7 with Pydantic argument schemas; registry with membership check.
   - Seed script that creates merchants, devices, settlements and orders matching the personas.
 - **Done when:** every tool has a happy-path and failure-path test; unknown tool names are rejected.
@@ -191,12 +191,12 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track B
 
-#### [ ] B6 Proactive trigger engine and signal generator
-- **Branch:** `feat/B6-triggers`
-- **Owns:** `chanakya/missions/triggers.py`, `chanakya/missions/signals.py`
+#### [x] B6 Mission intake: three doors, mission cards, priority queue
+- **Branch:** `feat/B6-intake`
+- **Owns:** `chanakya/missions/intake.py`, `chanakya/missions/queue.py`, `chanakya/missions/signals.py`
 - **Depends on:** B3
-- **Build:** simulated signal feed (device offline, settlement failed, failed-payment spike, UPI growth without Soundbox, card demand without POS, onboarding stalled); rules that open missions with priority, contact window and language.
-- **Done when:** a seeded feed opens the expected missions; duplicate signals do not open duplicate missions.
+- **Build:** the three doors from IDEA 3.2 (merchant raises a hand, data says so, human hands over); every signal becomes a mission card with goal, why-now reason, starting worries (priors over Concern Bank ids) and priority (chance x value); repeat signals refresh the open mission; do-not-call merchants are closed, never contacted; a queue ranks waiting missions and checks calling hours and the merchant's window; a simulated signal feed for the demo merchants.
+- **Done when:** a callback request, a Door 2 signal and a Door 3 hand-over each open one mission card; duplicates update the existing mission; the queue orders by priority inside contact windows.
 
 #### [ ] B7 Scheduler, follow-ups and verification
 - **Branch:** `feat/B7-followups`
@@ -218,6 +218,13 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Depends on:** B5 (consumes `BeliefUpdated`, `PlanComputed`, `ActionDecision` events)
 - **Build:** split screen: transcript and audio on the left; concern meter, look-ahead tree, willingness curve and action log on the right.
 - **Done when:** renders from recorded event fixtures and from a live call.
+
+#### [ ] B14 Mock product page and mock onboarding page
+- **Branch:** `feat/B14-demo-pages`
+- **Owns:** `frontend/src/app/demo/`, `chanakya/missions/demo_api.py`
+- **Depends on:** B1, B5
+- **Build:** a mock Soundbox page with "Request a callback" (opens a Door 1 mission) and a mock onboarding page at `/demo/onboard/<session>` (completing it updates the Onboarding system so the mission can verify DONE). Both clearly labelled as mocks.
+- **Done when:** tapping the button opens a mission, and completing the form moves a mission waiting on onboarding to DONE.
 
 ---
 
