@@ -295,9 +295,9 @@
       "dependencies": [
         "B1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Tests cover blocked writes without consent, blocked calls outside hours, and an audit entry for each path.",
-      "evidence": ""
+      "evidence": "2026-10-29: pytest 85 passed (gate: consent and disclosure for writes, per-tool consent and withdrawal, calling hours, do-not-call, suitability, cross-merchant, sensitive data, unknown tool/mission, closed mission, reconsideration, failures, audit entry for every path); ./init.sh passed."
     },
     {
       "id": "B3",
