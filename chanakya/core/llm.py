@@ -49,6 +49,14 @@ async def complete_json(client: LLMClient, role: Role, messages: list[Message], 
     return parse_json(await client.complete(role, messages, json_mode=True, **kwargs))
 
 
+def retry_delay(response: httpx.Response, attempt: int, cap: float = 20.0) -> float:
+    """Seconds to wait before retrying: the provider's Retry-After when given, else exponential backoff."""
+    try:
+        return min(cap, max(0.0, float(response.headers.get("retry-after", ""))))
+    except ValueError:
+        return 0.5 * 2 ** attempt
+
+
 class OpenAICompatibleLLM:
     """Calls ``/chat/completions`` on OpenRouter or Groq, chosen by ``Settings``."""
 
@@ -90,7 +98,7 @@ class OpenAICompatibleLLM:
             try:
                 response = await client.post("chat/completions", json=body)
                 if response.status_code in {429, 500, 502, 503} and attempt < 2:
-                    await asyncio.sleep(0.5 * 2 ** attempt)
+                    await asyncio.sleep(retry_delay(response, attempt))
                     continue
                 response.raise_for_status()
                 content = response.json()["choices"][0]["message"].get("content") or ""

@@ -151,3 +151,11 @@ def test_openai_compatible_client_sends_role_model_and_never_leaks_key():
     assert "secret-key" not in str(error.value)
     with pytest.raises(LLMError):
         asyncio.run(OpenAICompatibleLLM(Settings.from_env({})).complete("main", []))
+
+
+def test_retry_delay_honours_retry_after_with_a_cap():
+    from chanakya.core.llm import retry_delay
+
+    assert retry_delay(httpx.Response(429, headers={"retry-after": "3"}), 0) == 3.0
+    assert retry_delay(httpx.Response(429, headers={"retry-after": "600"}), 0) == 20.0
+    assert retry_delay(httpx.Response(503), 1) == 1.0
