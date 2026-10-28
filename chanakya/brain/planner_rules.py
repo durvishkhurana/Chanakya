@@ -73,6 +73,10 @@ class RuleBasedPlanner:
             return Move(type=MoveType.END_CALL_POLITELY, reason="action taken"), "finished"
         if "SCHEDULE_FOLLOWUP" in done:
             return Move(type=MoveType.END_CALL_POLITELY, reason="follow-up scheduled"), "after_followup"
+        asked = state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT
+        if lib.explicit_consent(last) and not asked and f"CONFIRM_CONSENT({tool})" not in done:
+            # An unprompted yes is welcome, but consent is only recorded for a clear question.
+            return Move(type=MoveType.CONFIRM_CONSENT, tool=tool), "confirm_unprompted_yes"
         if len(state.transcript.turns) >= MAX_TURNS:
             return Move(type=MoveType.SCHEDULE_FOLLOWUP, args={"channel": "call"}), "too_long"
 

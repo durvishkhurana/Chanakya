@@ -206,3 +206,10 @@ def test_baseline_planner_wins_more_merchants_than_an_untreated_pitch():
     planned_rate = sum(twin.state.consented for _, twin in planned) / len(planned)
     naive_rate = naive.count("consented") / len(naive)
     assert planned_rate > naive_rate
+
+
+def test_an_unprompted_yes_gets_a_clear_consent_question_first():
+    state = with_turns(Turn(speaker="merchant", text="Haan, bhej do link."), moves=[GREETED])
+    move = plan(state)
+    assert move.type == MoveType.CONFIRM_CONSENT and move.tool == "send_onboarding_link"
+    assert state.transcript.consents == []
