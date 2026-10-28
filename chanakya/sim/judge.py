@@ -87,6 +87,7 @@ class TwinState:
     ended: bool = False
     consented: bool = False
     declined: bool = False
+    followup_agreed: bool = False
     violations: list[str] = field(default_factory=list)
     turns: int = 0
 
@@ -165,6 +166,13 @@ def judge_turn(state: TwinState, move: Move | None, agent_text: str, rng: random
     elif move_type == MoveType.ESCALATE:
         state.ended = True
         return Intent("acknowledge", detail="escalated")
+    elif move_type == MoveType.SCHEDULE_FOLLOWUP and "just_busy" in state.unresolved:
+        # A busy merchant offered a later call takes it; that is the right outcome for this call.
+        state.unresolved.discard("just_busy")
+        state.resolved.append("just_busy")
+        state.followup_agreed = True
+        state.ended = True
+        return Intent("acknowledge", detail="followup_agreed")
 
     if persona.adversarial and state.turns <= 3 and rng.random() < 0.8:
         return _after(state, Intent("adversarial", detail=persona.adversarial))
