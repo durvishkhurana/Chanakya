@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { deriveCallView, eventSummary, groupMissions, topWorries, worryLabel } from "./missionView.mjs";
+import { deriveCallView, eventSummary, groupMissions, missionCounts, topWorries, worryLabel } from "./missionView.mjs";
 
 const card = { goal: "Sell soundbox -> verified onboarding", starting_worries: { hidden_charges: 0.5, competitor_qr: 0.3, just_busy: 0.2 }, priority: 0.9 };
 const row = (id, state, priority, ready) => ({ mission: { id, state, card: { ...card, priority } }, queue: ready === undefined ? null : { ready } });
@@ -50,6 +50,14 @@ test("call view follows the ledger: transcript, concern meter, plans, willingnes
   assert.deepEqual(view.willingness, [{ turn: 1, value: 0.2 }, { turn: 2, value: 0.55 }]);
   assert.equal(view.consent, "given");
   assert.equal(view.actions[0].data.link, "/demo/onboard/x");
+});
+
+test("headline counts add up from the rows", () => {
+  const rows = [row("a", "CREATED", 1, true), row("b", "SCHEDULED", 1, false), row("c", "IN_CONVERSATION", 1),
+    row("d", "AWAITING_CONFIRMATION", 1), row("e", "DONE", 1), row("f", "CLOSED_NOT_INTERESTED", 1), row("g", "ESCALATED", 1)];
+  const counts = missionCounts(rows, [{ status: "open" }, { status: "resolved" }]);
+  assert.deepEqual(counts, { ready: 1, waiting: 2, talking: 1, onMerchant: 1, done: 1, closed: 2, handoffsOpen: 1 });
+  assert.equal(counts.waiting + counts.talking + counts.onMerchant + counts.done + counts.closed, rows.length);
 });
 
 test("without belief updates the meter shows the card's starting worries", () => {

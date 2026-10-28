@@ -205,7 +205,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** APScheduler jobs for verification checks and follow-ups (WhatsApp nudge, callback); simulated clock for demos and tests; mission closes DONE only when the system confirms the outcome.
 - **Done when:** an end-to-end test drives a mission from link sent to onboarding complete using the simulated clock.
 
-#### [ ] B8 Mission Control dashboard
+#### [x] B8 Mission Control dashboard
 - **Branch:** `feat/B8-mission-control`
 - **Owns:** `frontend/src/app/missions/`, `frontend/src/components/missions/`
 - **Depends on:** B5
