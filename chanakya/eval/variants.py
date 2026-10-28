@@ -165,4 +165,8 @@ def make_variant(name: str, llm=None, llm_agent=None):
         return BrainVariant(name, llm=llm)
     if name == "chanakya_no_belief":
         return BrainVariant(name, llm=llm, belief=False)
+    if name == "chanakya_forest":
+        from chanakya.brain.forest.forest import default_forest
+
+        return BrainVariant(name, llm=llm, planner=NRPAPlanner(forest=default_forest()))
     raise ValueError(f"Unknown variant {name}")

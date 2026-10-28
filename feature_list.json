@@ -223,9 +223,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "Forest lookup under 50 ms and improves planner win rate over baseline candidates in eval.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/forest (forest.py, generate.py), data/transcripts/synthetic_transcripts.jsonl (540 transcripts from python -m chanakya.brain.forest.generate --seed 11: NRPA, baseline and an exploring baseline against planning-split Twin-A, hi/pa/bn/gu/mr/ta merchants, outcome-labelled), data/forest/forest.json (40 clusters, hashed trigram state vectors, discounted outcome credit, Wilson lower bounds, top-worry moves abstracted as @top). Lookup 1-4 ms per call (target < 50 ms): met. Win rate: python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 --variants chanakya,chanakya_forest gives mission success 0.97 vs 0.97 (turns to close 5.09 vs 5.03); converse() on 150 held-out calls gives 0.933 vs 0.947 (2 calls, within noise). The improvement criterion is NOT demonstrated, so the task stays in-progress. Next: richer transcripts (LLM-voiced twins) or forest values that condition on concern history."
     },
     {
       "id": "A10",

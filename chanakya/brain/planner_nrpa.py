@@ -61,7 +61,7 @@ class NRPAPlanner:
 
     def __init__(self, bank: ConcernBank | None = None, samples: int = 6, level: int = 2, iterations: int = 4,
                  depth: int = 2, budget_ms: float = 300.0, alpha: float = 1.0, seed: int = 0,
-                 evaluations: int = 8):
+                 evaluations: int = 8, forest=None):
         if not 1 <= level <= 2:
             raise ValueError("NRPA level must be 1 or 2")
         self.bank = bank or default_bank()
@@ -69,6 +69,8 @@ class NRPAPlanner:
         self.samples, self.level, self.iterations = samples, level, iterations
         self.depth, self.budget_ms, self.alpha, self.seed = depth, budget_ms, alpha, seed
         self.evaluations = evaluations
+        # Strategy Forest (A9): moves that worked in similar states become the first candidates.
+        self.forest = forest
 
     # ── simulation model ────────────────────────────────────────────────
 
@@ -191,7 +193,8 @@ class NRPAPlanner:
         product, tool = mission_product(state.card), consent_tool(state.card, state)
         done = {m.key() for m in state.moves}
         open_concerns = [cid for cid, _ in lib.open_concerns(state)[:2]]
-        ranked = [baseline, Move(type=MoveType.CONFIRM_CONSENT, tool=tool)]
+        mined = [move for move, _ in self.forest.moves_for(state, limit=2)] if self.forest is not None else []
+        ranked = [baseline, *mined, Move(type=MoveType.CONFIRM_CONSENT, tool=tool)]
         for cid in open_concerns:
             ranked += [Move(type=MoveType.RESOLVE_CONCERN, concern=cid), Move(type=MoveType.PROBE_CONCERN, concern=cid)]
         ranked += [Move(type=MoveType.RECOMMEND, product=product), Move(type=MoveType.DISCOVER_NEED),

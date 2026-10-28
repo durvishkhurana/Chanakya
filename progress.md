@@ -23,6 +23,7 @@
 9. `feat/A5-realizer`: LLM and template realizers, BrainAgent voice integration behind PLANNER_ENABLED
 10. `feat/A6-lookahead-planner`: NRPA look-ahead planner over belief-sampled Twin-A merchants, now the voice planner when PLANNER_ENABLED
 11. `feat/A8-eval-harness`: evaluation harness (offline and online), plus twin realism, belief and rate-limit fixes it surfaced
+12. `feat/A9-strategy-forest`: Strategy Forest mined from 540 synthetic multilingual transcripts; lookup under 50 ms; no measured win-rate gain yet
 
 ## Status
 
@@ -44,6 +45,7 @@
 
 ### What's In Progress
 
+- [ ] A9 Strategy Forest (`feat/A9-strategy-forest`): built and wired as NRPA's candidate prior; lookup 1-4 ms; but it does not yet improve win rate in the evaluation harness (0.97 with and without), so not done
 - [ ] F0.3 CI (`feat/F0.3-ci`): workflow runs `FULL=1 ./init.sh` on every push and PR; passes locally, waiting for the first green GitHub Actions run on `main`
 
 ### What's Next
