@@ -24,9 +24,15 @@ IRRELEVANT_PATIENCE = 0.06
 TURN_PATIENCE = 0.03
 WALK_AWAY_WILLINGNESS = 0.08
 # Chance of a yes rises linearly from CONSENT_FLOOR to certainty at CONSENT_FLOOR + CONSENT_SPAN.
-CONSENT_FLOOR = 0.05
+CONSENT_FLOOR = -0.2
 CONSENT_SPAN = 0.5
-UNRESOLVED_CONSENT_PENALTY = 0.08
+# Each worry left unanswered multiplies the chance of a yes by this factor.
+UNRESOLVED_CONSENT_FACTOR = 0.35
+# Hidden concerns are often held back (arXiv 2605.22240): the chance a merchant says one out loud per turn.
+VOICE_BASE = 0.3
+VOICE_TECH = 0.3
+# Asking again for the same yes after a no is pressure.
+REASK_PENALTY = 0.1
 
 PRESSURE = re.compile(
     r"\b(today only|last chance|hurry|limited (?:time|offer)|right now or|must decide|abhi le lo|jaldi karo"
@@ -177,6 +183,9 @@ def judge_turn(state: TwinState, move: Move | None, agent_text: str, rng: random
     if persona.adversarial and state.turns <= 3 and rng.random() < 0.8:
         return _after(state, Intent("adversarial", detail=persona.adversarial))
 
+    if move_type == MoveType.CONFIRM_CONSENT and state.declined:
+        state.willingness = _clamp(state.willingness - REASK_PENALTY)
+        state.patience = _clamp(state.patience - REASK_PENALTY)
     if move_type == MoveType.CONFIRM_CONSENT:
         if rng.random() < consent_chance(state):
             state.consented = True
@@ -192,15 +201,15 @@ def judge_turn(state: TwinState, move: Move | None, agent_text: str, rng: random
 
 def consent_chance(state: TwinState) -> float:
     """Probability the merchant says yes to a consent request right now."""
-    effective = state.willingness - UNRESOLVED_CONSENT_PENALTY * len(state.unresolved)
-    return _clamp((effective - CONSENT_FLOOR) / CONSENT_SPAN)
+    base = _clamp((state.willingness - CONSENT_FLOOR) / CONSENT_SPAN)
+    return base * UNRESOLVED_CONSENT_FACTOR ** len(state.unresolved)
 
 
 def _concern_or_hesitate(state: TwinState, rng: random.Random, prefer: str | None = None) -> Intent:
     unvoiced = sorted(state.unresolved - state.voiced)
     if prefer:
         concern = prefer
-    elif unvoiced and rng.random() < 0.55 + 0.3 * state.persona.tech_comfort:
+    elif unvoiced and rng.random() < VOICE_BASE + VOICE_TECH * state.persona.tech_comfort:
         concern = rng.choice(unvoiced)
     elif state.unresolved and rng.random() < 0.4:
         concern = rng.choice(sorted(state.unresolved))
