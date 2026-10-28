@@ -52,7 +52,6 @@ export default function MockOnboardingPage() {
       </div>
     </section>}
     {info && !finished && <section style={{ paddingTop: 36 }}>
-      <p className="eyebrow"><span className="small-dot" /> ONE LAST STEP</p>
       <h1 style={{ fontSize: 40, letterSpacing: -1.5 }}>Finish your {product} setup</h1>
       <p className={styles.lead}>Confirm a couple of details. This mock asks for nothing sensitive: no OTP, PIN, card, bank or ID details.</p>
       <form className={styles.form} onSubmit={complete}>
