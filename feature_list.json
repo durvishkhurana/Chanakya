@@ -93,9 +93,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Fixed-seed runs are reproducible; calibration test shows 50-70% of untreated merchants decline or hang up; adversarial personas included.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/sim (judge.py, voice.py, twin.py, calibration.py). Calibration over 20 seeds with the template voice: naive agent declined 62.8% planning / 58.3% evaluation (target 50-70%); oracle agent consented 98.8% on evaluation. Reproducibility: same seed gives an identical transcript. Live check on Groq: Twin-B (qwen/qwen3.8-27b) replied in Gurmukhi Punjabi and Bengali, voiced its hidden concern, fake-staff persona pushed for an OTP. Tests: chanakya/sim/tests/test_twins.py. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 44 passed, Ruff clean, frontend 9/9. Command: python -m chanakya.sim.calibration."
     },
     {
       "id": "A3",

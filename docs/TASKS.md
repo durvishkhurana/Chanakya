@@ -71,7 +71,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - 40+ merchant personas: business type, city, language, patience, busyness, tech comfort, hidden concerns, willingness prior.
 - **Done when:** loaders validate against core schemas; tests check every resolve condition points to an existing knowledge node.
 
-#### [ ] A2 Merchant twins (Twin-A and Twin-B)
+#### [x] A2 Merchant twins (Twin-A and Twin-B)
 - **Branch:** `feat/A2-twins`
 - **Owns:** `chanakya/sim/`
 - **Depends on:** A1
