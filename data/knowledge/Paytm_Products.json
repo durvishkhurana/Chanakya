@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "name": "Paytm business payment products",
+    "description": "Official product capabilities for QR, Soundbox, card machines, online payments, Payment Links, and the Business app. Prices and merchant terms require official confirmation.",
+    "pageNum": 6,
+    "reviewed_at": "2026-10-26",
+    "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26. Section text includes its source URL. This is a local knowledge snapshot, not a live offer feed."
+  },
+  "tree": {
+    "result": [
+      {
+        "node_id": "qr",
+        "title": "Shop payments: All-in-One QR",
+        "page_index": 1,
+        "summary": "QR payment acceptance for merchants using UPI apps.",
+        "text": "Paytm for Business lists Payments QR as a way for merchants to accept digital payments through UPI apps. The All-in-One QR is an in-store payment product. A merchant seeking scan-and-pay collection at a shop can explore this product. The official retail product page is https://business.paytm.com/retail . Source: https://business.paytm.com/ . Reviewed 2026-10-26. This snapshot does not establish device charges, merchant eligibility, settlement timing, or promotional offers. Confirm applicable terms through the official Paytm channel."
+      },
+      {
+        "node_id": "soundbox",
+        "title": "Soundbox: spoken payment confirmations",
+        "page_index": 2,
+        "summary": "Voice notifications for received in-store payments; model-specific features need confirmation.",
+        "text": "Paytm Soundbox provides voice payment confirmations for in-store payments. Paytm's official Soundbox page describes instant voice confirmation and 4G connectivity. The Business homepage also describes multilingual support. A merchant who needs audible payment confirmation while serving customers can explore Soundbox. Features vary by model; do not imply that every Soundbox accepts cards or has the same battery life. Explore available devices through https://business.paytm.com/soundbox-devices or the Paytm for Business app. Sources: https://business.paytm.com/soundbox and https://business.paytm.com/ . Reviewed 2026-10-26. This snapshot does not establish rental, purchase price, installation cost, availability, or a particular merchant's plan. Confirm current charges and model specifications with Paytm before ordering."
+      },
+      {
+        "node_id": "card_machine",
+        "title": "Card machine: in-store card payments",
+        "page_index": 3,
+        "summary": "POS card payment acceptance for stores and other businesses.",
+        "text": "Paytm offers POS card machines for in-store payments. Its official product page describes card machines for stores, restaurants, and delivery businesses. The product can be explored when customers need to pay by card. Paytm's page also describes reporting and payment tracking with the Paytm for Business app. Source and official product page: https://business.paytm.com/pos-card-machine . Reviewed 2026-10-26. Machine capabilities and applicable payment modes depend on the chosen device and merchant setup. This snapshot does not establish a quoted rental, transaction charge, device price, card network list, delivery timeline, or settlement guarantee. Confirm the appropriate model and merchant terms through the official channel."
+      },
+      {
+        "node_id": "gateway",
+        "title": "Payment Gateway: website and app checkout",
+        "page_index": 4,
+        "summary": "Online payment collection on websites and mobile apps.",
+        "text": "The Paytm for Business homepage lists Payment Gateway for accepting online payments on a business website or app. It describes developer APIs and documentation for integration. A merchant with a website or app checkout can explore Payment Gateway. The official product destination linked by Paytm is https://www.paytmpayments.com/payment-gateway . Official developer documentation is https://developer.paytm.com/docs . Source: https://business.paytm.com/ . Reviewed 2026-10-26. This snapshot does not establish merchant approval, processing fees, integration effort, activation time, uptime, or settlement timing. Do not promise that a payment cannot fail. Confirm current supported methods and merchant terms with Paytm."
+      },
+      {
+        "node_id": "payment_links",
+        "title": "Payment Links: collect without a website",
+        "page_index": 5,
+        "summary": "Remote payment collection using a shareable link without a website or app.",
+        "text": "Paytm for Business describes Payment Links for collecting online payments without a website or app. Merchants can share a payment link with customers using channels such as WhatsApp, email, or SMS. A merchant taking remote orders without website checkout can explore Payment Links. The official product destination linked by Paytm is https://www.paytmpayments.com/payment-link . Source: https://business.paytm.com/ . Reviewed 2026-10-26. This sales demo cannot create or send payment links. This snapshot does not establish payment charges, limits, eligibility, or settlement timing. Customers should use the official Paytm channel for onboarding and link creation."
+      },
+      {
+        "node_id": "onboarding",
+        "title": "Business app, onboarding, pricing and limits",
+        "page_index": 6,
+        "summary": "Official next steps and payment tracking; no verified price quotes or sales execution.",
+        "text": "Paytm for Business offers a Business app and merchant dashboard for managing business payments. The homepage describes tracking payments and viewing bank settlements. Its official merchant app route is https://business.paytm.com/p4b-app-download . Merchants can explore official product information at https://business.paytm.com/ and pricing at https://business.paytm.com/pricing . Source: https://business.paytm.com/ . Reviewed 2026-10-26. Exact product costs, rental, taxes, transaction charges, device availability, settlement schedules, and promotions are not established in this snapshot. A merchant must confirm current applicable terms directly with Paytm. Scout is an independent AI sales demo with no order, callback, lead-storage, messaging, payment-processing, or Paytm account access. It must not claim to complete those actions. Onboarding and any payment happen through official channels."
+      }
+    ]
+  },
+  "pages": {"result": []}
+}

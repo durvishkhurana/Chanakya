@@ -1,0 +1,91 @@
+"""Chanakya's voice-only FastAPI entry point."""
+
+import asyncio
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Literal
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+from langchain_core.tracers.langchain import wait_for_all_tracers
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+from agent.graph import Agent
+from agent.prompts.prompts import voice_assistant_system_prompt
+from backend.twilio_routes import configure_telephony
+from backend.twilio_routes import router as telephony_router
+
+voice_agent_instance = None
+
+
+def missing_configuration(provider="llm_batch"):
+    required = ["OPENROUTER_API_KEY", "SARVAM_API_KEY"]
+    if provider == "jev" or os.getenv("VOICE_INTERRUPTION_ENABLED", "false").lower() in {"true", "1", "yes"}:
+        required.append("TYPESAFE_API_KEY")
+    return [name for name in required if not os.getenv(name, "").strip()]
+
+
+@asynccontextmanager
+async def lifespan(app):
+    global voice_agent_instance
+    if os.getenv("OPENROUTER_API_KEY", "").strip():
+        voice_agent_instance = Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
+    try:
+        configure_telephony(app, voice_agent_instance, os.getenv("SARVAM_API_KEY", ""))
+        if getattr(app.state, "telephony", None) and voice_agent_instance is None:
+            raise ValueError("OPENROUTER_API_KEY is required for phone calling")
+        yield
+    finally:
+        try:
+            if getattr(app.state, "telephony", None):
+                await app.state.telephony.aclose()
+            if voice_agent_instance is not None:
+                await voice_agent_instance.aclose()
+                voice_agent_instance = None
+        finally:
+            await asyncio.to_thread(wait_for_all_tracers)
+
+
+app = FastAPI(title="Chanakya Voice API", lifespan=lifespan)
+app.include_router(telephony_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_methods=["GET", "HEAD"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/api/health")
+@app.head("/api/health")
+async def health():
+    missing = missing_configuration()
+    return {
+        "status": "ok",
+        "name": "Chanakya Voice API",
+        "configured": not missing,
+        "missing": missing,
+        "agent": voice_agent_instance is not None,
+        "telephony": getattr(app.state, "telephony", None) is not None,
+    }
+
+
+@app.websocket("/api/voice/ws")
+async def voice_websocket_endpoint(
+    websocket: WebSocket,
+    retrieval_provider: Literal["decisions", "jev", "llm_batch"] = "llm_batch",
+):
+    missing = missing_configuration(retrieval_provider)
+    if missing or voice_agent_instance is None:
+        await websocket.accept()
+        await websocket.send_json({
+            "type": "voice_error",
+            "message": "Voice is not configured yet. Add the provider keys to the server's .env file and restart the backend.",
+        })
+        await websocket.close(code=1013)
+        return
+    from backend.voice_pipeline import voice_pipeline
+    await voice_pipeline(websocket, voice_agent_instance, retrieval_provider)

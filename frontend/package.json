@@ -1,0 +1,26 @@
+{
+  "name": "chanakya-voice",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src",
+    "test": "node --test src/lib/*.test.mjs"
+  },
+  "dependencies": {
+    "next": "^15.5.27",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.27.0",
+    "eslint-config-next": "^15.5.27"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.30"
+    }
+  }
+}

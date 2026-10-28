@@ -1,0 +1,14 @@
+# Runtime dependencies for the inherited streaming voice and agent pipeline.
+langgraph
+langchain-core
+langchain-openai
+httpx[http2]>=0.28,<1
+typesafe-sdk[http2]==0.7.2
+langsmith>=0.14.4
+python-dotenv>=1.0.1
+pydantic
+fastapi
+python-multipart
+uvicorn[standard]
+sarvamai
+twilio>=9,<10

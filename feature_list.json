@@ -1,0 +1,604 @@
+{
+  "project": "Chanakya",
+  "status_values": [
+    "not-started",
+    "in-progress",
+    "blocked",
+    "done"
+  ],
+  "spec": "docs/TASKS.md (full build details); docs/IDEA.md (product)",
+  "features": [
+    {
+      "id": "F0.1",
+      "name": "Repository bootstrap and import of the existing voice agent",
+      "description": "Full spec: docs/TASKS.md, task F0.1",
+      "track": "0",
+      "owner": "Durvish Khurana",
+      "branch": "feat/F0.1-bootstrap",
+      "owns": [
+        "repo root",
+        "backend/",
+        "agent/",
+        "frontend/",
+        "data/knowledge/"
+      ],
+      "dependencies": [],
+      "status": "done",
+      "done_when": "Backend starts, /api/health responds, the browser voice page loads, and the inherited unit tests pass from the repo root.",
+      "evidence": "2026-10-29: FULL=1 ./init.sh passed (agent 94 OK, backend 94 OK, Ruff clean, frontend 9 pass, lint clean, build compiled); uvicorn backend.main:app -> /api/health {status: ok, configured: true, agent: true}; next start -> page contains 'Talk to Chanakya'. Landed as the initial commit on main (empty repository, so no PR was possible)."
+    },
+    {
+      "id": "F0.2",
+      "name": "Shared contracts",
+      "description": "Full spec: docs/TASKS.md, task F0.2",
+      "track": "0",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/F0.2-core-contracts",
+      "owns": [
+        "chanakya/core/"
+      ],
+      "dependencies": [],
+      "status": "not-started",
+      "done_when": "Schemas round-trip to JSON, fakes satisfy every protocol, tests pass. Includes MissionCard with why_now and starting_worries (docs/IDEA.md 3.2).",
+      "evidence": ""
+    },
+    {
+      "id": "F0.3",
+      "name": "Continuous integration",
+      "description": "Full spec: docs/TASKS.md, task F0.3",
+      "track": "0",
+      "owner": "Durvish Khurana",
+      "branch": "feat/F0.3-ci",
+      "owns": [
+        ".github/workflows/"
+      ],
+      "dependencies": [
+        "F0.1"
+      ],
+      "status": "not-started",
+      "done_when": "CI runs ./init.sh on every PR and is green on main.",
+      "evidence": "",
+      "notes": "Optional for the hackathon; roadmap if time is short."
+    },
+    {
+      "id": "A1",
+      "name": "Concern Bank and merchant personas",
+      "description": "Full spec: docs/TASKS.md, task A1",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A1-concerns-personas",
+      "owns": [
+        "data/concerns/",
+        "data/personas/",
+        "chanakya/brain/concern_bank.py"
+      ],
+      "dependencies": [
+        "F0.1",
+        "F0.2"
+      ],
+      "status": "not-started",
+      "done_when": "Loaders validate against core schemas; every resolve condition points to an existing knowledge node; each intake trigger type has a starting-worries prior.",
+      "evidence": ""
+    },
+    {
+      "id": "A2",
+      "name": "Merchant twins (Twin-A and Twin-B)",
+      "description": "Full spec: docs/TASKS.md, task A2",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A2-twins",
+      "owns": [
+        "chanakya/sim/"
+      ],
+      "dependencies": [
+        "A1"
+      ],
+      "status": "not-started",
+      "done_when": "Fixed-seed runs are reproducible; calibration test shows 50-70% of untreated merchants decline or hang up; adversarial personas included.",
+      "evidence": ""
+    },
+    {
+      "id": "A3",
+      "name": "Belief tracker and live concern meter feed",
+      "description": "Full spec: docs/TASKS.md, task A3",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A3-belief-tracker",
+      "owns": [
+        "chanakya/brain/belief.py",
+        "chanakya/brain/cues.py"
+      ],
+      "dependencies": [
+        "A1"
+      ],
+      "status": "not-started",
+      "done_when": "Starts from the mission card prior; scripted utterances move the right concern to the top; BeliefUpdated events emitted; latency per update logged.",
+      "evidence": ""
+    },
+    {
+      "id": "A4",
+      "name": "Move library and baseline planner",
+      "description": "Full spec: docs/TASKS.md, task A4",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A4-moves-baseline-planner",
+      "owns": [
+        "chanakya/brain/moves.py",
+        "chanakya/brain/planner_rules.py"
+      ],
+      "dependencies": [
+        "A3"
+      ],
+      "status": "not-started",
+      "done_when": "Precondition tests pass; planner never proposes a write without CONFIRM_CONSENT; DISCLOSE_AND_GREET always first.",
+      "evidence": ""
+    },
+    {
+      "id": "A5",
+      "name": "Realizer and agent integration",
+      "description": "Full spec: docs/TASKS.md, task A5",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A5-realizer",
+      "owns": [
+        "chanakya/brain/realizer.py",
+        "agent/",
+        "backend/"
+      ],
+      "dependencies": [
+        "A4"
+      ],
+      "status": "not-started",
+      "done_when": "A browser call works with PLANNER_ENABLED on and off; existing voice tests still pass; TurnCompleted events carry belief and chosen move.",
+      "evidence": ""
+    },
+    {
+      "id": "A6",
+      "name": "Look-ahead planner (NRPA with Twin-A)",
+      "description": "Full spec: docs/TASKS.md, task A6",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A6-lookahead-planner",
+      "owns": [
+        "chanakya/brain/planner_nrpa.py"
+      ],
+      "dependencies": [
+        "A2",
+        "A4"
+      ],
+      "status": "not-started",
+      "done_when": "Beats the baseline planner on a fixed Twin-A set; stays inside its time budget with fallback; PlanComputed events include the search tree.",
+      "evidence": ""
+    },
+    {
+      "id": "A7",
+      "name": "Planning while listening",
+      "description": "Full spec: docs/TASKS.md, task A7",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A7-plan-while-listening",
+      "owns": [
+        "backend/",
+        "chanakya/brain/speculative.py"
+      ],
+      "dependencies": [
+        "A6"
+      ],
+      "status": "not-started",
+      "done_when": "p50/p90 turn latency logged and compared with planning after speech; only read-only tools run before end of speech.",
+      "evidence": "",
+      "notes": "Roadmap candidate."
+    },
+    {
+      "id": "A8",
+      "name": "Evaluation harness",
+      "description": "Full spec: docs/TASKS.md, task A8",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A8-eval-harness",
+      "owns": [
+        "chanakya/eval/"
+      ],
+      "dependencies": [
+        "A2",
+        "B1"
+      ],
+      "status": "not-started",
+      "done_when": "One command produces a report on 100 Twin-B merchants plus the adversarial set for: reactive baseline, actions only, Chanakya, Chanakya without belief.",
+      "evidence": "",
+      "notes": "Can start against fakes before A2/B1 merge. Suggested to move to Track B to balance load."
+    },
+    {
+      "id": "A9",
+      "name": "Expert transcripts and Strategy Forest",
+      "description": "Full spec: docs/TASKS.md, task A9",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A9-strategy-forest",
+      "owns": [
+        "data/transcripts/",
+        "data/forest/",
+        "chanakya/brain/forest/"
+      ],
+      "dependencies": [
+        "A1"
+      ],
+      "status": "not-started",
+      "done_when": "Forest lookup under 50 ms and improves planner win rate over baseline candidates in eval.",
+      "evidence": ""
+    },
+    {
+      "id": "A10",
+      "name": "Adversarial and safety suite",
+      "description": "Full spec: docs/TASKS.md, task A10",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A10-safety-suite",
+      "owns": [
+        "chanakya/eval/safety/"
+      ],
+      "dependencies": [
+        "A8"
+      ],
+      "status": "not-started",
+      "done_when": "Report shows zero violations for Chanakya or lists each failure (OTP phishing, injection, invented-price bait, 'haan' consent, distress).",
+      "evidence": ""
+    },
+    {
+      "id": "A11",
+      "name": "Coach mode engine",
+      "description": "Full spec: docs/TASKS.md, task A11",
+      "track": "A",
+      "owner": "Durvish Khurana",
+      "branch": "feat/A11-coach-engine",
+      "owns": [
+        "chanakya/humans/coach_engine.py"
+      ],
+      "dependencies": [
+        "A6"
+      ],
+      "status": "not-started",
+      "done_when": "Next-best-move suggestions with a one-line reason stream for a recorded human call; never speaks.",
+      "evidence": ""
+    },
+    {
+      "id": "B1",
+      "name": "Mock business systems and tool registry",
+      "description": "Full spec: docs/TASKS.md, task B1",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B1-mock-systems",
+      "owns": [
+        "chanakya/actions/systems/",
+        "chanakya/actions/registry.py"
+      ],
+      "dependencies": [
+        "F0.2"
+      ],
+      "status": "not-started",
+      "done_when": "SQLite mocks for Intake, CRM, Messaging, Onboarding, Field ops, Devices, Ticketing (Settlements read-only); every tool has happy and failure path tests; unknown tool names rejected.",
+      "evidence": "",
+      "notes": "Tool list follows docs/IDEA.md 3.7 (updated); docs/TASKS.md still lists the old set."
+    },
+    {
+      "id": "B2",
+      "name": "Safety gate, policy graph and audit log",
+      "description": "Full spec: docs/TASKS.md, task B2",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B2-safety-gate",
+      "owns": [
+        "chanakya/actions/gate.py",
+        "chanakya/actions/policy.py",
+        "chanakya/actions/audit.py"
+      ],
+      "dependencies": [
+        "B1"
+      ],
+      "status": "not-started",
+      "done_when": "Tests cover blocked writes without consent, blocked calls outside hours, and an audit entry for each path.",
+      "evidence": ""
+    },
+    {
+      "id": "B3",
+      "name": "Mission ledger and state machine",
+      "description": "Full spec: docs/TASKS.md, task B3",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B3-missions",
+      "owns": [
+        "chanakya/missions/ledger.py",
+        "chanakya/missions/state.py"
+      ],
+      "dependencies": [
+        "F0.2"
+      ],
+      "status": "not-started",
+      "done_when": "Illegal transitions raise; a full mission can be replayed from its events.",
+      "evidence": ""
+    },
+    {
+      "id": "B4",
+      "name": "Hand-off cards",
+      "description": "Full spec: docs/TASKS.md, task B4",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B4-handoff",
+      "owns": [
+        "chanakya/humans/handoff.py"
+      ],
+      "dependencies": [
+        "B3"
+      ],
+      "status": "not-started",
+      "done_when": "Card generated from a recorded mission; human queue claim/resolve endpoints work.",
+      "evidence": ""
+    },
+    {
+      "id": "B5",
+      "name": "Backend API for missions, actions and hand-offs",
+      "description": "Full spec: docs/TASKS.md, task B5",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B5-api",
+      "owns": [
+        "chanakya/missions/api.py",
+        "chanakya/actions/api.py",
+        "chanakya/humans/api.py"
+      ],
+      "dependencies": [
+        "B2",
+        "B3",
+        "B4"
+      ],
+      "status": "not-started",
+      "done_when": "API tests pass; ledger events stream to a test client over WebSocket.",
+      "evidence": ""
+    },
+    {
+      "id": "B6",
+      "name": "Mission intake: three doors, mission cards, priority queue",
+      "description": "Full spec: docs/TASKS.md, task B6",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B6-intake",
+      "owns": [
+        "chanakya/missions/intake.py",
+        "chanakya/missions/queue.py",
+        "chanakya/missions/signals.py"
+      ],
+      "dependencies": [
+        "B3"
+      ],
+      "status": "not-started",
+      "done_when": "A seeded callback request, a Door 2 signal and a Door 3 hand-over each open one mission card with why-now and starting worries; repeats update the existing mission; queue orders by chance x value inside contact windows.",
+      "evidence": "",
+      "notes": "Replaces the old 'trigger engine' (docs/IDEA.md 3.2). docs/TASKS.md not yet updated."
+    },
+    {
+      "id": "B7",
+      "name": "Scheduler, follow-ups and verification",
+      "description": "Full spec: docs/TASKS.md, task B7",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B7-followups",
+      "owns": [
+        "chanakya/missions/scheduler.py",
+        "chanakya/missions/verifier.py"
+      ],
+      "dependencies": [
+        "B1",
+        "B3"
+      ],
+      "status": "not-started",
+      "done_when": "End-to-end test drives a mission from link sent to onboarding complete with the simulated clock; DONE only on system confirmation.",
+      "evidence": ""
+    },
+    {
+      "id": "B8",
+      "name": "Mission Control dashboard",
+      "description": "Full spec: docs/TASKS.md, task B8",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B8-mission-control",
+      "owns": [
+        "frontend/src/app/missions/",
+        "frontend/src/components/missions/"
+      ],
+      "dependencies": [
+        "B5"
+      ],
+      "status": "not-started",
+      "done_when": "Seeded demo shows missions moving live with why-now reasons, ledger timeline and hand-off queue; mocks labelled.",
+      "evidence": ""
+    },
+    {
+      "id": "B9",
+      "name": "Live Call View",
+      "description": "Full spec: docs/TASKS.md, task B9",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B9-live-call-view",
+      "owns": [
+        "frontend/src/app/call/",
+        "frontend/src/components/call/"
+      ],
+      "dependencies": [
+        "B5"
+      ],
+      "status": "not-started",
+      "done_when": "Split screen renders from recorded event fixtures and from a live call: transcript, concern meter, look-ahead tree, willingness curve, action log.",
+      "evidence": ""
+    },
+    {
+      "id": "B10",
+      "name": "Approval queue",
+      "description": "Full spec: docs/TASKS.md, task B10",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B10-approvals",
+      "owns": [
+        "chanakya/humans/approvals.py"
+      ],
+      "dependencies": [
+        "B2",
+        "B8"
+      ],
+      "status": "not-started",
+      "done_when": "A high-risk action waits, is approved, then executes, all in the ledger.",
+      "evidence": "",
+      "notes": "Roadmap candidate."
+    },
+    {
+      "id": "B11",
+      "name": "Coach mode UI",
+      "description": "Full spec: docs/TASKS.md, task B11",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B11-coach-ui",
+      "owns": [
+        "frontend/src/app/coach/"
+      ],
+      "dependencies": [
+        "A11"
+      ],
+      "status": "not-started",
+      "done_when": "Telecaller view works with the recorded human call fixture.",
+      "evidence": ""
+    },
+    {
+      "id": "B12",
+      "name": "Manager insights",
+      "description": "Full spec: docs/TASKS.md, task B12",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B12-insights",
+      "owns": [
+        "chanakya/insights/",
+        "frontend/src/app/insights/"
+      ],
+      "dependencies": [
+        "B3"
+      ],
+      "status": "not-started",
+      "done_when": "Charts render from a seeded ledger.",
+      "evidence": "",
+      "notes": "Roadmap candidate."
+    },
+    {
+      "id": "B13",
+      "name": "Multi-channel messaging",
+      "description": "Full spec: docs/TASKS.md, task B13",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B13-messaging",
+      "owns": [
+        "chanakya/actions/systems/messaging_channels.py"
+      ],
+      "dependencies": [
+        "B1"
+      ],
+      "status": "not-started",
+      "done_when": "A mission continues correctly after a simulated WhatsApp reply.",
+      "evidence": "",
+      "notes": "Roadmap candidate."
+    },
+    {
+      "id": "B14",
+      "name": "Mock product page and mock onboarding page",
+      "description": "Full spec: docs/IDEA.md sections 3.7, 3.8 and 8 (not yet in docs/TASKS.md)",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B14-demo-pages",
+      "owns": [
+        "frontend/src/app/demo/"
+      ],
+      "dependencies": [
+        "B1",
+        "B5"
+      ],
+      "status": "not-started",
+      "done_when": "Tapping 'Request a callback' opens a Door 1 mission; completing the mock onboarding page updates the Onboarding system so the mission verifies DONE.",
+      "evidence": "",
+      "notes": "New task required by the updated demo (docs/IDEA.md section 8); not in docs/TASKS.md yet."
+    },
+    {
+      "id": "I1",
+      "name": "End-to-end demo scenarios",
+      "description": "Full spec: docs/TASKS.md, task I1",
+      "track": "I",
+      "owner": "both",
+      "branch": "feat/I1-demo-scenarios",
+      "owns": [
+        "scripts/demo/"
+      ],
+      "dependencies": [
+        "A5",
+        "A6",
+        "B6",
+        "B7",
+        "B8",
+        "B9",
+        "B14"
+      ],
+      "status": "not-started",
+      "done_when": "Each scenario in docs/IDEA.md section 8 runs from one command and from the dashboard.",
+      "evidence": ""
+    },
+    {
+      "id": "I2",
+      "name": "Full evaluation run and results",
+      "description": "Full spec: docs/TASKS.md, task I2",
+      "track": "I",
+      "owner": "both",
+      "branch": "feat/I2-results",
+      "owns": [
+        "docs/results/"
+      ],
+      "dependencies": [
+        "A8",
+        "A6"
+      ],
+      "status": "not-started",
+      "done_when": "Results, report and charts saved in docs/results/ with commands and seeds.",
+      "evidence": ""
+    },
+    {
+      "id": "I3",
+      "name": "Phone demo hardening",
+      "description": "Full spec: docs/TASKS.md, task I3",
+      "track": "I",
+      "owner": "both",
+      "branch": "feat/I3-phone-demo",
+      "owns": [
+        "backend/"
+      ],
+      "dependencies": [
+        "A5"
+      ],
+      "status": "not-started",
+      "done_when": "Twilio path tested with the allowlisted number, or a recorded backup video exists.",
+      "evidence": "",
+      "notes": "Trial accounts block Media Streams; SMS may still work."
+    },
+    {
+      "id": "I4",
+      "name": "README, architecture diagram and pitch assets",
+      "description": "Full spec: docs/TASKS.md, task I4",
+      "track": "I",
+      "owner": "both",
+      "branch": "docs/I4-readme",
+      "owns": [
+        "README.md",
+        "docs/"
+      ],
+      "dependencies": [
+        "I1",
+        "I2"
+      ],
+      "status": "not-started",
+      "done_when": "README final; deck numbers come only from docs/results/.",
+      "evidence": ""
+    }
+  ]
+}

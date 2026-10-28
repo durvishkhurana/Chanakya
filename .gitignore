@@ -1,0 +1,30 @@
+# Server credentials and runtime state
+.env
+.env.*
+!.env.example
+.state/
+logs/
+*.sqlite
+*.db
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Frontend dependencies and build output
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Local tooling and editor state
+.claude/
+.gstack/
+.DS_Store
+.vscode/
+.idea/
