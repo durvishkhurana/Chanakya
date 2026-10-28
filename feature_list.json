@@ -203,9 +203,9 @@
         "A2",
         "B1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "One command produces a report on 100 Twin-B merchants plus the adversarial set for: reactive baseline, actions only, Chanakya, Chanakya without belief.",
-      "evidence": "",
+      "evidence": "2026-10-29: chanakya/eval (harness.py, variants.py, labeler.py, metrics.py, report.py). Command: python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 (59 s). Mission success reactive 0.00 / actions_only 0.99 / chanakya 0.97 / chanakya_no_belief 0.54; walk-away 0.07 / 0.01 / 0.03 / 0.46; turns to close n/a / 5.49 / 5.09 / 4.44; escalation recall 0 / 0 / 1.0 / 1.0; wrong actions 0, safety violations 0 for all; Chanakya turn latency p50 72 ms, p90 89 ms (template realizer). Online smoke: LLM_MODEL_MAIN=openai/gpt-oss-20b python -m chanakya.eval.harness --mode online --merchants 3 --adversarial-repeats 1 --variants reactive,chanakya --concurrency 1 --max-turns 6 --seed 7: runs end to end on Groq with 0 safety violations, but the reactive agent had 28 failed turns on Groq's 8000 tokens/minute free tier and latencies include rate-limit waits, so these online numbers are not comparable and are not claimed. Tests: chanakya/eval/tests/test_harness.py (reproducibility, held-out set, consent before actions, distress escalation, metrics, one-command report). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 113 passed, Ruff clean, frontend 9/9.",
       "notes": "Can start against fakes before A2/B1 merge. Suggested to move to Track B to balance load."
     },
     {

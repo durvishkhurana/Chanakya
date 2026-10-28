@@ -22,6 +22,7 @@
 8. `feat/A4-moves-baseline-planner`: typed move library with preconditions and the rule-and-belief baseline planner
 9. `feat/A5-realizer`: LLM and template realizers, BrainAgent voice integration behind PLANNER_ENABLED
 10. `feat/A6-lookahead-planner`: NRPA look-ahead planner over belief-sampled Twin-A merchants, now the voice planner when PLANNER_ENABLED
+11. `feat/A8-eval-harness`: evaluation harness (offline and online), plus twin realism, belief and rate-limit fixes it surfaced
 
 ## Status
 
@@ -39,6 +40,7 @@
 - [x] A4 moves and baseline planner: preconditions (disclose first and once, write only with explicit consent for that exact tool, only closing moves after a clear no, unknown concerns/products/tools rejected), explicit-consent detector that never accepts a bare haan/okay, decline/distress/sensitive-request/denial signals; baseline planner wins 68.3% consent + 20.0% follow-up on Twin-A vs 38.7% consent for an untreated pitch
 - [x] A5 realizer and agent integration: LLM realizer grounded in the move's knowledge nodes plus the agent's sales rules, every line checked (sensitive data, invented money, pressure, claimed actions, unasked consent) with reviewed templates as fallback; BrainAgent plugs into the existing voice session behind PLANNER_ENABLED; TurnCompleted events carry belief and move; live voice calls verified with the flag on and off
 - [x] A6 look-ahead planner: candidates are the baseline move plus the strongest alternatives (consent question and stopping always included), merchants sampled from the belief, NRPA level 2 adapts the two-turn follow-up policy against Twin-A's judge, candidates scored by the mean of fresh rollouts (expected value, not a lucky best rollout); safety and consent rules bypass search; 300 ms budget with baseline fallback. On 300 Twin-A calls: consent 0.897 vs baseline 0.683 in 4.7 vs 6.7 agent turns
+- [x] A8 evaluation harness: one command runs reactive, actions-only, Chanakya and Chanakya-without-belief on 100 held-out Twin-B calls plus 12 adversarial calls with fixed seeds and writes JSON/Markdown/HTML; offline (deterministic) and online (LLM agents, Twin-B LLM voice, judge-labelled moves) modes; actions run on labelled mocks until B1
 
 ### What's In Progress
 
@@ -66,6 +68,9 @@
 - **Model settings:** `deepseek/deepseek-v4-flash` with reasoning disabled (default mode garbled a simple answer); `openai/gpt-6-luna` with reasoning effort `none`
 - **Python 3.12** for all code; the inherited code runs on it unchanged
 - **Initial commit went straight to `main`** because the repository was empty; everything after goes through PRs
+
+- **Twin realism fix found by the evaluation (2026-10-29):** with the first twin, an agent that only answered what it heard and asked repeatedly reached 98% consent offline, above Chanakya's 91-92%. The twin voiced its worries too often and an open worry barely blocked a yes, contrary to docs/IDEA.md and arXiv 2605.22240. The twin now holds worries back, each open worry multiplies the chance of a yes by 0.35, and re-asking after a no is pressure; the untreated agent stays calibrated at 64-66% decline. Even so, actions-only (0.99) and Chanakya (0.97) are within noise offline; Chanakya closes in fewer turns and its belief is what separates it from the no-belief ablation (0.54). Do not claim Chanakya beats actions-only on success from these runs
+- **A6 numbers after the twin change:** on 300 Twin-A calls NRPA consent 0.943 vs baseline 0.670; on 150 held-out calls 0.933 vs 0.847
 
 ## Files Modified This Session
 

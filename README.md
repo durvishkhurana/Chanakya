@@ -61,6 +61,16 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 
 New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. Shared contracts, the event bus, settings and the LLM client live in `chanakya/core/`; `chanakya/core/fakes.py` has in-memory fakes for tests.
 
+### Evaluation
+
+```bash
+python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7   # deterministic, no network
+python -m chanakya.eval.harness --mode online --merchants 3 --max-turns 6  # uses the configured LLM provider
+python -m chanakya.sim.calibration                                         # twin walk-away calibration
+```
+
+Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out` is given.
+
 ## Verify
 
 ```bash

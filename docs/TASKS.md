@@ -179,7 +179,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** start planning on partial transcripts; refine on the final transcript; cancel stale plans; allow only read-only tool lookups before the merchant finishes.
 - **Done when:** measured p50/p90 turn latency is logged and compared with planning after speech.
 
-#### [ ] A8 Evaluation harness
+#### [x] A8 Evaluation harness
 - **Branch:** `feat/A8-eval-harness`
 - **Owns:** `chanakya/eval/`
 - **Depends on:** A2, B1 (uses fakes until B1 merges)
