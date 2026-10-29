@@ -35,7 +35,7 @@
 
 ### What's In Progress
 
-- [ ] A9 Strategy Forest: built and wired as the planner's candidate prior, lookup 1-4 ms, but no win-rate gain in the harness (0.97 with and without)
+- [ ] A9 Strategy Forest (blocked): built and wired as the candidate prior, lookup 1-4 ms, but no measured gain (harness 0.96/0.98 with and without; look-ahead consent 0.920 vs 0.917 and 0.953 vs 0.953); needs harder twins or real transcripts
 - [ ] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh` on every push and PR; check the Actions tab once merged
 
 ### What's Next

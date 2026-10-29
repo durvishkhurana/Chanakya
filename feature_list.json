@@ -224,9 +224,10 @@
       "dependencies": [
         "A1"
       ],
-      "status": "in-progress",
+      "status": "blocked",
       "done_when": "Forest lookup under 50 ms and improves planner win rate over baseline candidates in eval.",
-      "evidence": "2026-10-29: chanakya/brain/forest (forest.py, generate.py), data/transcripts/synthetic_transcripts.jsonl (540 transcripts from python -m chanakya.brain.forest.generate --seed 11: NRPA, baseline and an exploring baseline against planning-split Twin-A, hi/pa/bn/gu/mr/ta merchants, outcome-labelled), data/forest/forest.json (40 clusters, hashed trigram state vectors, discounted outcome credit, Wilson lower bounds, top-worry moves abstracted as @top). Lookup 1-4 ms per call (target < 50 ms): met. Win rate: python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 --variants chanakya,chanakya_forest gives mission success 0.97 vs 0.97 (turns to close 5.09 vs 5.03); converse() on 150 held-out calls gives 0.933 vs 0.947 (2 calls, within noise). The improvement criterion is NOT demonstrated, so the task stays in-progress. Next: richer transcripts (LLM-voiced twins) or forest values that condition on concern history. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
+      "evidence": "Forest built and wired as the planner's candidate prior; lookup 1-4 ms (under 50 ms). No measured win-rate gain: harness 0.96 vs 0.96 (seed 7) and 0.98 vs 0.98 (seed 13); python -m chanakya.eval.planner_checks forest gives 0.920 vs 0.917 (300 planning calls) and 0.953 vs 0.953 (150 held-out calls).",
+      "notes": "Blocked on the done_when gain: the simulator leaves little headroom and the mined moves overlap the planner's own candidates. Needs harder twins or real transcripts with outcomes before a gain can be measured."
     },
     {
       "id": "A10",

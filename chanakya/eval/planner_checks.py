@@ -2,6 +2,7 @@
 
     python -m chanakya.eval.planner_checks lookahead   # consent rate, Twin-A, planning x seeds 0-9, evaluation x 0-4
     python -m chanakya.eval.planner_checks stability   # coach recording: does the suggestion depend on the seed?
+    python -m chanakya.eval.planner_checks forest      # look-ahead consent with and without the Strategy Forest prior
 
 Offline and deterministic: template twins, lexical belief, no network.
 """
@@ -15,7 +16,7 @@ from typing import ClassVar
 
 from chanakya.brain.concern_bank import default_bank, load_personas
 from chanakya.brain.contracts.schemas import Door, Merchant, MissionCard, MissionKind, TriggerType, Turn
-from chanakya.brain.forest.forest import parse_move
+from chanakya.brain.forest.forest import default_forest, parse_move
 from chanakya.brain.planner_nrpa import NRPAPlanner
 from chanakya.brain.planner_rules import RuleBasedPlanner
 from chanakya.brain.tests.test_planner_rules import converse
@@ -55,6 +56,16 @@ async def lookahead() -> None:
           f"max {max(times):.0f} ms over {len(times)} plans")
 
 
+async def forest() -> None:
+    """Consent rate of the look-ahead planner with and without the Strategy Forest as its candidate prior."""
+    mined = default_forest()
+    for split, seeds in (("planning", 10), ("evaluation", 5)):
+        personas = [p for p in load_personas(split=split) if not p.adversarial]
+        plain = await consent_rate(lambda: NRPAPlanner(BANK), personas, seeds)
+        prior = await consent_rate(lambda: NRPAPlanner(BANK, forest=mined), personas, seeds)
+        print(f"{split}: {len(personas) * seeds} calls: look-ahead {plain:.3f}, with forest {prior:.3f}")
+
+
 async def stability(seeds: int = 42) -> None:
     """Replay the coach recording with ``seeds`` mission ids and count how often each suggestion agrees."""
     recording = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -82,9 +93,9 @@ async def stability(seeds: int = 42) -> None:
 
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="Planner measurements for docs/results.")
-    parser.add_argument("check", choices=["lookahead", "stability"])
+    parser.add_argument("check", choices=["lookahead", "stability", "forest"])
     args = parser.parse_args(argv)
-    asyncio.run(lookahead() if args.check == "lookahead" else stability())
+    asyncio.run({"lookahead": lookahead, "stability": stability, "forest": forest}[args.check]())
 
 
 if __name__ == "__main__":

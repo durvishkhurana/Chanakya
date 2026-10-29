@@ -55,6 +55,16 @@ template twin, after the twin recalibration in section 4 and the seed-stability 
 Planner time per searched move with a 300 ms budget: p50 111 ms, p90 120 ms, max 185 ms over 1,460 plans,
 no fallbacks. Before the fix (6 sampled merchants) the same command gave 0.943 and 0.933 with p50 58 ms. The Strategy Forest prior did not change success in the harness
 (0.97 with and without, `--variants chanakya,chanakya_forest`), so it is not claimed as an improvement.
+Re-measured after the seed-stability fix, it still makes no difference:
+
+```bash
+python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 --variants chanakya,chanakya_forest
+python -m chanakya.eval.planner_checks forest
+```
+
+Harness success 0.96 vs 0.96 (seed 7) and 0.98 vs 0.98 (seed 13); look-ahead consent 0.920 vs 0.917 (300
+planning calls) and 0.953 vs 0.953 (150 held-out calls). The forest's mined moves are mostly ones the planner
+already considers, and both settings are close to their ceiling, so there is little left for a prior to add.
 
 ### 2a. Seed stability (A6)
 
