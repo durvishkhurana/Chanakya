@@ -36,7 +36,7 @@
 ### What's Next
 
 1. Gurnoor: review and merge, in order, `fix/windows-dev-setup`, `feat/core-llm-providers` (core change), then `feat/track-a-on-main`
-2. Connect the brain to the mission runtime: adapters from `chanakya.core` PlanContext/BeliefTracker/Realizer to the Track A planner, belief tracker and realizer, and the real ActionGate instead of the mock gate
+2. Connect the brain to the mission runtime: `chanakya/brain/core_adapters.py` (branch `feat/brain-core-adapters`) already exposes the planner, belief tracker and realizer through the core `Planner`, `BeliefTracker` and `Realizer` protocols and turns brain events into core ledger events; still to do is calling them from the runtime and using the real ActionGate instead of the mock gate. Gurnoor: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank names are `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` for now
 3. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
 4. Track B: B10-B13; together: I1, I3, I4
 
