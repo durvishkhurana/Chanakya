@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "description": "A fictional, scripted human telecaller call used to test coach mode. No real call, merchant or recording.",
+    "mission": {"trigger": "upi_rising_no_soundbox", "language": "hi-IN", "business_type": "kirana", "city": "Jaipur"}
+  },
+  "turns": [
+    {"speaker": "human_agent", "text": "Namaste, main Sunita bol rahi hoon, payment products ke baare mein call kiya hai. Kya do minute baat kar sakte hain?", "move": "DISCLOSE_AND_GREET"},
+    {"speaker": "merchant", "text": "Haan boliye, par jaldi bataiye."},
+    {"speaker": "human_agent", "text": "Aapki dukaan par UPI payments badh rahe hain, kya aapne Soundbox ke baare mein socha hai?", "move": "RECOMMEND(soundbox)"},
+    {"speaker": "merchant", "text": "Mere paas pehle se dusra QR laga hua hai, wahi chal raha hai."},
+    {"speaker": "human_agent", "text": "Ji, samajh gayi."},
+    {"speaker": "merchant", "text": "Aur iska kiraya kitna hai? Baad mein koi extra charge toh nahi katega?"},
+    {"speaker": "human_agent", "text": "Main aapko details bhej deti hoon."},
+    {"speaker": "merchant", "text": "Hmm... dekhiye... abhi sochna padega."},
+    {"speaker": "human_agent", "text": "Theek hai ji."},
+    {"speaker": "merchant", "text": "Haan, theek hai, aap official link bhej dijiye."}
+  ]
+}
