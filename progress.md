@@ -87,7 +87,7 @@
 
 ## Evidence of Completion
 
-- [x] I1: `FULL=1 SKIP_INSTALL=1 ./init.sh` on `feat/I1-demo-scenarios` → agent 104 OK, backend 98 OK, pytest 275 passed, Ruff clean, frontend 19 passed, lint clean, build compiled; `python scripts/demo/scenarios.py` → 4/4 scenarios passed; live backend with Groq: all four scenarios reached DONE, DONE, AWAITING_CONFIRMATION, ESCALATED from the dashboard and the API, and a typed call updated every Live Call View panel
+- [x] I1: `FULL=1 SKIP_INSTALL=1 ./init.sh` on `feat/I1-demo-scenarios` → agent 104 OK, backend 98 OK, pytest 281 passed, Ruff clean, frontend 22 passed, lint clean, build compiled; `python scripts/demo/scenarios.py` → 4/4 scenarios passed; live backend with Groq: all four scenarios reached DONE, DONE, AWAITING_CONFIRMATION, ESCALATED from the dashboard and the API, and a typed call updated every Live Call View panel
 - [x] Tests pass: `SKIP_INSTALL=1 FULL=1 ./init.sh` on `main` at 8659d21 → agent 94 OK, backend 94 OK, pytest 129 passed, Ruff clean, frontend 19 passed, lint clean, build compiled
 - [x] End to end: `scripts/demo/e2e_track_b.py` against a live backend → 17/17 checks, 0 server errors
 - [x] Manual verification in a browser: callback → mission card → link sent through the gate → mock onboarding → DONE verified; Mission Control and the Live Call View update live; design inspector 0 FAIL on all three screens

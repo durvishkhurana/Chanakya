@@ -18,7 +18,7 @@
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 275 passed, Ruff clean, frontend 19 pass, lint clean, build compiled | build needs network for Google Fonts |
+| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 281 passed, Ruff clean, frontend 22 pass, lint clean, build compiled | build needs network for Google Fonts |
 | Scenarios | `python scripts/demo/scenarios.py` | 4/4 passed | offline templates, SimClock at 15:00 IST |
 | Live backend | `MISSIONS_ENABLED=true CALLING_HOURS=0-24` + `POST /api/calls/scenarios/<name>` | DONE, DONE, AWAITING_CONFIRMATION, ESCALATED | Groq realizer |
 | Dashboard | "Run scenario" in `/missions`, "Speak as the merchant" on `/call/<id>` | call opened and played live; typed turns filled every panel | browser check |
