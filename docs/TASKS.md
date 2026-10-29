@@ -300,7 +300,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Branch:** `feat/I3-phone-demo`
 - **Build:** Twilio path tested with the allowlisted number; fallbacks for network failures; recorded backup video.
 
-#### [ ] I4 README, architecture diagram and pitch assets
+#### [x] I4 README, architecture diagram and pitch assets
 - **Branch:** `docs/I4-readme`
 - **Build:** final README, architecture image, screenshots, measured numbers for the deck.
 

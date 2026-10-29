@@ -3,13 +3,13 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** I1 demo scenarios on `feat/I1-demo-scenarios` (PR open): the brain now talks on real missions, so live calls fill the Live Call View. Track A (#15-#17) and B11 coach mode (#18) are merged.
+**Active Feature:** none in progress. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
-| Integration | both | I2 measured results in `docs/results/`; I1 demo scenarios (PR open) | I3, I4 |
+| Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
 
 ## Status
 
@@ -49,7 +49,7 @@
 2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
 3. A6: Gurnoor found the NRPA choice varies with its seed on the coach recording; look at why so few samples flip the choice
 4. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-5. Track B: optional B10, B12, B13. Together: I3 phone demo or backup video, I4 README and deck numbers
+5. Track B: optional B10, B12, B13. Together: I3 backup video (docs/PHONE_DEMO.md, path A)
 
 ## Blockers / Risks
 

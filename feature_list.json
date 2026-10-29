@@ -617,10 +617,10 @@
         "I1",
         "I2"
       ],
-      "status": "in-progress",
+      "status": "done",
       "done_when": "README final; deck numbers come only from docs/results/.",
-      "evidence": "docs/I4-readme: README 'How it works' with docs/architecture.svg, a rewritten Status that quotes only results unchanged by the A6 re-measure and links docs/results for numbers, and three screenshots in docs/screenshots taken from a live backend running the I1 scenarios.",
-      "notes": "Final once #19 (I1), #20 (A6) and #21 (I3) are merged: the README refers to their scenarios, results and runbook."
+      "evidence": "Merged in #22 after #19, #20 and #21: README 'How it works' with docs/architecture.svg, Status rewritten, three screenshots in docs/screenshots from a live backend running the I1 scenarios. The README quotes only results unchanged by the A6 re-measure and links docs/results (commands and seeds) for every other number, so deck numbers come from docs/results. Checked on main at b8f591e: every README link and image path exists.",
+      "notes": ""
     }
   ]
 }
