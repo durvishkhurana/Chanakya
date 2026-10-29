@@ -615,9 +615,10 @@
         "I1",
         "I2"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "README final; deck numbers come only from docs/results/.",
-      "evidence": ""
+      "evidence": "docs/I4-readme: README 'How it works' with docs/architecture.svg, a rewritten Status that quotes only results unchanged by the A6 re-measure and links docs/results for numbers, and three screenshots in docs/screenshots taken from a live backend running the I1 scenarios.",
+      "notes": "Final once #19 (I1), #20 (A6) and #21 (I3) are merged: the README refers to their scenarios, results and runbook."
     }
   ]
 }
