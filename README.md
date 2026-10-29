@@ -8,26 +8,40 @@ The full idea is in [docs/IDEA.md](docs/IDEA.md). Tasks and owners are in [docs/
 
 > Independent project, not affiliated with Paytm. Paytm systems are represented by labelled mock services; product facts come from curated public Paytm for Business pages with source URLs and review dates.
 
+## How it works
+
+![Chanakya architecture: three doors into a mission queue and ledger, the call with the Chanakya brain, a safety gate in front of labelled mock systems, a verifier, a hand-off queue and live dashboards](docs/architecture.svg)
+
+1. **Three doors.** A mission starts when a merchant asks (a callback from the product page), when the merchant's data says so (card attempts with no card machine, an unused Soundbox, rising UPI), or when a colleague hands it over. Each mission card carries the starting worries for its trigger.
+2. **The call.** Chanakya calls in the merchant's language (Hindi, Hinglish, Punjabi, English) through the browser or a phone line, and says it is an AI assistant first.
+3. **The brain.** Every merchant turn updates a belief over 13 merchant worries (cost, hidden charges, an existing QR, a faulty device, trust, being busy and so on). A look-ahead planner tries the candidate moves against simulated merchants drawn from that belief and picks the one most likely to end in an explicit yes. The realizer words it from sourced product pages only, and falls back to a safe template if the model's line breaks a rule or the provider stalls.
+4. **Getting it done.** A write (an onboarding link, a technician visit, a WhatsApp summary) runs only through the safety gate: AI disclosed, an explicit yes recorded for that action, calling hours, do-not-call, no sensitive data, an audit trail. The business systems are labelled mocks.
+5. **Checking it happened.** A mission is DONE only when the onboarding system confirms it. Until then the verifier sends at most two reminders and then queues a callback.
+6. **People.** Distress, a request for a person, or anything off-script becomes an urgent hand-off card, so the colleague does not make the merchant repeat themselves. Coach mode runs the same brain silently on a human telecaller's call and suggests each next move.
+7. **Watching it.** Mission Control and the Live Call View read the ledger's event stream: transcript, worries, the planner's candidates and scores, and every safety decision.
+
 ## Status
 
-This is the pilot. It contains the existing multilingual voice sales agent that Chanakya is built on:
+Built and merged: the voice agent, the teammate layer (missions, actions, safety gate, verification, hand-offs, dashboards, coach mode) and the Chanakya brain (belief tracker, look-ahead planner, realizer), with merchant twins, a judge and an evaluation harness. Task-by-task status is in [feature_list.json](feature_list.json) and `progress.md`.
 
-- Streaming speech-to-text (Sarvam `saaras:v3-realtime`) with automatic language detection
-- Streaming text-to-speech (Sarvam `bulbul:v3`)
-- Interruption handling, conversation memory and inactivity check-ins
-- LangGraph agent with multi-path PageIndex retrieval over `data/knowledge/`
-- Browser voice client (Next.js) and Twilio Media Streams transport
+Measured, with commands and seeds, in [docs/results/](docs/results/README.md):
 
-On top of it, the teammate layer is in place (Track B):
+- No safety violations in the adversarial suite (prompt injection, OTP phishing, pressure, invented-price bait, an ambiguous "haan", distress, decline), offline and with the live model realizer.
+- Every distressed merchant in the evaluation was handed to a person.
+- Belief tracking carries the result: without it, about half the simulated merchants walk away.
+- Chanakya does not beat a simpler "answer the worry, then ask" agent on success in this simulator; the results page says so and why.
 
-- Mission intake through three doors, mission cards with starting worries, and a priority queue
-- A mission ledger and state machine; every step is an event, and any mission can be replayed
-- Typed tools on labelled mock business systems, behind a safety gate (AI disclosure, explicit consent, calling hours, do not call, no sensitive data, audit trail)
-- Verification and reminders: a mission is done only when a system confirms it
-- Handoff cards and a human queue
-- Mission Control, the Live Call View, a mock product page, a mock onboarding page and the landing page
+Not done yet: a recorded phone demo (see [docs/PHONE_DEMO.md](docs/PHONE_DEMO.md)), a measured gain from the Strategy Forest, and any test with real merchants.
 
-The Chanakya brain (belief tracker, Strategy Forest, look-ahead planner), merchant twins and evaluation are Track A and are being added task by task. See `progress.md`.
+## Screens
+
+Mission Control with a card-machine sale verified to DONE, its live call, and a distressed merchant handed to a person (all fictional merchants, mock systems):
+
+![Mission Control: queue, KPIs, the selected mission's card, concern meter and ledger](docs/screenshots/mission-control.png)
+
+![Live Call View of the card-machine sale: transcript with each move, the worry meter, the plan, willingness over the call, and the safety panel](docs/screenshots/live-call.png)
+
+![Live Call View of a distressed merchant: Chanakya stops selling and hands the call to a person, with no actions taken](docs/screenshots/handoff.png)
 
 ## Run locally
 
@@ -136,8 +150,9 @@ backend/          FastAPI app, voice session, Sarvam and Twilio transports
 agent/            LangGraph agent, PageIndex retrieval, prompts
 frontend/         Next.js voice client and dashboards
 data/knowledge/   sourced product knowledge (PageIndex JSON)
-chanakya/         brain, missions, actions, humans, sim, eval (being added)
-docs/             IDEA.md, TASKS.md, PROMPT.md
+chanakya/         brain, missions, actions, humans, sim, eval
+docs/results/     measured results with their commands and seeds
+docs/             IDEA.md, TASKS.md, architecture.svg, screenshots
 ```
 
 ## Working on this repo
