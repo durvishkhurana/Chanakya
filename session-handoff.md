@@ -3,37 +3,37 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Track A and Track B are merged on `main` (Track A in PRs #15-#17). B11 coach mode UI is done on `feat/B11-coach-ui`
-- Branch / commit: `feat/B11-coach-ui`, cut from `main` at `844da64`
+- Current status: Track A, Track B and coach mode (B11) are on `main`. Four PRs wait for Gurnoor's review, in merge order: #19 I1 demo scenarios, #20 A6 planner seed stability (with the A9 finding), #21 I3 live-call fallbacks and runbook, #22 I4 README
+- Branch / commit: this note is on `docs/I4-readme`, cut from `main` at `688086c`; each PR branch was cut from the same commit
 
 ## Completed This Session
 
-- [x] Pulled Track A onto local main; `FULL=1 ./init.sh` passed (271 pytest)
-- [x] B11 coach mode UI: `chanakya/humans/coach_api.py` (`/api/coach`, behind `COACH_ENABLED`) runs the A11 `CoachEngine` turn by turn; `frontend/src/app/coach/` shows the call, the suggested next move with how to answer and its sourced pages, the concern meter and a hand-off card
+- [x] #19 `feat/I1-demo-scenarios`: the brain runs on real missions (`MissionCall`), four IDEA section 8 scenarios from one command and from Mission Control, typed and browser-voice calls on a mission, F0.3 closed with CI evidence
+- [x] #20 `fix/A6-planner-seed-stability`: "baad mein" no longer a busy cue, stratified sampling with 12 merchants; results re-measured; `python -m chanakya.eval.planner_checks lookahead|stability|forest`; A9 recorded as blocked (no measured gain)
+- [x] #21 `feat/I3-phone-demo`: `VOICE_LLM_TIMEOUT_MS` (default 4000) falls back to templates and lexical evidence on a stalled provider; `docs/PHONE_DEMO.md`
+- [x] #22 `docs/I4-readme`: README "How it works", `docs/architecture.svg`, screenshots, Status rewritten
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Everything | `SKIP_INSTALL=1 FULL=1 ./init.sh` | passed | agent 104 OK, backend 98 OK, pytest 277, Ruff clean, frontend 22 tests, lint, build |
-| Coach API | `python -m pytest chanakya/humans` | 11 passed | recorded fixture replay, pinned seed, distress hand-off, bad input |
-| Browser | `/coach` at 1440 and 375 px | verified | recorded call end to end; typed distress line drafted the hand-off card; no page overflow |
-
-## Files Changed
-
-- `chanakya/humans/coach_api.py`, `chanakya/humans/tests/test_coach_api.py`, `backend/main.py` (appended mount)
-- `frontend/src/app/coach/`, `frontend/src/lib/coachView.mjs` and its test, `frontend/src/components/missions/` (nav item, icon), `frontend/src/lib/missionView.mjs` (three worry labels)
-- `README.md`, `feature_list.json`, `docs/TASKS.md`, `progress.md`, this file
+| I1 | `FULL=1 SKIP_INSTALL=1 ./init.sh` on #19 | pytest 283, frontend 22, build compiled | scenarios 4/4; live backend checked from the dashboard |
+| A6 | `SKIP_INSTALL=1 ./init.sh` on #20 | pytest 279 | harness seeds 7 and 13 regenerated into `docs/results`; stability 21/42 whole runs identical (was 13) |
+| I3 | `SKIP_INSTALL=1 ./init.sh` on #21 | pytest 280 | live Groq turns 1.3-1.5 s, no fallback |
+| I4 | `SKIP_INSTALL=1 ./init.sh` on #22 | pytest 277 | docs only |
 
 ## Decisions Made
 
-- The recorded call pins the planner seed (mission id `coach_recorded`) so every replay shows the same suggestions; typed calls use a random id
-- The hand-off card is copied as text; coached calls are not ledger missions, so nothing is sent to the hand-off queue
+- A6: common random numbers did not reduce the seed swing (the noise was in which merchants were sampled), so only stratified sampling and 12 samples were kept; the cost is planner p50 58 -> 111 ms
+- A9 is blocked, not done: the forest changes nothing measurable (0.96/0.98 harness, 0.920 vs 0.917 and 0.953 vs 0.953 consent)
+- The README quotes only numbers that #20 does not change and links `docs/results` for the rest
 
 ## Blockers / Risks
 
-- The NRPA planner's choice varies a lot with its seed on the recorded call (see `progress.md`, Blockers); this is Track A (A6)
-- OpenRouter has no credits; Groq's free tier rate limits make full online evaluations impossible
+- I3 is done only with a call to the allowlisted number or a recorded backup video; both need Durvish with the phone (and an upgraded Twilio account for Media Streams). Steps are in `docs/PHONE_DEMO.md`
+- Browser voice on a mission was checked up to `voice_ready`; a spoken turn with a microphone is not yet tried
+- `gh` cannot be installed on this machine; PRs are opened in the browser
+- OpenRouter has no credits; Groq's free tier rules out full online evaluations
 
 ## Next Session Startup
 
@@ -44,4 +44,4 @@
 
 ## Recommended Next Step
 
-- Write the brain's `turn_completed`, `belief_updated` and `plan_computed` events into the ledger during live calls so the Live Call View shows real calls, and align the concern ids between intake and the Concern Bank
+- After the four PRs merge (resolve `progress.md`, `feature_list.json` and this file by keeping both sides' facts): record the backup video from `docs/PHONE_DEMO.md`, path A, and close I3 and I4
