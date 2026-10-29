@@ -26,7 +26,7 @@
   - A1 Concern Bank (13 concerns in Hindi, Hinglish, Punjabi, English, resolved only by sourced knowledge nodes), trigger priors, 68 seeded personas split planning/evaluation
   - A2 Twin-A and Twin-B with a deterministic judge and walk-away calibration (untreated agent loses 64-67%)
   - A3 Bayesian belief tracker with LLM or lexical evidence and hesitation cues
-  - A4 typed moves with hard preconditions and the baseline planner; A6 NRPA look-ahead planner (consent 0.943 vs 0.670 baseline on 300 Twin-A calls)
+  - A4 typed moves with hard preconditions and the baseline planner; A6 NRPA look-ahead planner (consent 0.920 vs 0.670 baseline on 300 Twin-A calls, 0.953 vs 0.847 on 150 held-out calls; seed-stable since `fix/A6-planner-seed-stability`)
   - A5 LLM realizer with safety fallbacks, BrainAgent in voice calls behind `PLANNER_ENABLED`; live voice calls verified with the flag on and off
   - A7 planning while listening behind `PLANNING_WHILE_LISTENING` (p50 1065 -> 457 ms with fake delays; off by default)
   - A8 evaluation harness; A10 safety suite (zero violations offline and online); A11 coach engine
@@ -54,7 +54,7 @@
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
-- [ ] The NRPA planner's suggestions vary with its seed (the mission id): on the recorded coach call only 13 of 42 seeds give the clean run, and after "Aur iska kiraya kitna hai? Baad mein koi extra charge toh nahi katega?" 10 of 42 suggest asking for consent and 11 suggest answering "just busy". Coach mode pins the recorded call's seed (`coach_recorded`) so replays are identical; typed calls are not pinned. Track A (A6) should look at why so few samples flip the choice
+- [x] Planner seed sensitivity found in coach mode is fixed on `fix/A6-planner-seed-stability`: "baad mein" is no longer a busy cue, sampled merchants are stratified and 12 are sampled; see `docs/results/README.md` section 2a
 - [ ] Coach sessions live in backend memory (at most 50) and are lost on restart; the hand-off card is copied as text, not sent to the hand-off queue, because a coached call has no mission in the ledger
 
 ## Decisions Made
