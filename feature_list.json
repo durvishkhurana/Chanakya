@@ -55,9 +55,9 @@
       "dependencies": [
         "F0.1"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "CI runs ./init.sh on every PR and is green on main.",
-      "evidence": "",
+      "evidence": "2026-10-29: .github/workflows/ci.yml runs FULL=1 ./init.sh on Ubuntu (Python 3.12, Node 20) for every push and pull request. Locally FULL=1 ./init.sh passed on Windows with Python 3.12.13: agent 94 OK, backend 94 OK, Ruff clean, frontend 9/9 pass, lint clean, build compiled. Not done yet: the first GitHub Actions run is not visible from this machine (private repo, no gh CLI); mark done once CI is green on main. Carried onto main in feat/track-a-on-main.",
       "notes": "Optional for the hackathon; roadmap if time is short."
     },
     {
@@ -76,9 +76,9 @@
         "F0.1",
         "F0.2"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Loaders validate against core schemas; every resolve condition points to an existing knowledge node; each intake trigger type has a starting-worries prior.",
-      "evidence": ""
+      "evidence": "2026-10-29: data/concerns/concerns.json (13 concerns), data/concerns/priors.json (all 11 TriggerTypes), data/personas/personas.json (68 personas from data/personas/generate_personas.py, seed 20261029: 34 planning, 34 evaluation, 4 adversarial kinds each), chanakya/brain/concern_bank.py loaders validating against core schemas. Tests: chanakya/brain/tests/test_concern_bank.py checks every resolve condition points to an existing knowledge node, every trigger has a prior, the generator reproduces the committed file. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 24 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A2",
@@ -93,9 +93,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Fixed-seed runs are reproducible; calibration test shows 50-70% of untreated merchants decline or hang up; adversarial personas included.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/sim (judge.py, voice.py, twin.py, calibration.py). Calibration over 20 seeds with the template voice: naive agent declined 62.8% planning / 58.3% evaluation (target 50-70%); oracle agent consented 98.8% on evaluation. Reproducibility: same seed gives an identical transcript. Live check on Groq: Twin-B (qwen/qwen3.8-27b) replied in Gurmukhi Punjabi and Bengali, voiced its hidden concern, fake-staff persona pushed for an OTP. Tests: chanakya/sim/tests/test_twins.py. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 44 passed, Ruff clean, frontend 9/9. Command: python -m chanakya.sim.calibration. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A3",
@@ -111,9 +111,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Starts from the mission card prior; scripted utterances move the right concern to the top; BeliefUpdated events emitted; latency per update logged.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/belief.py, chanakya/brain/cues.py. Tests (chanakya/brain/tests/test_belief.py): 8 scripted utterances in Hinglish, Hindi and Punjabi each move the right concern to the top; evidence overrides a wrong prior within two turns; hesitation tilts toward unspoken worries; BeliefUpdated events persisted with latency. Live LLM scorer on Groq (openai/gpt-oss-20b): paraphrases in Hinglish, Punjabi and Hindi scored hidden_charges 0.95, not_needed 0.95, settlement_delay 0.96 at 1566/841/609 ms per update. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 61 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A4",
@@ -129,9 +129,9 @@
       "dependencies": [
         "A3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Precondition tests pass; planner never proposes a write without CONFIRM_CONSENT; DISCLOSE_AND_GREET always first.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/moves.py, chanakya/brain/planner_rules.py. Tests (chanakya/brain/tests/test_planner_rules.py): every precondition; explicit consent in Hinglish/Hindi/Punjabi/English while 'Haan.', 'Okay.', 'Theek hai.' are rejected; property check over 170 simulated Twin-A calls (34 personas x 5 seeds incl. adversarial): DISCLOSE_AND_GREET always first, no write without consent, only closing moves after a decline; baseline beats the untreated pitch. Measured over 300 Twin-A calls (30 personas x 10 seeds, template voice): consent 0.683, follow-up 0.200. SKIP_INSTALL=1 ./init.sh passed: agent 99 OK, backend 95 OK, pytest 81 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A5",
@@ -148,9 +148,9 @@
       "dependencies": [
         "A4"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A browser call works with PLANNER_ENABLED on and off; existing voice tests still pass; TurnCompleted events carry belief and chosen move.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/realizer.py, agent/brain_agent.py, backend/main.py create_voice_agent(). Tests: chanakya/brain/tests/test_realizer.py (all templates safe in hi/en/pa, fallbacks on unsafe or claimed actions, consent must be a question), agent/test_brain_agent.py (offline call discloses, resolves, rejects bare haan, writes only via gate with consent, distress escalates, OTP refused, flag switch). Live: uvicorn backend.main:app with PLANNER_ENABLED=true and false, Sarvam TTS speech streamed into /api/voice/ws: Hindi transcribed, Chanakya disclosed and answered the hidden-charges question from the pricing source without a number, ~0.8 MB of reply audio each run. SKIP_INSTALL=1 FULL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 98 passed, Ruff clean, frontend 9/9, build compiled. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A6",
@@ -166,9 +166,9 @@
         "A2",
         "A4"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Beats the baseline planner on a fixed Twin-A set; stays inside its time budget with fallback; PlanComputed events include the search tree.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/planner_nrpa.py; backend/main.py uses NRPAPlanner when PLANNER_ENABLED. Measured with the text-mode converse() helper from chanakya/brain/tests/test_planner_rules.py and the template Twin-A (30 planning personas x seeds 0-9 = 300 calls): NRPA consent 0.897 (success 0.897) vs baseline 0.683 consent + 0.200 follow-up, mean agent turns 4.7 vs 6.7. Held-out evaluation personas, template twin, seeds 0-4 (150 calls): NRPA 0.947 vs baseline 0.873 consent. Time budget 300 ms: 159 searched plans p50 74 ms, p90 86 ms, max 109 ms, 0 fallbacks. Tests: chanakya/brain/tests/test_planner_nrpa.py (determinism, forced rules, END scored, budget fallback, outcome ordering, beats baseline on a fixed Twin-A set). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 104 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A7",
@@ -184,9 +184,9 @@
       "dependencies": [
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "p50/p90 turn latency logged and compared with planning after speech; only read-only tools run before end of speech.",
-      "evidence": "",
+      "evidence": "2026-10-29: chanakya/brain/speculative.py, agent/brain_agent.py (_turn/prepare/commit), backend/voice_session.py partial-transcript hook. python -m chanakya.brain.speculative --turns 40 --seed 3 (fake delays rollout 0.25 s, main 0.8 s, partial 0.6 s before final, 25% of finals changed): planning after speech p50 1064.7 ms / p90 1076.9 ms; planning while listening p50 459.3 ms / p90 1063.1 ms; 8 misses recomputed. Live: LLM_MODEL_MAIN=openai/gpt-oss-20b python -m chanakya.brain.speculative --live --turns 12 --seed 3: after speech p50 8299 / p90 12564 ms, while listening p50 11717 / p90 15244 ms; both dominated by Groq free-tier rate-limit waits, and speculation adds calls, so the flag defaults to false. Write actions never run speculatively (tested). Tests: chanakya/brain/tests/test_speculative.py, backend/test_voice_speculation.py. SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 98 OK, pytest 136 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B.",
       "notes": "Roadmap candidate."
     },
     {
@@ -203,9 +203,9 @@
         "A2",
         "B1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "One command produces a report on 100 Twin-B merchants plus the adversarial set for: reactive baseline, actions only, Chanakya, Chanakya without belief.",
-      "evidence": "",
+      "evidence": "2026-10-29: chanakya/eval (harness.py, variants.py, labeler.py, metrics.py, report.py). Command: python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 (59 s). Mission success reactive 0.00 / actions_only 0.99 / chanakya 0.97 / chanakya_no_belief 0.54; walk-away 0.07 / 0.01 / 0.03 / 0.46; turns to close n/a / 5.49 / 5.09 / 4.44; escalation recall 0 / 0 / 1.0 / 1.0; wrong actions 0, safety violations 0 for all; Chanakya turn latency p50 72 ms, p90 89 ms (template realizer). Online smoke: LLM_MODEL_MAIN=openai/gpt-oss-20b python -m chanakya.eval.harness --mode online --merchants 3 --adversarial-repeats 1 --variants reactive,chanakya --concurrency 1 --max-turns 6 --seed 7: runs end to end on Groq with 0 safety violations, but the reactive agent had 28 failed turns on Groq's 8000 tokens/minute free tier and latencies include rate-limit waits, so these online numbers are not comparable and are not claimed. Tests: chanakya/eval/tests/test_harness.py (reproducibility, held-out set, consent before actions, distress escalation, metrics, one-command report). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 113 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B.",
       "notes": "Can start against fakes before A2/B1 merge. Suggested to move to Track B to balance load."
     },
     {
@@ -223,9 +223,9 @@
       "dependencies": [
         "A1"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "Forest lookup under 50 ms and improves planner win rate over baseline candidates in eval.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/brain/forest (forest.py, generate.py), data/transcripts/synthetic_transcripts.jsonl (540 transcripts from python -m chanakya.brain.forest.generate --seed 11: NRPA, baseline and an exploring baseline against planning-split Twin-A, hi/pa/bn/gu/mr/ta merchants, outcome-labelled), data/forest/forest.json (40 clusters, hashed trigram state vectors, discounted outcome credit, Wilson lower bounds, top-worry moves abstracted as @top). Lookup 1-4 ms per call (target < 50 ms): met. Win rate: python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 --variants chanakya,chanakya_forest gives mission success 0.97 vs 0.97 (turns to close 5.09 vs 5.03); converse() on 150 held-out calls gives 0.933 vs 0.947 (2 calls, within noise). The improvement criterion is NOT demonstrated, so the task stays in-progress. Next: richer transcripts (LLM-voiced twins) or forest values that condition on concern history. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A10",
@@ -240,9 +240,9 @@
       "dependencies": [
         "A8"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Report shows zero violations for Chanakya or lists each failure (OTP phishing, injection, invented-price bait, 'haan' consent, distress).",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/eval/safety (suite.py). python -m chanakya.eval.safety --mode offline: 12 scenarios, 34 turns, 0 violations. python -m chanakya.eval.safety --mode online (Groq, gpt-oss-120b realizer): 12 scenarios, 37 turns, 0 violations; injections refused, no number given under price bait, no guarantee under pressure, PIN offer refused, distress escalated, decline ended the call. Checks: AI disclosure on first turn, sensitive-data requests, invented amounts and promises, pressure, claimed actions, writes without consent, acting on ambiguous consent, ignoring an explicit yes, continuing after a no, slow escalation, leaked instructions, em dash. Bugs it found and fixed: a later unprompted yes was ignored; rupee/price questions were misread. Tests: chanakya/eval/safety/tests/test_suite.py. SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 126 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "A11",
@@ -257,9 +257,9 @@
       "dependencies": [
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Next-best-move suggestions with a one-line reason stream for a recorded human call; never speaks.",
-      "evidence": ""
+      "evidence": "2026-10-29: chanakya/humans/coach_engine.py, data/transcripts/human_call_fixture.json (fictional, annotated human call), tests/test_coach_engine.py. On the fixture, 5 merchant turns give 5 suggestions: resolve competitor QR (53%, then 95% once voiced), resolve hidden charges, resolve rental cost (86%), and a clear consent question after the merchant's unprompted yes; none suggests disclosure, no agent turns or actions are produced, CoachSuggestion events are published. Unlabelled human turns are not inferred offline (an LLM labeler from chanakya.eval could be plugged in). SKIP_INSTALL=1 ./init.sh passed: agent 104 OK, backend 95 OK, pytest 130 passed, Ruff clean, frontend 9/9. Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "B1",
@@ -557,9 +557,9 @@
         "A8",
         "A6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Results, report and charts saved in docs/results/ with commands and seeds.",
-      "evidence": ""
+      "evidence": "2026-10-29: docs/results/offline-seed7 and offline-seed13 (python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7/13): success reactive 0.00/0.00, actions_only 0.99/1.00, chanakya 0.97/0.97, chanakya_no_belief 0.54/0.48, zero safety violations and wrong actions. docs/results/safety-offline and safety-online: 12 scenarios, 0 violations each. docs/results/twin-calibration.txt: untreated agent 67.3% decline. docs/results/latency-planning-while-listening.json: p50 1065 -> 457 ms with fake delays. Full online evaluation not run: Groq free-tier rate limits (documented in docs/results/README.md). Ported onto main's chanakya/core on 2026-10-29 (feat/track-a-on-main): Track A's own types moved to chanakya/brain/contracts, LLM calls go through chanakya.core.llm; re-measured offline evaluation and safety suite gave identical numbers; full pytest 265 passed with Track B."
     },
     {
       "id": "I3",

@@ -57,6 +57,22 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 .venv/bin/python -m backend.call_chanakya --help
 ```
 
+### Feature flags
+
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+
+### Evaluation
+
+```bash
+python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7   # deterministic, no network
+python -m chanakya.eval.harness --mode online --merchants 3 --max-turns 6  # uses the configured LLM provider
+python -m chanakya.sim.calibration                                         # twin walk-away calibration
+python -m chanakya.eval.safety --mode offline                              # adversarial and safety suite (also --mode online)
+python -m chanakya.brain.forest.generate --seed 11                         # regenerate transcripts and the Strategy Forest
+```
+
+Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out` is given. Measured results, with their commands and seeds, are in [docs/results/](docs/results/README.md).
+
 ## Verify
 
 ```bash
