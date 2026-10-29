@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 from chanakya.brain.concern_bank import default_bank, load_personas
 from chanakya.brain.contracts.fakes import sample_state
@@ -29,6 +30,18 @@ def test_same_seed_and_conversation_give_the_same_plan():
     first, second = plan(NRPAPlanner(BANK, seed=4), open_state()), plan(NRPAPlanner(BANK, seed=4), open_state())
     assert first.move == second.move and first.candidates == second.candidates
     assert isinstance(NRPAPlanner(BANK), Planner)
+
+
+def test_sampled_merchants_cover_a_tied_belief_evenly_whatever_the_seed():
+    state = open_state()
+    state.belief = state.belief.model_copy(update={"probabilities": {"rental_cost": 0.32, "hidden_charges": 0.32,
+                                                                     "just_busy": 0.32, "not_needed": 0.04}})
+    for seed in range(10):
+        planner = NRPAPlanner(BANK, samples=6)
+        merchants = planner.sample_merchants(state, random.Random(seed))
+        firsts = [m.persona.hidden_concerns[0] for m in merchants if m.unresolved]
+        # Stratified draws: no worry is left out or doubled up by luck, so the plan does not swing with the seed.
+        assert max(firsts.count(c) for c in set(firsts)) - min(firsts.count(c) for c in set(firsts)) <= 1, firsts
 
 
 def test_safety_and_consent_rules_are_never_searched():

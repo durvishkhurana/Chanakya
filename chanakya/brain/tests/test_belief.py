@@ -49,6 +49,15 @@ def test_scripted_utterances_move_the_right_concern_to_the_top(text, expected):
     assert belief.top(1)[0][0] == expected
 
 
+def test_later_inside_a_charges_question_is_not_a_busy_merchant():
+    # "Baad mein" here means "charged later", not "call me later"; the cue used to tie just_busy with the asked worries.
+    belief = run(BayesianBeliefTracker(BANK), {cid: 1.0 for cid in BANK.ids},
+                 merchant("Aur iska kiraya kitna hai? Baad mein koi extra charge toh nahi katega?"))
+    top = [cid for cid, _ in belief.top(2)]
+    assert set(top) == {"rental_cost", "hidden_charges"}
+    assert belief.probabilities["just_busy"] < 0.05
+
+
 def test_belief_starts_from_the_mission_card_prior():
     tracker = BayesianBeliefTracker(BANK)
     belief = tracker.start(BANK.priors[TriggerType.SOUNDBOX_UNUSED])
