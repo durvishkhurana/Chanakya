@@ -8,6 +8,8 @@ import CallView from "../../../components/call/CallView";
 import { demoEvents } from "../../../components/call/demoFixture";
 import AppShell from "../../../components/missions/AppShell";
 import { api, useMissionStream } from "../../../lib/chanakyaApi";
+import useVoiceCall from "../../../lib/useVoiceCall";
+import { FINISHED } from "../../../lib/missionView.mjs";
 
 export default function CallPage() {
   const { missionId } = useParams();
@@ -68,5 +70,48 @@ function LiveCall({ missionId }) {
     </div>
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>{error}</span><Link className="text-action" href="/missions">Back to Mission control</Link></div>}
     {!error && <CallView events={events} mission={mission} newSince={Infinity} />}
+    {mission && !FINISHED.has(mission.state) && <SayAsMerchant missionId={missionId} />}
+    {mission && !FINISHED.has(mission.state) && <VoiceOnMission missionId={missionId} />}
   </AppShell>;
+}
+
+/** Speak as the merchant through the microphone; the call runs on this mission, so the view above fills live. */
+function VoiceOnMission({ missionId }) {
+  const [open, setOpen] = useState(false);
+  return open ? <VoicePanel missionId={missionId} onClose={() => setOpen(false)} />
+    : <div className="panel" style={{ marginTop: 12 }}><button className="btn" onClick={() => setOpen(true)}>Talk by voice instead</button></div>;
+}
+
+function VoicePanel({ missionId, onClose }) {
+  const call = useVoiceCall({ isOpen: true, onClose, path: `/api/calls/${missionId}/voice`, modal: false });
+  const labels = { connecting: "Connecting…", listening: "Chanakya is listening", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Call stopped" };
+  return <div className="panel" role="status" style={{ marginTop: 12, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+    <b>{labels[call.callState] || call.callState}</b>
+    <span className="meta num">{call.duration}</span>
+    {call.callState === "error" && <span className="meta">{call.connectionError}</span>}
+    <span ref={call.messagesContainerRef} hidden />
+    <button className="btn" ref={call.endButtonRef} onClick={call.handleEndCall} style={{ marginLeft: "auto" }}>End voice call</button>
+  </div>;
+}
+
+/** Type what the merchant says; Chanakya answers on this mission and the call above updates from the ledger. */
+function SayAsMerchant({ missionId }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function send(e) {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setBusy(true);
+    try { await api(`/api/calls/${missionId}/say`, { method: "POST", body: { text } }); setText(""); setError(""); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+  return <form className="panel" onSubmit={send} style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
+    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant (text stands in for the phone line)</label>
+    <input id="say" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={text} maxLength={500}
+      onChange={(e) => setText(e.target.value)} placeholder="Haan ji, boliye?" disabled={busy} />
+    <button className="btn primary" disabled={busy || !text.trim()}>{busy ? "Chanakya is thinking…" : "Say"}</button>
+    {error && <p className="error" role="alert" style={{ flexBasis: "100%" }}>{error}</p>}
+  </form>;
 }

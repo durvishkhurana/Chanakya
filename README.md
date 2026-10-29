@@ -94,6 +94,15 @@ State lives in `.state/` (ignored by git); delete it to start fresh. An end-to-e
 .venv/bin/python scripts/demo/e2e_track_b.py http://127.0.0.1:8000
 ```
 
+The demo storyline (docs/IDEA.md section 8) as four scenarios, each a real call on a real mission: the brain talks, the safety gate and mock systems act, the verifier confirms. A scripted merchant reacts to Chanakya's actual moves.
+
+```bash
+.venv/bin/python scripts/demo/scenarios.py                     # all four, in-process on a fresh ledger, offline
+.venv/bin/python scripts/demo/scenarios.py distressed_handoff  # one scenario; add --live for the configured LLM
+```
+
+On a running backend, "Run scenario" in Mission Control plays one live and opens its call (`POST /api/calls/scenarios/<name>`), and the Live Call View has a "Speak as the merchant" box (`POST /api/calls/<mission id>/say`) and a "Talk by voice instead" button (WebSocket `/api/calls/<mission id>/voice`, the browser voice protocol with the call running on that mission; needs the LLM and Sarvam keys). Scenarios: `card_machine_sale`, `callback_followup` (fast-forwards the demo clock a day), `soundbox_service`, `distressed_handoff`.
+
 ### Feature flags
 
 New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.

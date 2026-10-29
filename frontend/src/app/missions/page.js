@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import AppShell from "../../components/missions/AppShell";
@@ -72,6 +72,7 @@ function MissionControl() {
           : <><b>{counts.ready} ready to call now</b> · {counts.handoffsOpen} {counts.handoffsOpen === 1 ? "hand-off is" : "hand-offs are"} waiting for a person</>}</p>
       </div>
       <div className="actions">
+        <ScenarioRunner busy={busy} act={act} />
         <button className="btn" disabled={!!busy} onClick={() => act("feed", () => api("/api/missions/signals/demo-feed", { method: "POST" }))}>{busy === "feed" ? "Loading…" : "Load demo signals"}</button>
         {next ? <Link className="btn primary" href={`/call/${next.id}`}>Call {next.card.merchant_name}</Link>
           : <button className="btn primary" disabled>Nobody to call right now</button>}
@@ -106,6 +107,25 @@ function MissionControl() {
       </aside>
     </div>
   </AppShell>;
+}
+
+/** Runs one of the demo storyline scenarios on a real mission and opens its live call. */
+function ScenarioRunner({ busy, act }) {
+  const router = useRouter();
+  const [scenarios, setScenarios] = useState([]);
+  const [name, setName] = useState("");
+  useEffect(() => { api("/api/calls/scenarios").then(setScenarios).catch(() => setScenarios([])); }, []);
+  if (!scenarios.length) return null;
+  const run = () => act("scenario", async () => {
+    const { mission_id: id } = await api(`/api/calls/scenarios/${name || scenarios[0].name}`, { method: "POST" });
+    router.push(`/call/${id}`);
+  });
+  return <>
+    <select className="btn" aria-label="Demo scenario" value={name || scenarios[0].name} onChange={(e) => setName(e.target.value)} disabled={!!busy}>
+      {scenarios.map((s) => <option key={s.name} value={s.name}>{s.title.split(":")[0]}</option>)}
+    </select>
+    <button className="btn" disabled={!!busy} onClick={run}>{busy === "scenario" ? "Starting…" : "Run scenario"}</button>
+  </>;
 }
 
 function Kpi({ label, value, note, loading }) {
