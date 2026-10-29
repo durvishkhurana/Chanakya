@@ -262,7 +262,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** configurable high-risk actions pause for human approval; approve/reject from the dashboard; timeouts escalate.
 - **Done when:** a high-risk action waits, is approved, then executes, all in the ledger.
 
-#### [ ] B11 Coach mode UI
+#### [x] B11 Coach mode UI
 - **Branch:** `feat/B11-coach-ui`
 - **Owns:** `frontend/src/app/coach/`
 - **Depends on:** A11

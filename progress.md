@@ -3,11 +3,11 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** Track A is complete on `feat/track-a-on-main` (ported onto main's core) and waits for Gurnoor's review together with a small `core:` change and the Windows fixes.
+**Active Feature:** none in progress. Track A merged on main (PRs #15-#17); B11 coach mode UI is done on `feat/B11-coach-ui`.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B14, B15 (merged on main) | B11 coach UI (A11 is ready); B10, B12, B13 roadmap |
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11 (on `feat/track-a-on-main`) | A9 (forest built, no measured gain), F0.3 (CI green on main not yet seen) |
 | Integration | both | I2 measured results in `docs/results/` | I1, I3, I4 |
 
@@ -21,6 +21,7 @@
 - [x] B7 verification and reminders, B8 Mission Control, B9 Live Call View, B14 mock product and onboarding pages
 - [x] B15 landing page (design-taste and landing-page skills)
 - [x] `scripts/demo/e2e_track_b.py`: the whole Track B flow against a live backend, 17 checks
+- [x] B11 coach mode UI: `/coach` replays the recorded telecaller call through the A11 engine (`/api/coach`, behind `COACH_ENABLED`), with the suggestion card, how to answer from the Concern Bank with sourced pages, the concern meter, and a hand-off card when the engine says to escalate; the telecaller can also type lines
 - [x] Track A (Durvish), on `feat/track-a-on-main`:
   - A1 Concern Bank (13 concerns in Hindi, Hinglish, Punjabi, English, resolved only by sourced knowledge nodes), trigger priors, 68 seeded personas split planning/evaluation
   - A2 Twin-A and Twin-B with a deterministic judge and walk-away calibration (untreated agent loses 64-67%)
@@ -39,10 +40,10 @@
 
 ### What's Next
 
-1. Gurnoor: review and merge, in order, `fix/windows-dev-setup`, `feat/core-llm-providers` (core change), `feat/track-a-on-main`, `feat/brain-core-adapters`
+1. Done: `fix/windows-dev-setup`, `feat/track-a-on-main` and `feat/brain-core-adapters` are merged on main (PRs #15-#17)
 2. Connect the brain to the mission runtime: `feat/brain-core-adapters` exposes the planner, belief tracker and realizer through the core protocols and turns brain events into `turn_completed`, `belief_updated` and `plan_computed` ledger events; still to do is writing them through the ledger (or `POST /api/missions/{id}/events`) so the Live Call View renders live calls, checking the payload shapes it expects, and using the real ActionGate instead of the mock gate
 3. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-4. Track B: B11 coach mode UI (A11 engine is ready); optional B10, B12, B13. Together: I1 demo scenarios, I3 phone demo or backup video, I4 README and deck numbers
+4. Track B: optional B10, B12, B13. Together: I1 demo scenarios, I3 phone demo or backup video, I4 README and deck numbers
 
 ## Blockers / Risks
 
@@ -53,6 +54,8 @@
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
+- [ ] The NRPA planner's suggestions vary with its seed (the mission id): on the recorded coach call only 13 of 42 seeds give the clean run, and after "Aur iska kiraya kitna hai? Baad mein koi extra charge toh nahi katega?" 10 of 42 suggest asking for consent and 11 suggest answering "just busy". Coach mode pins the recorded call's seed (`coach_recorded`) so replays are identical; typed calls are not pinned. Track A (A6) should look at why so few samples flip the choice
+- [ ] Coach sessions live in backend memory (at most 50) and are lost on restart; the hand-off card is copied as text, not sent to the hand-off queue, because a coached call has no mission in the ledger
 
 ## Decisions Made
 
