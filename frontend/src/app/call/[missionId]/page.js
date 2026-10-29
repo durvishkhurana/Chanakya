@@ -8,6 +8,7 @@ import CallView from "../../../components/call/CallView";
 import { demoEvents } from "../../../components/call/demoFixture";
 import AppShell from "../../../components/missions/AppShell";
 import { api, useMissionStream } from "../../../lib/chanakyaApi";
+import { FINISHED } from "../../../lib/missionView.mjs";
 
 export default function CallPage() {
   const { missionId } = useParams();
@@ -68,5 +69,28 @@ function LiveCall({ missionId }) {
     </div>
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>{error}</span><Link className="text-action" href="/missions">Back to Mission control</Link></div>}
     {!error && <CallView events={events} mission={mission} newSince={Infinity} />}
+    {mission && !FINISHED.has(mission.state) && <SayAsMerchant missionId={missionId} />}
   </AppShell>;
+}
+
+/** Type what the merchant says; Chanakya answers on this mission and the call above updates from the ledger. */
+function SayAsMerchant({ missionId }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function send(e) {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setBusy(true);
+    try { await api(`/api/calls/${missionId}/say`, { method: "POST", body: { text } }); setText(""); setError(""); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+  return <form className="panel" onSubmit={send} style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
+    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant (text stands in for the phone line)</label>
+    <input id="say" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={text} maxLength={500}
+      onChange={(e) => setText(e.target.value)} placeholder="Haan ji, boliye?" disabled={busy} />
+    <button className="btn primary" disabled={busy || !text.trim()}>{busy ? "Chanakya is thinking…" : "Say"}</button>
+    {error && <p className="error" role="alert" style={{ flexBasis: "100%" }}>{error}</p>}
+  </form>;
 }

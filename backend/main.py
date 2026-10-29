@@ -126,3 +126,6 @@ if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes"
     from chanakya.missions.demo_api import router as demo_router
 
     app.include_router(demo_router)
+    from chanakya.brain.calls_api import router as calls_router
+
+    app.include_router(calls_router)
