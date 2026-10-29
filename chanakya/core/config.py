@@ -16,10 +16,33 @@ DEFAULT_MODELS = {
     "twin_b": "openai/gpt-6-luna",
     "judge": "deepseek/deepseek-v4-flash",
 }
+# Used while OpenRouter credits are arranged; measured on Groq on 2026-10-29.
+GROQ_MODELS = {
+    "main": "openai/gpt-oss-120b",
+    "rollout": "openai/gpt-oss-20b",
+    "twin_a": "openai/gpt-oss-20b",
+    "twin_b": "qwen/qwen3.8-27b",
+    "judge": "openai/gpt-oss-120b",
+}
+PROVIDER_URLS = {
+    "openrouter": "https://openrouter.ai/api/v1",
+    "groq": "https://api.groq.com/openai/v1",
+}
 
 
 def _flag(name: str) -> bool:
     return os.getenv(name, "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _provider() -> str:
+    """``LLM_PROVIDER`` if set; otherwise OpenRouter, or Groq when only a Groq key is configured."""
+    chosen = os.getenv("LLM_PROVIDER", "").strip().lower()
+    if chosen:
+        if chosen not in PROVIDER_URLS:
+            raise ValueError("LLM_PROVIDER must be 'openrouter' or 'groq'")
+        return chosen
+    only_groq = os.getenv("GROQ_API_KEY", "").strip() and not os.getenv("OPENROUTER_API_KEY", "").strip()
+    return "groq" if only_groq else "openrouter"
 
 
 @dataclass(frozen=True)
@@ -32,12 +55,26 @@ class Settings:
     timezone: str = "Asia/Kolkata"
     calling_hours: tuple[int, int] = (9, 21)
     models: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_MODELS))
-    openrouter_api_key: str = ""
+    openrouter_api_key: str = field(default="", repr=False)
+    llm_provider: str = "openrouter"
+    groq_api_key: str = field(default="", repr=False)
+
+    @property
+    def llm_base_url(self) -> str:
+        """Base URL of the configured OpenAI-compatible provider."""
+        return PROVIDER_URLS[self.llm_provider]
+
+    @property
+    def llm_api_key(self) -> str:
+        """API key for the configured provider."""
+        return self.groq_api_key if self.llm_provider == "groq" else self.openrouter_api_key
 
     @classmethod
     def from_env(cls) -> Settings:
         """Read settings from environment variables."""
-        models = {role: os.getenv(f"MODEL_{role.upper()}", model) for role, model in DEFAULT_MODELS.items()}
+        provider = _provider()
+        defaults = GROQ_MODELS if provider == "groq" else DEFAULT_MODELS
+        models = {role: os.getenv(f"MODEL_{role.upper()}", model) for role, model in defaults.items()}
         start, end = (int(part) for part in os.getenv("CALLING_HOURS", "9-21").split("-"))
         return cls(
             planner_enabled=_flag("PLANNER_ENABLED"),
@@ -49,4 +86,6 @@ class Settings:
             calling_hours=(start, end),
             models=models,
             openrouter_api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            llm_provider=provider,
+            groq_api_key=os.getenv("GROQ_API_KEY", ""),
         )

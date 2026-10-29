@@ -11,9 +11,11 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langsmith import traceable
 from pydantic import BaseModel, ConfigDict, Field
 
+from chanakya.core.llm import reasoning_options
+
 from .batch_pageindex import BatchPageIndex, compact_json
-from .languages import VOICE_LANGUAGES
-from .models import OpenRouterChatOpenAI
+from .languages import VOICE_LANGUAGES, spoken_text
+from .models import OpenRouterChatOpenAI, provider_settings
 from .retrieval import RetrievalResult
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
@@ -37,6 +39,13 @@ REPLY_TOOL = {
 }
 
 
+def _text(content):
+    """Join a message's text whether the provider sent a string or content blocks."""
+    if isinstance(content, str):
+        return content
+    return "".join(block.get("text", "") for block in content if isinstance(block, dict))
+
+
 def _trace_inputs(inputs):
     return {key: value for key, value in inputs.items() if key not in {"self", "emit"}}
 
@@ -56,18 +65,31 @@ class NormalLLMAgent:
         self.evidence_limit = int(os.getenv("NORMAL_LLM_EVIDENCE_BYTES", "32000"))
         if min(self.timeout, self.max_seconds, self.evidence_limit) <= 0:
             raise ValueError("Normal LLM limits must be positive")
+        settings = provider_settings()
+        # Groq serves a different model and rejects OpenRouter's fast tier.
+        options = (
+            {"model": "openai/gpt-6-luna", "reasoning_effort": "none", "service_tier": "fast"}
+            if settings.llm_provider == "openrouter"
+            else {"model": settings.models["main"], **reasoning_options(settings.models["main"], "groq")}
+        )
         self.model = model if model is not None else OpenRouterChatOpenAI(
-            model="openai/gpt-6-luna",
-            api_key=os.getenv("OPENROUTER_API_KEY", ""),
-            base_url="https://openrouter.ai/api/v1",
-            reasoning_effort="none",
-            service_tier="fast",
+            **options,
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url,
+            ls_provider_name=settings.llm_provider,
             streaming=True,
             stream_usage=True,
             max_tokens=response_tokens,
             timeout=self.timeout,
             max_retries=0,
         )
+        # Groq aborts a stream when a required tool call is answered with text, so it may reply in plain text.
+        self.plain_text_replies = getattr(self.model, "ls_provider_name", "") == "groq"
+
+    def _tool_choice(self, can_read):
+        if self.plain_text_replies:
+            return "auto"
+        return "required" if can_read else "reply"
 
     def _messages(self, question, conversation, language, voice):
         style = (
@@ -87,7 +109,12 @@ class NormalLLMAgent:
         ]
 
     @staticmethod
-    def _finish(chunk):
+    def _finish(chunk, plain_text=False):
+        if plain_text and chunk is not None and not chunk.tool_call_chunks and _text(chunk.content).strip():
+            return AIMessage(
+                content=spoken_text(_text(chunk.content).strip()),
+                response_metadata=chunk.response_metadata, usage_metadata=chunk.usage_metadata,
+            )
         if chunk is None or chunk.invalid_tool_calls or len(chunk.tool_calls) != 1:
             raise RuntimeError("Normal LLM returned an invalid response")
         call = chunk.tool_calls[0]
@@ -95,7 +122,7 @@ class NormalLLMAgent:
         arguments = json.loads(chunk.tool_call_chunks[0]["args"])
         content, calls = "", chunk.tool_calls
         if call["name"] == "reply":
-            content = ReplyRequest.model_validate(arguments).text
+            content = spoken_text(ReplyRequest.model_validate(arguments).text)
             content.encode("utf-8")
             calls = []
         return AIMessage(
@@ -123,7 +150,7 @@ class NormalLLMAgent:
             raise RuntimeError("Normal LLM changed already-streamed reply text")
         text.encode("utf-8")
         if text[len(emitted):]:
-            emit({"type": "token", "content": text[len(emitted):]})
+            emit({"type": "token", "content": spoken_text(text[len(emitted):])})
         return text
 
     def _steps(self, question, conversation, language, voice, emit):
@@ -187,8 +214,9 @@ class NormalLLMAgent:
         raise RuntimeError("Normal LLM did not finish its bounded response")
 
     def _config(self, turn):
-        return {"run_name": "luna_agent", "tags": ["openrouter", "llm_batch"], "metadata": {
-            "ls_provider": "openrouter", "ls_model_name": "openai/gpt-6-luna",
+        provider = getattr(self.model, "ls_provider_name", "openrouter")
+        return {"run_name": "luna_agent", "tags": [provider, "llm_batch"], "metadata": {
+            "ls_provider": provider, "ls_model_name": getattr(self.model, "model_name", "openai/gpt-6-luna"),
             "batch_turn": turn, "catalog_bytes": self.index.catalog_bytes,
         }}
 
@@ -203,14 +231,17 @@ class NormalLLMAgent:
                 return done.value
             chunks, emitted, deadline = None, "", time.monotonic() + timeout
             model = self.model.bind_tools(
-                tools, tool_choice="required" if can_read else "reply", parallel_tool_calls=False, strict=True,
+                tools, tool_choice=self._tool_choice(can_read), parallel_tool_calls=False, strict=True,
             )
             for chunk in model.stream(messages, config=self._config(turn), timeout=timeout):
                 if time.monotonic() >= deadline:
                     raise TimeoutError("Normal LLM request exceeded its deadline")
                 chunks = chunk if chunks is None else chunks + chunk
                 emitted = self._emit_reply(chunks, emitted, emit)
-            response = self._finish(chunks)
+            response = self._finish(chunks, self.plain_text_replies)
+            if self.plain_text_replies and not response.tool_calls and not emitted:
+                # Plain text is spoken only once it is known not to precede a source read.
+                emit({"type": "token", "content": spoken_text(response.content)})
 
     @traceable(name="normal_llm_agent", process_inputs=_trace_inputs, process_outputs=_trace_outputs)
     async def arun(self, question, conversation, *, language=None, voice=False, emit=lambda event: None):
@@ -223,13 +254,16 @@ class NormalLLMAgent:
                 return done.value
             chunks, emitted = None, ""
             model = self.model.bind_tools(
-                tools, tool_choice="required" if can_read else "reply", parallel_tool_calls=False, strict=True,
+                tools, tool_choice=self._tool_choice(can_read), parallel_tool_calls=False, strict=True,
             )
             async with asyncio.timeout(timeout):
                 async for chunk in model.astream(messages, config=self._config(turn)):
                     chunks = chunk if chunks is None else chunks + chunk
                     emitted = self._emit_reply(chunks, emitted, emit)
-            response = self._finish(chunks)
+            response = self._finish(chunks, self.plain_text_replies)
+            if self.plain_text_replies and not response.tool_calls and not emitted:
+                # Plain text is spoken only once it is known not to precede a source read.
+                emit({"type": "token", "content": spoken_text(response.content)})
 
     async def aclose(self):
         # SDK clients own connection pools separate from the typed providers.

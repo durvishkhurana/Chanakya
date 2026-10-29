@@ -63,7 +63,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track A
 
-#### [ ] A1 Concern Bank and merchant personas
+#### [x] A1 Concern Bank and merchant personas
 - **Branch:** `feat/A1-concerns-personas`
 - **Owns:** `data/concerns/`, `data/personas/`, `chanakya/brain/concern_bank.py`
 - **Build:**
@@ -71,7 +71,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - 40+ merchant personas: business type, city, language, patience, busyness, tech comfort, hidden concerns, willingness prior.
 - **Done when:** loaders validate against core schemas; tests check every resolve condition points to an existing knowledge node.
 
-#### [ ] A2 Merchant twins (Twin-A and Twin-B)
+#### [x] A2 Merchant twins (Twin-A and Twin-B)
 - **Branch:** `feat/A2-twins`
 - **Owns:** `chanakya/sim/`
 - **Depends on:** A1
@@ -82,7 +82,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Adversarial personas: angry merchant, prompt-injection attempts, fake "Paytm staff" asking for OTP.
 - **Done when:** fixed-seed runs are reproducible; calibration test shows a realistic walk-away rate.
 
-#### [ ] A3 Belief tracker and live concern meter feed
+#### [x] A3 Belief tracker and live concern meter feed
 - **Branch:** `feat/A3-belief-tracker`
 - **Owns:** `chanakya/brain/belief.py`, `chanakya/brain/cues.py`
 - **Depends on:** A1
@@ -92,7 +92,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Bayesian update with decay; emits `BeliefUpdated` events.
 - **Done when:** unit tests on scripted utterances move the right concern to the top; latency per update is logged.
 
-#### [ ] A4 Move library and baseline planner
+#### [x] A4 Move library and baseline planner
 - **Branch:** `feat/A4-moves-baseline-planner`
 - **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`
 - **Depends on:** A3
@@ -101,7 +101,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Rule-and-belief baseline planner: picks a move from belief and mission goal. This is the fallback for the look-ahead planner.
 - **Done when:** precondition tests pass; planner never proposes a write without consent.
 
-#### [ ] A5 Realizer and agent integration
+#### [x] A5 Realizer and agent integration
 - **Branch:** `feat/A5-realizer`
 - **Owns:** `chanakya/brain/realizer.py`, `agent/`, `backend/` voice session hook
 - **Depends on:** A4
@@ -161,7 +161,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track A
 
-#### [ ] A6 Look-ahead planner (NRPA with Twin-A)
+#### [x] A6 Look-ahead planner (NRPA with Twin-A)
 - **Branch:** `feat/A6-lookahead-planner`
 - **Owns:** `chanakya/brain/planner_nrpa.py`
 - **Depends on:** A2, A4
@@ -172,14 +172,14 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - Strict time budget with fallback; emits `PlanComputed` events including the search tree for the dashboard.
 - **Done when:** beats the baseline planner on a fixed Twin-A set; stays inside the time budget.
 
-#### [ ] A7 Planning while listening
+#### [x] A7 Planning while listening
 - **Branch:** `feat/A7-plan-while-listening`
 - **Owns:** `backend/` voice session planning hook, `chanakya/brain/speculative.py`
 - **Depends on:** A6
 - **Build:** start planning on partial transcripts; refine on the final transcript; cancel stale plans; allow only read-only tool lookups before the merchant finishes.
 - **Done when:** measured p50/p90 turn latency is logged and compared with planning after speech.
 
-#### [ ] A8 Evaluation harness
+#### [x] A8 Evaluation harness
 - **Branch:** `feat/A8-eval-harness`
 - **Owns:** `chanakya/eval/`
 - **Depends on:** A2, B1 (uses fakes until B1 merges)
@@ -239,14 +239,14 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** generate expert-style transcripts (multilingual, labelled outcomes); embed and cluster states; record moves and outcomes; back-propagate values; Wilson lower bound; one-lookup retrieval of top moves; update from completed missions.
 - **Done when:** forest lookup is under 50 ms and improves planner win rate over baseline candidates in eval.
 
-#### [ ] A10 Adversarial and safety suite
+#### [x] A10 Adversarial and safety suite
 - **Branch:** `feat/A10-safety-suite`
 - **Owns:** `chanakya/eval/safety/`
 - **Depends on:** A8
 - **Build:** scenarios for prompt injection, OTP phishing, pressure requests, invented-price bait, consent ambiguity ("haan"), distressed merchant; automatic checks for violations.
 - **Done when:** report shows zero violations for Chanakya or lists each failure.
 
-#### [ ] A11 Coach mode engine
+#### [x] A11 Coach mode engine
 - **Branch:** `feat/A11-coach-engine`
 - **Owns:** `chanakya/humans/coach_engine.py` (agreed exception: Track A owns this one file)
 - **Depends on:** A6
@@ -292,7 +292,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** seeded scripts for the demo storyline in IDEA section 8: offline Soundbox service mission, card-machine sale with concern resolution and WhatsApp link, follow-up to DONE, distressed-merchant hand-off.
 - **Done when:** each scenario runs from one command and from the dashboard.
 
-#### [ ] I2 Full evaluation run and results
+#### [x] I2 Full evaluation run and results
 - **Branch:** `feat/I2-results`
 - **Build:** run the harness on all variants; save results, report and charts in `docs/results/` with commands and seeds.
 

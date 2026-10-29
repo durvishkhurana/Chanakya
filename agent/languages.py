@@ -13,3 +13,8 @@ VOICE_LANGUAGES = {
     "ta-IN": "Tamil",
     "te-IN": "Telugu",
 }
+
+
+def spoken_text(text: str) -> str:
+    """Replace em dashes, which Chanakya never says or writes, with a comma pause."""
+    return text.replace(" — ", ", ").replace("—", ", ")
