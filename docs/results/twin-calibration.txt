@@ -1,0 +1,2 @@
+naive {'consented': 0.327, 'declined': 0.673, 'undecided': 0.0} declined per seed: [0.833, 0.633, 0.567, 0.567, 0.767] stdev 0.108
+oracle {'consented': 1.0, 'declined': 0.0, 'undecided': 0.0} declined per seed: [0.0, 0.0, 0.0, 0.0, 0.0] stdev 0.0

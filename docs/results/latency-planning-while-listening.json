@@ -1,0 +1,21 @@
+{
+  "turns": 40,
+  "seed": 3,
+  "lead_s": 0.6,
+  "change_rate": 0.25,
+  "model": {
+    "fake_delays_s": {
+      "rollout": 0.25,
+      "main": 0.8
+    }
+  },
+  "planning_after_speech": {
+    "p50_ms": 1065.4,
+    "p90_ms": 1073.7
+  },
+  "planning_while_listening": {
+    "p50_ms": 456.7,
+    "p90_ms": 1069.0
+  },
+  "speculation_misses": 8
+}
