@@ -66,6 +66,8 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 .venv/bin/python -m backend.call_chanakya --help
 ```
 
+The demo runbook, including what callers hear when the network fails and how to record a backup video, is in [docs/PHONE_DEMO.md](docs/PHONE_DEMO.md).
+
 ### Missions and dashboards
 
 The mission, action and handoff APIs are off by default. Turn them on in `.env`:
