@@ -10,6 +10,7 @@ const WORRIES = {
   swipe_charges: "Swipe charges", rental_cost: "Rental cost", not_needed: "Not needed",
   customers_pay_cash: "Customers pay cash", device_reliability: "Device reliability", cash_flow: "Cash flow",
   settlement_delay: "Settlement delay",
+  per_swipe_charges: "Swipe charges", device_issue: "Device reliability", language_comfort: "Language comfort",
 };
 
 export const doorLabel = (door) => DOORS[door] || door;

@@ -3,11 +3,11 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** I1 demo scenarios on `feat/I1-demo-scenarios`: the brain now talks on real missions, so live calls fill the Live Call View. Track A, the `core:` LLM change and the Windows fixes are merged (#15, #16, #17).
+**Active Feature:** I1 demo scenarios on `feat/I1-demo-scenarios` (PR open): the brain now talks on real missions, so live calls fill the Live Call View. Track A (#15-#17) and B11 coach mode (#18) are merged.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B14, B15 (merged on main) | B11 coach UI (A11 is ready); B10, B12, B13 roadmap |
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11 (merged on main) | A9 (forest built, no measured gain), F0.3 (CI green on main not yet seen) |
 | Integration | both | I2 measured results in `docs/results/`; I1 demo scenarios (PR open) | I3, I4 |
 
@@ -21,6 +21,7 @@
 - [x] B7 verification and reminders, B8 Mission Control, B9 Live Call View, B14 mock product and onboarding pages
 - [x] B15 landing page (design-taste and landing-page skills)
 - [x] `scripts/demo/e2e_track_b.py`: the whole Track B flow against a live backend, 17 checks
+- [x] B11 coach mode UI: `/coach` replays the recorded telecaller call through the A11 engine (`/api/coach`, behind `COACH_ENABLED`), with the suggestion card, how to answer from the Concern Bank with sourced pages, the concern meter, and a hand-off card when the engine says to escalate; the telecaller can also type lines
 - [x] Track A (Durvish), on `feat/track-a-on-main`:
   - A1 Concern Bank (13 concerns in Hindi, Hinglish, Punjabi, English, resolved only by sourced knowledge nodes), trigger priors, 68 seeded personas split planning/evaluation
   - A2 Twin-A and Twin-B with a deterministic judge and walk-away calibration (untreated agent loses 64-67%)
@@ -46,7 +47,7 @@
 1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
 2. Phone and browser voice calls still run the brain without a mission; give `/ws/voice` an optional `mission_id` that uses `MissionCall`, so spoken calls appear in the Live Call View too
 3. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-4. Track B: B11 coach mode UI (A11 engine is ready); optional B10, B12, B13. Together: I1 demo scenarios, I3 phone demo or backup video, I4 README and deck numbers
+4. Track B: optional B10, B12, B13. Together: I3 phone demo or backup video, I4 README and deck numbers
 
 ## Blockers / Risks
 
@@ -58,6 +59,8 @@
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
+- [ ] The NRPA planner's suggestions vary with its seed (the mission id): on the recorded coach call only 13 of 42 seeds give the clean run, and after "Aur iska kiraya kitna hai? Baad mein koi extra charge toh nahi katega?" 10 of 42 suggest asking for consent and 11 suggest answering "just busy". Coach mode pins the recorded call's seed (`coach_recorded`) so replays are identical; typed calls are not pinned. Track A (A6) should look at why so few samples flip the choice
+- [ ] Coach sessions live in backend memory (at most 50) and are lost on restart; the hand-off card is copied as text, not sent to the hand-off queue, because a coached call has no mission in the ledger
 
 ## Decisions Made
 

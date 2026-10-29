@@ -5,12 +5,13 @@ import { useState } from "react";
 
 import "../../styles/app.css";
 import { plexSans } from "./fonts";
-import { CallIcon, MenuIcon, PeopleIcon, QueueIcon, ShopIcon } from "./icons";
+import { CallIcon, HeadsetIcon, MenuIcon, PeopleIcon, QueueIcon, ShopIcon } from "./icons";
 
 const NAV = [
   { href: "/missions", label: "Mission control", Icon: QueueIcon },
   { href: "/call/demo", label: "Live call (recorded)", Icon: CallIcon },
   { href: "/missions?tab=handoffs", label: "Hand-offs", Icon: PeopleIcon, countKey: "handoffs" },
+  { href: "/coach", label: "Coach mode", Icon: HeadsetIcon },
 ];
 
 /** Tinted L-frame (sidebar and top bar) around one white sheet. */

@@ -129,3 +129,9 @@ if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes"
     from chanakya.brain.calls_api import router as calls_router
 
     app.include_router(calls_router)
+
+# Chanakya coach mode API (task B11); mounted only when COACH_ENABLED is true.
+if os.getenv("COACH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}:
+    from chanakya.humans.coach_api import router as coach_router
+
+    app.include_router(coach_router)

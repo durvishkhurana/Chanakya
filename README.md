@@ -72,6 +72,7 @@ The mission, action and handoff APIs are off by default. Turn them on in `.env`:
 
 ```bash
 MISSIONS_ENABLED=true
+COACH_ENABLED=true   # coach mode: /api/coach and the /coach screen
 CALLING_HOURS=0-24   # only for testing at night; the default is 9-21 Asia/Kolkata
 ```
 
@@ -83,6 +84,7 @@ Then, with the backend and frontend running:
 | `/demo/soundbox` | Mock product page: "Request a callback" opens a mission |
 | `/missions` | Mission Control: queue, mission cards, concern meter, ledger, handoffs, demo clock |
 | `/call/demo` | A scripted recorded call, played back event by event |
+| `/coach` | Coach mode: Chanakya follows a human telecaller's call (a fictional recording, or lines you type) and suggests each next move |
 | `/call/<mission id>` | The live call view of a real mission |
 | `/demo/onboard/<session>` | Mock onboarding page behind the SMS link |
 

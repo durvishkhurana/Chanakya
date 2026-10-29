@@ -1,0 +1,19 @@
+/* Coach mode. Transcript turns, notes and playback controls come from the call view's call.css. */
+.cx .coach-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.cx .coach-grid .call-transcript { max-height: 520px; overflow-y: auto; padding-right: 4px; }
+.cx .turn.human_agent { background: var(--raised); }
+.cx .coach-chip { display: block; margin-top: 6px; font-size: 13px; color: #144f5e; font-weight: 500; }
+
+.cx .suggest-move { font-size: 20px; line-height: 28px; font-weight: 600; margin-bottom: 4px; text-wrap: balance; }
+.cx .how { margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-control); background: var(--raised); font-size: 14px; line-height: 20px; }
+.cx .how h3 { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+.cx .sources { list-style: none; display: grid; gap: 4px; margin-top: 10px; font-size: 13px; line-height: 18px; }
+
+.cx .say { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; margin-top: 20px; }
+.cx .say select, .cx .say input { height: 36px; padding: 0 10px; border: 1px solid var(--control); border-radius: var(--radius-control); background: var(--surface); color: var(--text); font: inherit; font-size: 14px; min-width: 0; }
+.cx .say input::placeholder { color: var(--faint); }
+.cx .say select:focus-visible, .cx .say input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cx .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 1180px) { .cx .coach-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .cx .say { grid-template-columns: minmax(0, 1fr); } }

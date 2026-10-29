@@ -3,8 +3,8 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Track A and Track B are merged on `main` (#15, #16, #17). I1 demo scenarios is done on `feat/I1-demo-scenarios` and waits for review; A9 and F0.3 are in progress
-- Branch / commit: `feat/I1-demo-scenarios`, cut from `main` at `844da64`
+- Current status: Track A and Track B are merged on `main` (#15-#17), and B11 coach mode (#18). I1 demo scenarios is done on `feat/I1-demo-scenarios` and waits for review; A9 and F0.3 are in progress
+- Branch / commit: `feat/I1-demo-scenarios`, cut from `main` at `844da64`, with `main` at `688086c` (B11) merged in
 
 ## Completed This Session
 
@@ -37,6 +37,7 @@
 
 ## Blockers / Risks
 
+- The NRPA planner's choice varies with its seed (Gurnoor, B11; see `progress.md`, Blockers); Track A (A6) to look at
 - Voice calls (`/ws/voice`) are not yet tied to a mission; only text calls and scenarios reach the Live Call View
 - The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - OpenRouter has no credits; Groq's free tier rate limits make full online evaluations impossible
