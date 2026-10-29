@@ -120,13 +120,7 @@ class CorePlanner:
 
     async def plan(self, context: core.PlanContext) -> core.PlanResult:
         result = await self.planner.plan(to_brain_state(context, self.bank))
-        mission_id = context.mission.id
-        return core.PlanResult(
-            chosen=to_core_move(result.move, mission_id),
-            candidates=[core.ScoredMove(move=to_core_move(c.move, mission_id), score=c.score, visits=c.visits)
-                        for c in result.candidates],
-            tree=result.tree, elapsed_ms=result.elapsed_ms, fallback=result.fallback,
-        )
+        return to_core_plan(result, context.mission.id)
 
     async def reconsider(self, context: core.PlanContext, call: core.ToolCall) -> bool:
         brain_call = brain.ToolCall(tool=call.tool, args=dict(call.args), mission_id=call.mission_id)
@@ -167,21 +161,30 @@ class CoreRealizer:
 def to_ledger_event(event: brain_events.Event) -> core.MissionEvent | None:
     """A brain event as a core ledger event for Track B's bus and dashboards (``None`` if it has no core kind)."""
     mission_id = event.mission_id or ""
+    # Payloads are exactly the core models, because the gate, hand-off cards and dashboards parse them strictly.
     if isinstance(event, brain_events.BeliefUpdated):
-        payload = {"belief": to_core_belief(event.belief).model_dump(mode="json"), "latency_ms": event.latency_ms,
-                   "evidence": event.evidence}
-        return core.MissionEvent(mission_id=mission_id, kind=core.EventKind.BELIEF_UPDATED, payload=payload)
+        return core.MissionEvent.of(mission_id, core.EventKind.BELIEF_UPDATED, to_core_belief(event.belief))
     if isinstance(event, brain_events.PlanComputed):
-        payload = {"chosen": to_core_move(event.plan.move, mission_id).model_dump(mode="json"),
-                   "tree": event.plan.tree, "elapsed_ms": event.plan.elapsed_ms, "fallback": event.plan.fallback}
-        return core.MissionEvent(mission_id=mission_id, kind=core.EventKind.PLAN_COMPUTED, payload=payload)
+        return core.MissionEvent.of(mission_id, core.EventKind.PLAN_COMPUTED, to_core_plan(event.plan, mission_id))
     if isinstance(event, brain_events.TurnCompleted):
-        move = to_core_move(event.move, mission_id).model_dump(mode="json") if event.move else None
-        payload = {"speaker": event.turn.speaker, "text": event.turn.text, "move": move,
-                   "belief": to_core_belief(event.belief).model_dump(mode="json") if event.belief else None}
-        return core.MissionEvent(mission_id=mission_id, kind=core.EventKind.TURN_COMPLETED, payload=payload)
-    if isinstance(event, brain_events.ActionDecided):
-        decision = event.decision
-        payload = {"tool": decision.call.tool, "verdict": decision.verdict, "reason": decision.reason}
-        return core.MissionEvent(mission_id=mission_id, kind=core.EventKind.ACTION_DECISION, payload=payload)
+        return core.MissionEvent.of(mission_id, core.EventKind.TURN_COMPLETED, to_core_turn(event.turn, mission_id))
+    # Action decisions are written by the safety gate itself, so the brain's copy would be a duplicate.
     return None
+
+
+def to_core_turn(turn: brain.Turn, mission_id: str) -> core.Turn:
+    """Brain turn -> core turn; hesitation timing goes into ``cues``."""
+    speaker = {value: key for key, value in SPEAKERS.items()}[turn.speaker]
+    cues = {"pause_ms": float(turn.pause_before_ms)} if turn.pause_before_ms is not None else {}
+    return core.Turn(speaker=speaker, text=turn.text, language=turn.language, cues=cues, at=turn.at,
+                     move=to_core_move(turn.move, mission_id) if turn.move else None)
+
+
+def to_core_plan(plan: brain.PlanResult, mission_id: str) -> core.PlanResult:
+    """Brain plan -> core plan."""
+    return core.PlanResult(
+        chosen=to_core_move(plan.move, mission_id),
+        candidates=[core.ScoredMove(move=to_core_move(c.move, mission_id), score=c.score, visits=c.visits)
+                    for c in plan.candidates],
+        tree=plan.tree, elapsed_ms=plan.elapsed_ms, fallback=plan.fallback,
+    )
