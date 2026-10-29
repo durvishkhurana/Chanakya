@@ -4,7 +4,7 @@
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
 - Current status: Track B is merged on `main`. Track A (A1-A8, A10, A11) and the I2 results are complete on `feat/track-a-on-main`, ported onto main's `chanakya/core`; A9 and F0.3 are in progress
-- Branch / commit: `feat/track-a-on-main`, cut from `feat/core-llm-providers`, which is cut from `main` at `8659d21`
+- Branch / commit: `feat/track-a-on-main`, cut from `feat/core-llm-providers`, which is cut from `main` at `007f2a1` (after PR #14)
 
 ## Completed This Session
 
@@ -22,6 +22,7 @@
 | Frontend | `npm test`, `npm run lint`, `npm run build` | 19 pass, lint clean, build compiled | build needs network for Google Fonts |
 | Evaluation | `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7` | chanakya 0.97, actions_only 0.99, no_belief 0.54, reactive 0.00; 0 violations | identical before and after the port |
 | Safety | `python -m chanakya.eval.safety --mode offline` and `--mode online` | 0 violations each | online used the Groq realizer |
+| Track B end to end | `scripts/demo/e2e_track_b.py` against a live backend | 17/17 (Gurnoor, PR #14) | callback, link, mock onboarding, DONE |
 | Live | voice WebSocket with Sarvam speech, `PLANNER_ENABLED` on and off | Hindi call transcribed, disclosed, answered from sources | done before the port; the port was re-checked with live Groq text turns |
 
 ## Files Changed
