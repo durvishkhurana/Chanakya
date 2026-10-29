@@ -261,6 +261,9 @@ uuid-utils==0.17.1
     # via
     #   langchain-core
     #   langsmith
+tzdata==2026.6 ; sys_platform == "win32"
+    # via
+    #   -r requirements.txt
 uvicorn==0.54.0
     # via
     #   -r requirements.txt

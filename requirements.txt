@@ -12,3 +12,5 @@ python-multipart
 uvicorn[standard]
 sarvamai
 twilio>=9,<10
+# Windows has no system time-zone database; zoneinfo needs it for Asia/Kolkata.
+tzdata; sys_platform == "win32"
