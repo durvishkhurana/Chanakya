@@ -55,9 +55,9 @@
       "dependencies": [
         "F0.1"
       ],
-      "status": "in-progress",
+      "status": "done",
       "done_when": "CI runs ./init.sh on every PR and is green on main.",
-      "evidence": "2026-10-29: .github/workflows/ci.yml runs FULL=1 ./init.sh on Ubuntu (Python 3.12, Node 20) for every push and pull request. Locally FULL=1 ./init.sh passed on Windows with Python 3.12.13: agent 94 OK, backend 94 OK, Ruff clean, frontend 9/9 pass, lint clean, build compiled. Not done yet: the first GitHub Actions run is not visible from this machine (private repo, no gh CLI); mark done once CI is green on main. Carried onto main in feat/track-a-on-main.",
+      "evidence": "GitHub Actions CI (.github/workflows/ci.yml, FULL=1 ./init.sh) completed successfully on main for the merges of #16 (run 23, 460273c), #17 (run 25, 844da64) and #18 (run 28, 688086c), checked on the Actions page 2026-10-29.",
       "notes": "Optional for the hackathon; roadmap if time is short."
     },
     {
@@ -559,10 +559,10 @@
         "B9",
         "B14"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Each scenario in docs/IDEA.md section 8 runs from one command and from the dashboard.",
-      "evidence": "",
-      "notes": "Partly started: scripts/demo/e2e_track_b.py drives the Track B flow end to end (17 checks). The voice and brain parts wait on A5 and A6."
+      "evidence": "FULL=1 SKIP_INSTALL=1 ./init.sh on feat/I1-demo-scenarios (with main at 688086c merged): agent 104 OK, backend 98 OK, pytest 283 passed, Ruff clean, frontend 22 passed, lint clean, build compiled. python scripts/demo/scenarios.py: 4/4 scenarios passed (card_machine_sale DONE, callback_followup DONE after a WhatsApp reminder, soundbox_service technician booked with consent, distressed_handoff ESCALATED with an urgent hand-off card). Live backend (MISSIONS_ENABLED=true, Groq): the same four outcomes from POST /api/calls/scenarios/<name> and from the Mission Control 'Run scenario' control; a typed call on /call/<id> filled the transcript, belief, plan and safety panels. Tests: chanakya/brain/tests/test_scenarios.py. Voice: WebSocket /api/calls/<id>/voice with the real keys answered voice_ready and started the mission call (checked with a scripted client; a spoken turn with a microphone not yet tried).",
+      "notes": "Phone calls (Twilio) are not tied to missions yet. scripts/demo/e2e_track_b.py still covers the Track B flow alone."
     },
     {
       "id": "I2",

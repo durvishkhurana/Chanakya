@@ -3,37 +3,47 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Track A and Track B are merged on `main` (Track A in PRs #15-#17). B11 coach mode UI is done on `feat/B11-coach-ui`
-- Branch / commit: `feat/B11-coach-ui`, cut from `main` at `844da64`
+- Current status: Track A and Track B are merged on `main` (#15-#17), and B11 coach mode (#18). I1 demo scenarios is done on `feat/I1-demo-scenarios` and waits for review; A9 and F0.3 are in progress
+- Branch / commit: `feat/I1-demo-scenarios`, cut from `main` at `844da64`, with `main` at `688086c` (B11) merged in
 
 ## Completed This Session
 
-- [x] Pulled Track A onto local main; `FULL=1 ./init.sh` passed (271 pytest)
-- [x] B11 coach mode UI: `chanakya/humans/coach_api.py` (`/api/coach`, behind `COACH_ENABLED`) runs the A11 `CoachEngine` turn by turn; `frontend/src/app/coach/` shows the call, the suggested next move with how to answer and its sourced pages, the concern meter and a hand-off card
+- [x] Adapter event payloads are exactly the core models (`BeliefState`, `PlanResult`, `Turn`), so the gate, hand-off cards and the Live Call View parse them
+- [x] `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission (ledger events, disclosure and consent records, Track B's `ActionGate`, hand-off on distress, close on a clear no)
+- [x] `chanakya/brain/scenarios.py`, `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command
+- [x] `chanakya/brain/calls_api.py` (`/api/calls`, mounted with the mission APIs): run a scenario, speak as the merchant; dashboard controls in Mission Control and the Live Call View
+- [x] `/api/calls/<id>/voice`: a spoken browser call on the mission (same voice protocol, `MissionCall` as the agent); "Talk by voice instead" on the Live Call View; `useVoiceCall` takes optional `path` and `modal`
+- [x] F0.3 closed: CI green on main for #16, #17, #18
+- [x] The onboarding-link consent question also asks about a reminder; the consent is recorded for `send_onboarding_link` and `send_summary` so the verifier's WhatsApp reminder passes the gate
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Everything | `SKIP_INSTALL=1 FULL=1 ./init.sh` | passed | agent 104 OK, backend 98 OK, pytest 277, Ruff clean, frontend 22 tests, lint, build |
-| Coach API | `python -m pytest chanakya/humans` | 11 passed | recorded fixture replay, pinned seed, distress hand-off, bad input |
-| Browser | `/coach` at 1440 and 375 px | verified | recorded call end to end; typed distress line drafted the hand-off card; no page overflow |
+| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 283 passed, Ruff clean, frontend 22 pass, lint clean, build compiled | build needs network for Google Fonts |
+| Scenarios | `python scripts/demo/scenarios.py` | 4/4 passed | offline templates, SimClock at 15:00 IST |
+| Live backend | `MISSIONS_ENABLED=true CALLING_HOURS=0-24` + `POST /api/calls/scenarios/<name>` | DONE, DONE, AWAITING_CONFIRMATION, ESCALATED | Groq realizer |
+| Dashboard | "Run scenario" in `/missions`, "Speak as the merchant" on `/call/<id>` | call opened and played live; typed turns filled every panel | browser check |
 
 ## Files Changed
 
-- `chanakya/humans/coach_api.py`, `chanakya/humans/tests/test_coach_api.py`, `backend/main.py` (appended mount)
-- `frontend/src/app/coach/`, `frontend/src/lib/coachView.mjs` and its test, `frontend/src/components/missions/` (nav item, icon), `frontend/src/lib/missionView.mjs` (three worry labels)
-- `README.md`, `feature_list.json`, `docs/TASKS.md`, `progress.md`, this file
+- `chanakya/brain/`: `core_adapters.py`, `realizer.py` (link consent and technician wording), new `mission_call.py`, `scenarios.py`, `calls_api.py`, tests in `tests/test_core_adapters.py`, `tests/test_scenarios.py`
+- `scripts/demo/scenarios.py`
+- Shared: `backend/main.py` (appended `calls_router` mount), `frontend/src/app/missions/page.js`, `frontend/src/app/call/[missionId]/page.js` (Track B pages; tell Gurnoor)
+- Docs: `README.md`, `docs/TASKS.md` (I1 ticked), `feature_list.json`, `progress.md`, this file
 
 ## Decisions Made
 
-- The recorded call pins the planner seed (mission id `coach_recorded`) so every replay shows the same suggestions; typed calls use a random id
-- The hand-off card is copied as text; coached calls are not ledger missions, so nothing is sent to the hand-off queue
+- Scenario merchants are scripted but react to Chanakya's actual moves (worry when asked, explicit yes only to a consent question), so the real planner drives each call
+- `POST /api/calls/scenarios/<name>` refuses (409) when the merchant already has a mission past SCHEDULED, so a scenario never takes over a call in progress
 
 ## Blockers / Risks
 
-- The NRPA planner's choice varies a lot with its seed on the recorded call (see `progress.md`, Blockers); this is Track A (A6)
+- The NRPA planner's choice varies with its seed (Gurnoor, B11; see `progress.md`, Blockers); Track A (A6) to look at
+- The mission voice route was checked up to `voice_ready`; a real spoken call with a microphone is still to try. Phone calls are not tied to missions
+- The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - OpenRouter has no credits; Groq's free tier rate limits make full online evaluations impossible
+- `gh` cannot be installed on this machine (downloads reset); PRs are opened in the browser
 
 ## Next Session Startup
 
@@ -44,4 +54,4 @@
 
 ## Recommended Next Step
 
-- Write the brain's `turn_completed`, `belief_updated` and `plan_computed` events into the ledger during live calls so the Live Call View shows real calls, and align the concern ids between intake and the Concern Bank
+- After the I1 review: try "Talk by voice instead" on a mission with a microphone; look at the NRPA seed sensitivity Gurnoor found (A6); then I3 phone demo hardening

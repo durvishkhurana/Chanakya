@@ -50,7 +50,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - `fakes.py`: in-memory fakes for every interface, used by tests of both tracks.
 - **Done when:** schemas round-trip to JSON, fakes satisfy the protocols, tests pass.
 
-### [ ] F0.3 Continuous integration
+### [x] F0.3 Continuous integration
 - **Branch:** `feat/F0.3-ci`
 - **Owner:** Member A (after F0.1)
 - **Owns:** `.github/workflows/`
@@ -287,7 +287,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ## Phase 4: Integration and demo (together, one branch at a time)
 
-#### [ ] I1 End-to-end demo scenarios
+#### [x] I1 End-to-end demo scenarios
 - **Branch:** `feat/I1-demo-scenarios`
 - **Build:** seeded scripts for the demo storyline in IDEA section 8: offline Soundbox service mission, card-machine sale with concern resolution and WhatsApp link, follow-up to DONE, distressed-merchant hand-off.
 - **Done when:** each scenario runs from one command and from the dashboard.
