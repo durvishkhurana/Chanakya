@@ -558,10 +558,10 @@
         "B9",
         "B14"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Each scenario in docs/IDEA.md section 8 runs from one command and from the dashboard.",
-      "evidence": "",
-      "notes": "Partly started: scripts/demo/e2e_track_b.py drives the Track B flow end to end (17 checks). The voice and brain parts wait on A5 and A6."
+      "evidence": "FULL=1 SKIP_INSTALL=1 ./init.sh on feat/I1-demo-scenarios: agent 104 OK, backend 98 OK, pytest 275 passed, Ruff clean, frontend 19 passed, lint clean, build compiled. python scripts/demo/scenarios.py: 4/4 scenarios passed (card_machine_sale DONE, callback_followup DONE after a WhatsApp reminder, soundbox_service technician booked with consent, distressed_handoff ESCALATED with an urgent hand-off card). Live backend (MISSIONS_ENABLED=true, Groq): the same four outcomes from POST /api/calls/scenarios/<name> and from the Mission Control 'Run scenario' control; a typed call on /call/<id> filled the transcript, belief, plan and safety panels. Tests: chanakya/brain/tests/test_scenarios.py.",
+      "notes": "Voice calls (/ws/voice) are not yet tied to a mission; text calls and scenarios are. scripts/demo/e2e_track_b.py still covers the Track B flow alone."
     },
     {
       "id": "I2",

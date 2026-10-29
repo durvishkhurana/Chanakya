@@ -3,13 +3,13 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** Track A is complete on `feat/track-a-on-main` (ported onto main's core) and waits for Gurnoor's review together with a small `core:` change and the Windows fixes.
+**Active Feature:** I1 demo scenarios on `feat/I1-demo-scenarios`: the brain now talks on real missions, so live calls fill the Live Call View. Track A, the `core:` LLM change and the Windows fixes are merged (#15, #16, #17).
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B14, B15 (merged on main) | B11 coach UI (A11 is ready); B10, B12, B13 roadmap |
-| A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11 (on `feat/track-a-on-main`) | A9 (forest built, no measured gain), F0.3 (CI green on main not yet seen) |
-| Integration | both | I2 measured results in `docs/results/` | I1, I3, I4 |
+| A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11 (merged on main) | A9 (forest built, no measured gain), F0.3 (CI green on main not yet seen) |
+| Integration | both | I2 measured results in `docs/results/`; I1 demo scenarios (PR open) | I3, I4 |
 
 ## Status
 
@@ -30,6 +30,10 @@
   - A7 planning while listening behind `PLANNING_WHILE_LISTENING` (p50 1065 -> 457 ms with fake delays; off by default)
   - A8 evaluation harness; A10 safety suite (zero violations offline and online); A11 coach engine
   - I2 measured results in `docs/results/README.md`
+- [x] I1 demo scenarios (Durvish), on `feat/I1-demo-scenarios`:
+  - `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission; every turn, belief and plan goes to the ledger in the core shapes, AI disclosure and explicit consent are recorded where the gate checks them, writes go through Track B's `ActionGate` and mock systems, distress opens an urgent hand-off, a clear no closes the mission
+  - `chanakya/brain/scenarios.py` and `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command, 4/4 passing
+  - `chanakya/brain/calls_api.py` (`/api/calls`, behind `MISSIONS_ENABLED`): run a scenario or speak as the merchant; Mission Control has a "Run scenario" control and the Live Call View a "Speak as the merchant" box
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
 
 ### What's In Progress
@@ -39,8 +43,8 @@
 
 ### What's Next
 
-1. Gurnoor: review and merge, in order, `fix/windows-dev-setup`, `feat/core-llm-providers` (core change), `feat/track-a-on-main`, `feat/brain-core-adapters`
-2. Connect the brain to the mission runtime: `feat/brain-core-adapters` exposes the planner, belief tracker and realizer through the core protocols and turns brain events into `turn_completed`, `belief_updated` and `plan_computed` ledger events; still to do is writing them through the ledger (or `POST /api/missions/{id}/events`) so the Live Call View renders live calls, checking the payload shapes it expects, and using the real ActionGate instead of the mock gate
+1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
+2. Phone and browser voice calls still run the brain without a mission; give `/ws/voice` an optional `mission_id` that uses `MissionCall`, so spoken calls appear in the Live Call View too
 3. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
 4. Track B: B11 coach mode UI (A11 engine is ready); optional B10, B12, B13. Together: I1 demo scenarios, I3 phone demo or backup video, I4 README and deck numbers
 
@@ -49,7 +53,8 @@
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
 - [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
-- [ ] Live calls show empty planner panels until the brain's events reach the ledger; `/call/demo` is a labelled scripted recording until then
+- [ ] Voice calls are not yet tied to a mission (text calls and scenarios are); `/call/demo` stays a labelled scripted recording
+- [ ] The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
@@ -63,7 +68,7 @@
 
 - **Pitch: AI merchant-success teammate that gets the job done.** The voice agent was built earlier; the Chanakya brain plus missions and actions are the new work
 - **Mission intake has three doors:** the merchant raises a hand, the data says so, a human hands it over. Each trigger seeds the belief tracker's starting worries
-- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write
+- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write. Chanakya's link question also asks about a reminder, so a yes to it is recorded for `send_onboarding_link` and `send_summary`; every other consent covers only its own tool
 - **A mission is DONE only on system confirmation.** Two reminders at most, inside calling hours; "stop" ends with one passive check; then back to the queue as SCHEDULED with a callback time
 - **Missions API is behind `MISSIONS_ENABLED`** and mounted with appended lines in `backend/main.py`; the frontend reaches it through a same-origin `/api` proxy, so the backend's CORS policy is unchanged
 - **Design:** app screens use the framed-sheet style (IBM Plex Sans, green-grey frame); the landing page uses the well-kept board (League Spartan and Figtree, greys and mint). Styles are scoped (`.cx`, `.lp`) so they cannot collide
@@ -79,6 +84,7 @@
 
 ## Evidence of Completion
 
+- [x] I1: `FULL=1 SKIP_INSTALL=1 ./init.sh` on `feat/I1-demo-scenarios` → agent 104 OK, backend 98 OK, pytest 275 passed, Ruff clean, frontend 19 passed, lint clean, build compiled; `python scripts/demo/scenarios.py` → 4/4 scenarios passed; live backend with Groq: all four scenarios reached DONE, DONE, AWAITING_CONFIRMATION, ESCALATED from the dashboard and the API, and a typed call updated every Live Call View panel
 - [x] Tests pass: `SKIP_INSTALL=1 FULL=1 ./init.sh` on `main` at 8659d21 → agent 94 OK, backend 94 OK, pytest 129 passed, Ruff clean, frontend 19 passed, lint clean, build compiled
 - [x] End to end: `scripts/demo/e2e_track_b.py` against a live backend → 17/17 checks, 0 server errors
 - [x] Manual verification in a browser: callback → mission card → link sent through the gate → mock onboarding → DONE verified; Mission Control and the Live Call View update live; design inspector 0 FAIL on all three screens

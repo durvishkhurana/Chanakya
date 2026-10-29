@@ -3,43 +3,44 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Track B is merged on `main`. Track A (A1-A8, A10, A11) and the I2 results are complete on `feat/track-a-on-main`, ported onto main's `chanakya/core`; A9 and F0.3 are in progress
-- Branch / commit: `feat/track-a-on-main`, cut from `feat/core-llm-providers`, which is cut from `main` at `007f2a1` (after PR #14)
+- Current status: Track A and Track B are merged on `main` (#15, #16, #17). I1 demo scenarios is done on `feat/I1-demo-scenarios` and waits for review; A9 and F0.3 are in progress
+- Branch / commit: `feat/I1-demo-scenarios`, cut from `main` at `844da64`
 
 ## Completed This Session
 
-- [x] `fix/windows-dev-setup`: `init.sh` works in Git Bash on Windows (real Python 3.12, `.venv/Scripts`), `uvloop` skipped and `tzdata` installed on Windows
-- [x] `feat/core-llm-providers` (core change): the core LLM client supports Groq, JSON mode, seeds and rate-limit retries; OpenRouter behaviour unchanged
-- [x] `feat/track-a-on-main`: A1, A2, A3, A4, A5, A6, A7, A8, A10, A11, I2, CI workflow (F0.3), Groq for the voice agent
+- [x] Adapter event payloads are exactly the core models (`BeliefState`, `PlanResult`, `Turn`), so the gate, hand-off cards and the Live Call View parse them
+- [x] `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission (ledger events, disclosure and consent records, Track B's `ActionGate`, hand-off on distress, close on a clear no)
+- [x] `chanakya/brain/scenarios.py`, `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command
+- [x] `chanakya/brain/calls_api.py` (`/api/calls`, mounted with the mission APIs): run a scenario, speak as the merchant; dashboard controls in Mission Control and the Live Call View
+- [x] The onboarding-link consent question also asks about a reminder; the consent is recorded for `send_onboarding_link` and `send_summary` so the verifier's WhatsApp reminder passes the gate
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Python unit tests | `./init.sh` steps | agent and backend suites OK | inherited suites plus BrainAgent, provider and speculation tests |
-| pytest | `python -m pytest` | 265 passed | Track A and Track B together |
-| Lint | `python -m ruff check .` | All checks passed | |
-| Frontend | `npm test`, `npm run lint`, `npm run build` | 19 pass, lint clean, build compiled | build needs network for Google Fonts |
-| Evaluation | `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7` | chanakya 0.97, actions_only 0.99, no_belief 0.54, reactive 0.00; 0 violations | identical before and after the port |
-| Safety | `python -m chanakya.eval.safety --mode offline` and `--mode online` | 0 violations each | online used the Groq realizer |
-| Track B end to end | `scripts/demo/e2e_track_b.py` against a live backend | 17/17 (Gurnoor, PR #14) | callback, link, mock onboarding, DONE |
-| Live | voice WebSocket with Sarvam speech, `PLANNER_ENABLED` on and off | Hindi call transcribed, disclosed, answered from sources | done before the port; the port was re-checked with live Groq text turns |
+| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 275 passed, Ruff clean, frontend 19 pass, lint clean, build compiled | build needs network for Google Fonts |
+| Scenarios | `python scripts/demo/scenarios.py` | 4/4 passed | offline templates, SimClock at 15:00 IST |
+| Live backend | `MISSIONS_ENABLED=true CALLING_HOURS=0-24` + `POST /api/calls/scenarios/<name>` | DONE, DONE, AWAITING_CONFIRMATION, ESCALATED | Groq realizer |
+| Dashboard | "Run scenario" in `/missions`, "Speak as the merchant" on `/call/<id>` | call opened and played live; typed turns filled every panel | browser check |
 
 ## Files Changed
 
-- Track A packages: `chanakya/brain/` (including `contracts/`, `forest/`), `chanakya/sim/`, `chanakya/eval/`, `chanakya/humans/coach_engine.py`
-- Data: `data/concerns/`, `data/personas/`, `data/transcripts/`, `data/forest/`; results in `docs/results/`
-- Voice: `agent/brain_agent.py`, `agent/models.py`, `agent/graph.py`, `agent/normal_llm.py`, `agent/languages.py`, `backend/main.py`, `backend/voice_session.py`
-- Shared: `chanakya/core/config.py`, `chanakya/core/llm.py` (core change), `init.sh`, `requirements*.txt`, `.env.example`, `README.md`, `.github/workflows/ci.yml`
+- `chanakya/brain/`: `core_adapters.py`, `realizer.py` (link consent and technician wording), new `mission_call.py`, `scenarios.py`, `calls_api.py`, tests in `tests/test_core_adapters.py`, `tests/test_scenarios.py`
+- `scripts/demo/scenarios.py`
+- Shared: `backend/main.py` (appended `calls_router` mount), `frontend/src/app/missions/page.js`, `frontend/src/app/call/[missionId]/page.js` (Track B pages; tell Gurnoor)
+- Docs: `README.md`, `docs/TASKS.md` (I1 ticked), `feature_list.json`, `progress.md`, this file
 
 ## Decisions Made
 
-- See "Decisions Made" in `progress.md`: the port onto main's core, the twin recalibration, the reverted repeated-objection change, planning while listening off by default
+- Scenario merchants are scripted but react to Chanakya's actual moves (worry when asked, explicit yes only to a consent question), so the real planner drives each call
+- `POST /api/calls/scenarios/<name>` refuses (409) when the merchant already has a mission past SCHEDULED, so a scenario never takes over a call in progress
 
 ## Blockers / Risks
 
+- Voice calls (`/ws/voice`) are not yet tied to a mission; only text calls and scenarios reach the Live Call View
+- The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - OpenRouter has no credits; Groq's free tier rate limits make full online evaluations impossible
-- The old stacked Track A branches are superseded; merge only `fix/windows-dev-setup`, `feat/core-llm-providers`, `feat/track-a-on-main`
+- `gh` cannot be installed on this machine (downloads reset); PRs are opened in the browser
 
 ## Next Session Startup
 
@@ -50,4 +51,4 @@
 
 ## Recommended Next Step
 
-- Merge the three branches above after review, then connect the brain to the mission runtime through adapters for the core `Planner`, `BeliefTracker` and `Realizer` protocols and the real `ActionGate`
+- After the I1 review: give `/ws/voice` an optional `mission_id` that runs through `MissionCall`, so spoken calls show live in the Live Call View; then I3 phone demo hardening
