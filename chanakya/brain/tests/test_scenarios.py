@@ -84,3 +84,26 @@ def test_speaking_as_the_merchant_drives_a_live_call_on_the_mission(client, runt
     assert [t.payload["speaker"] for t in turns] == ["merchant", "agent"]
     assert client.post("/api/calls/missing/say", json={"text": "hello"}).status_code == 404
     assert client.post(f"/api/calls/{mission_id}/say", json={"text": ""}).status_code == 422
+
+
+def test_a_spoken_call_streams_through_the_mission(runtime):
+    async def go():
+        mission = await open_mission(runtime, SCENARIOS["callback_followup"])
+        call = MissionCall(runtime, mission.id)
+        await call.start()
+        events = [e async for e in call.astream("Haan ji, boliye?", config={"configurable": {"thread_id": "x"}})]
+        return mission.id, events
+
+    mission_id, events = asyncio.run(go())
+    assert [e["type"] for e in events] == ["token", "done"] and "AI assistant" in events[1]["full_content"]
+    kinds = [e.kind for e in runtime.ledger.store.events(mission_id)]
+    assert kinds.count(core.EventKind.TURN_COMPLETED) == 2 and core.EventKind.AI_DISCLOSED in kinds
+
+
+def test_voice_on_a_mission_explains_what_is_missing_instead_of_failing(client, runtime, monkeypatch):
+    monkeypatch.delenv("SARVAM_API_KEY", raising=False)
+    mission_id = asyncio.run(open_mission(runtime, SCENARIOS["callback_followup"])).id
+    with client.websocket_connect(f"/api/calls/{mission_id}/voice") as socket:
+        message = socket.receive_json()
+    assert message["type"] == "voice_error" and "not configured" in message["message"]
+    assert mission_id not in calls_api.calls  # nothing was started

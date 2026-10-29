@@ -25,7 +25,8 @@ function float32ToPcm16(float32Array) {
  * 2. Backend check-ins after 60 seconds of actual call inactivity.
  * 3. Persistent, scrollable transcription history viewable throughout the call.
  */
-export default function useVoiceCall({ isOpen, onClose, retrievalProvider = "llm_batch" }) {
+/** `path` picks the voice endpoint (a mission call uses its own); `modal: false` leaves the page usable behind the call. */
+export default function useVoiceCall({ isOpen, onClose, retrievalProvider = "llm_batch", path = "/api/voice/ws", modal = true }) {
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   const [callState, setCallState] = useState("connecting");
@@ -191,7 +192,7 @@ const startAudioCapture = useCallback((stream, ws) => {
       }
       micStreamRef.current = stream;
       const ws = new WebSocket(API_URL.replace(/^http/, "ws") +
-        `/api/voice/ws?retrieval_provider=${encodeURIComponent(retrievalProvider)}`);
+        `${path}?retrieval_provider=${encodeURIComponent(retrievalProvider)}`);
       wsRef.current = ws;
       ws.binaryType = "arraybuffer";
       let ready = false;
@@ -355,7 +356,7 @@ const startAudioCapture = useCallback((stream, ws) => {
     } catch (error) {
       failCall(error.name === "NotAllowedError" ? "Microphone access is required to start a call." : error.message);
     }
-  }, [releaseCallResources, startAudioCapture, retrievalProvider]);
+  }, [releaseCallResources, startAudioCapture, retrievalProvider, path]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -370,7 +371,7 @@ const startAudioCapture = useCallback((stream, ws) => {
   }, [isOpen, startCallSession, releaseCallResources]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !modal) return;
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -390,7 +391,7 @@ const startAudioCapture = useCallback((stream, ws) => {
       document.removeEventListener("keydown", handleKey);
       previousFocus?.focus?.({ preventScroll: true });
     };
-  }, [isOpen, handleEndCall]);
+  }, [isOpen, modal, handleEndCall]);
 
   return { callState, connectionError, callMessages, duration: formatDuration(callDuration),
     messagesContainerRef, endButtonRef, callOverlayRef, handleEndCall };

@@ -5,8 +5,9 @@ the safety gate and the Live Call View see exactly what a phone call would produ
 """
 
 import asyncio
+import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel, Field
 
 from chanakya.brain.contracts.llm import default_llm
@@ -55,9 +56,8 @@ async def start_scenario(name: str) -> dict:
     return {"mission_id": mission.id}
 
 
-@router.post("/{mission_id}/say")
-async def say(mission_id: str, utterance: Utterance) -> dict:
-    """The merchant says something on this mission's call; returns Chanakya's reply (None once the call is over)."""
+async def _call(mission_id: str) -> MissionCall:
+    """The running call on this mission, started on first use."""
     runtime = get_runtime()
     mission = runtime.ledger.store.get(mission_id)
     if mission is None:
@@ -68,7 +68,39 @@ async def say(mission_id: str, utterance: Utterance) -> dict:
             raise HTTPException(status_code=409, detail=f"mission is {mission.state.value}")
         call = calls[mission_id] = MissionCall(runtime, mission_id, llm=_llm())
         await call.start()
+    return call
+
+
+@router.post("/{mission_id}/say")
+async def say(mission_id: str, utterance: Utterance) -> dict:
+    """The merchant says something on this mission's call; returns Chanakya's reply (None once the call is over)."""
+    call = await _call(mission_id)
     reply = await call.say(utterance.text, utterance.language)
     if not call.open:
         calls.pop(mission_id, None)
     return {"reply": reply, "state": call.mission.state.value}
+
+
+@router.websocket("/{mission_id}/voice")
+async def voice(websocket: WebSocket, mission_id: str) -> None:
+    """A spoken call on this mission: the browser voice protocol, with Chanakya answering through ``MissionCall``."""
+    problem = None
+    if not Settings.from_env().llm_api_key or not os.getenv("SARVAM_API_KEY", "").strip():
+        problem = "Voice is not configured yet. Add the provider keys to the server's .env file and restart the backend."
+    else:
+        try:
+            call = await _call(mission_id)
+        except HTTPException as error:
+            problem = error.detail
+    if problem:
+        await websocket.accept()
+        await websocket.send_json({"type": "voice_error", "message": problem})
+        await websocket.close(code=1013)
+        return
+    from backend.voice_pipeline import voice_pipeline  # the inherited voice stack loads speech clients on import
+
+    try:
+        await voice_pipeline(websocket, call, "llm_batch")
+    finally:
+        if not call.open:
+            calls.pop(mission_id, None)

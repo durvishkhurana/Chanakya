@@ -148,6 +148,13 @@ class MissionCall:
         await self._after(self.state.moves[-1])
         return reply
 
+    async def astream(self, query: str, config=None, **kwargs):
+        """The voice agent interface (``agent.graph.Agent.astream``), so a spoken call can run on this mission."""
+        language = ((config or {}).get("configurable", {}).get("response_language")) or None
+        reply = await self.say(query, language) or ""
+        yield {"type": "token", "content": reply}
+        yield {"type": "done", "full_content": reply, "tool_calls": []}
+
     async def sync(self, state: brain.DialogueState) -> None:
         """Write disclosure and any new explicit consent to the ledger, where the safety gate looks for them."""
         if state.transcript.disclosed_ai and not self.disclosed:
