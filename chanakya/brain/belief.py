@@ -28,7 +28,10 @@ KEYWORDS: dict[str, tuple[str, ...]] = {
     "competitor_qr": ("already", "pehle se", "पहले से", "ਪਹਿਲਾਂ", "dusra", "doosre", "दूसरा", "other app", "another"),
     "settlement_delay": ("settlement", "bank mein", "बैंक में", "ਬੈਂਕ", "kab tak", "कब तक", "atak", "stuck"),
     "trust_in_caller": ("trust", "bharosa", "भरोसा", "ਭਰੋਸਾ", "fraud", "scam", "sach mein", "really from", "सच में"),
-    "just_busy": ("busy", "time nahi", "टाइम नहीं", "ਟਾਈਮ", "baad mein", "बाद में", "ਬਾਅਦ", "later", "customers hain"),
+    # "Later" alone is not a cue: "baad mein koi extra charge" is a charges worry, not a request to call back.
+    "just_busy": ("busy", "time nahi", "टाइम नहीं", "ਟਾਈਮ", "baad mein baat", "baad mein call", "baad mein phone",
+                  "बाद में बात", "बाद में कॉल", "बाद में फोन", "ਬਾਅਦ ਵਿੱਚ ਗੱਲ", "ਬਾਅਦ ਵਿੱਚ ਕਾਲ", "call later",
+                  "call me later", "talk later", "customers hain"),
     "device_issue": ("kharab", "खराब", "band ho", "बंद हो", "not working", "theek se", "ठीक से", "ਠੀਕ ਤਰ੍ਹਾਂ", "faulty"),
     "language_comfort": ("english", "अंग्रेज़ी", "ਅੰਗਰੇਜ਼ੀ", "samajh nahi", "समझ नहीं", "hindi mein", "my language"),
     "data_privacy": ("details", "jankari", "जानकारी", "ਜਾਣਕਾਰੀ", "document", "डॉक्यूमेंट", "privacy", "data"),
