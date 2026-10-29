@@ -22,8 +22,9 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel, Field
 
-from .languages import VOICE_LANGUAGES
+from .languages import VOICE_LANGUAGES, spoken_text
 from .models import OpenRouterChatOpenAI as ChatOpenAI
+from .models import provider_settings
 from .normal_llm import NormalLLMAgent
 from .prompts.prompts import (
     sales_answer_system_prompt,
@@ -56,7 +57,7 @@ class Agent:
     def __init__(
         self,
         name: str,
-        model: str = "openai/gpt-4.1-mini",
+        model: str | None = None,
         system_prompt: str | None = None,
         temperature: float = 0.5,
         retrieval_mode: str | None = None,
@@ -68,7 +69,12 @@ class Agent:
         answer_response_reserve_tokens: int | None = None,
     ):
         self.name = name
-        self.model = model
+        self.settings = provider_settings()
+        # Groq has no gpt-4.1-mini; use its configured main model unless a model was given.
+        self.model = model or (
+            "openai/gpt-4.1-mini" if self.settings.llm_provider == "openrouter"
+            else self.settings.models["main"]
+        )
         self.temperature = temperature
         self.summary_history_budget_chars = (
             summary_history_budget_chars
@@ -128,9 +134,10 @@ class Agent:
                 store=self.retriever.store, limits=self.retriever.limits, provider=other
             )
         self.llm = ChatOpenAI(
-            model=model,
-            api_key=os.getenv("OPENROUTER_API_KEY", ""),
-            base_url="https://openrouter.ai/api/v1",
+            model=self.model,
+            api_key=self.settings.llm_api_key,
+            base_url=self.settings.llm_base_url,
+            ls_provider_name=self.settings.llm_provider,
             temperature=temperature,
             streaming=True,
             stream_usage=True,
@@ -586,8 +593,8 @@ class Agent:
     def _model_config(self):
         return {
             "run_name": "llm_answer" if self.retrieval_mode != "llm" else "llm_agent",
-            "tags": ["openrouter"],
-            "metadata": {"ls_provider": "openrouter", "ls_model_name": self.model},
+            "tags": [self.settings.llm_provider],
+            "metadata": {"ls_provider": self.settings.llm_provider, "ls_model_name": self.model},
         }
 
     def _run_config(self, config):
@@ -620,7 +627,7 @@ class Agent:
         ):
             text = message_text(message.content)
             if text and not message.tool_call_chunks:
-                return {"type": "token", "content": text}
+                return {"type": "token", "content": spoken_text(text)}
         elif isinstance(message, ToolMessage):
             return {
                 "type": "tool_call",
