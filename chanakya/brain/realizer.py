@@ -5,6 +5,7 @@ Every LLM line is checked; anything that asks for sensitive data, invents money 
 the merchant is replaced by a deterministic template, which is also the offline realizer.
 """
 
+import asyncio
 import json
 import logging
 import re
@@ -228,10 +229,11 @@ class TemplateRealizer:
 class LLMRealizer:
     """Implements ``Realizer`` with the main model, the agent's sales rules and the move's sourced text."""
 
-    def __init__(self, llm: LLMClient, bank: ConcernBank | None = None, role="main"):
+    def __init__(self, llm: LLMClient, bank: ConcernBank | None = None, role="main", timeout_s: float | None = None):
         self.llm = llm
         self.bank = bank or default_bank()
         self.role = role
+        self.timeout_s = timeout_s
         self.templates = TemplateRealizer(self.bank)
         self.texts = knowledge_texts()
         self.last_fallback_reason = ""
@@ -286,9 +288,11 @@ class LLMRealizer:
             'Return JSON {"text": "<what Chanakya says>"}.'
         )
         try:
-            reply = await complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=500)
+            reply = await asyncio.wait_for(
+                complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=500),
+                self.timeout_s)
             text = spoken_text(str(reply.get("text", "")).strip())
-        except LLMError:
+        except (LLMError, TimeoutError):  # a slow provider on a live call gets the safe template, not silence
             text = ""
         problems = unsafe_reasons(text, move, state)
         if problems:

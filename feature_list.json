@@ -597,9 +597,9 @@
       "dependencies": [
         "A5"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "Twilio path tested with the allowlisted number, or a recorded backup video exists.",
-      "evidence": "",
+      "evidence": "Code hardening on feat/I3-phone-demo: live-call LLM bound VOICE_LLM_TIMEOUT_MS (default 4000) falls back to the template realizer and lexical evidence; tests chanakya/brain/tests/test_live_call_fallbacks.py; live Groq replies 1.3-1.5 s with no fallback; SKIP_INSTALL=1 ./init.sh: agent 104 OK, backend 98 OK, pytest 280 passed, Ruff clean, frontend 22 passed. Runbook docs/PHONE_DEMO.md. Not done: a call to the allowlisted number or a recorded backup video (needs a person, a phone and an upgraded Twilio account).",
       "notes": "Trial accounts block Media Streams; SMS may still work."
     },
     {

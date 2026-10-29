@@ -5,6 +5,7 @@ voice session and phone transport can use either one unchanged.
 """
 
 import asyncio
+import os
 
 from chanakya.brain import moves as lib
 from chanakya.brain.belief import BayesianBeliefTracker, LexicalScorer, LLMScorer
@@ -42,6 +43,15 @@ def inbound_card(thread_id: str, language: str) -> MissionCard:
     )
 
 
+def llm_timeout_s() -> float | None:
+    """``VOICE_LLM_TIMEOUT_MS`` (default 4000) in seconds; 0 turns the bound off."""
+    try:
+        ms = float(os.getenv("VOICE_LLM_TIMEOUT_MS", "4000"))
+    except ValueError:
+        ms = 4000.0
+    return ms / 1000 if ms > 0 else None
+
+
 class BrainAgent:
     """Plans every reply as a typed move. Writes go through ``gate`` only with consent; without a gate they are blocked."""
 
@@ -50,8 +60,12 @@ class BrainAgent:
         self.bank = default_bank()
         self.llm = llm
         self.planner = planner or RuleBasedPlanner(self.bank)
-        self.realizer = realizer or (LLMRealizer(llm, self.bank) if llm is not None else TemplateRealizer(self.bank))
-        self.scorer = scorer or (LLMScorer(llm, self.bank) if llm is not None else LexicalScorer(self.bank))
+        # On a live call a stalled provider must not mean silence: past this bound, templates and lexical evidence.
+        bound = llm_timeout_s()
+        self.realizer = realizer or (LLMRealizer(llm, self.bank, timeout_s=bound) if llm is not None
+                                     else TemplateRealizer(self.bank))
+        self.scorer = scorer or (LLMScorer(llm, self.bank, timeout_s=bound) if llm is not None
+                                 else LexicalScorer(self.bank))
         self.bus = bus
         self.gate = gate
         self.actions_enabled = actions_enabled

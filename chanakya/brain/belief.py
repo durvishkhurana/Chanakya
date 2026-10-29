@@ -5,6 +5,7 @@ utterance supports each concern (an LLM scorer, or a deterministic lexical score
 sharpened by hesitation cues. Decay pulls stale beliefs slightly back toward uniform each turn.
 """
 
+import asyncio
 import logging
 import re
 import time
@@ -83,10 +84,11 @@ class LexicalScorer:
 class LLMScorer:
     """Asks a fast model how strongly the utterance supports each concern; falls back to lexical."""
 
-    def __init__(self, llm: LLMClient, bank: ConcernBank, role="rollout"):
+    def __init__(self, llm: LLMClient, bank: ConcernBank, role="rollout", timeout_s: float | None = None):
         self.llm = llm
         self.bank = bank
         self.role = role
+        self.timeout_s = timeout_s
         self.fallback = LexicalScorer(bank)
 
     async def score(self, text: str, history: list[Turn]) -> dict[str, float]:
@@ -100,10 +102,11 @@ class LLMScorer:
             "suggests the merchant holds that worry. Use 0 when there is no sign of it."
         )
         try:
-            reply = await complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=400)
+            reply = await asyncio.wait_for(
+                complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=400), self.timeout_s)
             raw = reply.get("scores", {})
             return {cid: max(0.0, min(1.0, float(raw.get(cid, 0.0)))) for cid in self.bank.ids}
-        except (LLMError, TypeError, ValueError, AttributeError):
+        except (LLMError, TimeoutError, TypeError, ValueError, AttributeError):
             return await self.fallback.score(text, history)
 
 
