@@ -12,13 +12,15 @@
 - [x] `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission (ledger events, disclosure and consent records, Track B's `ActionGate`, hand-off on distress, close on a clear no)
 - [x] `chanakya/brain/scenarios.py`, `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command
 - [x] `chanakya/brain/calls_api.py` (`/api/calls`, mounted with the mission APIs): run a scenario, speak as the merchant; dashboard controls in Mission Control and the Live Call View
+- [x] `/api/calls/<id>/voice`: a spoken browser call on the mission (same voice protocol, `MissionCall` as the agent); "Talk by voice instead" on the Live Call View; `useVoiceCall` takes optional `path` and `modal`
+- [x] F0.3 closed: CI green on main for #16, #17, #18
 - [x] The onboarding-link consent question also asks about a reminder; the consent is recorded for `send_onboarding_link` and `send_summary` so the verifier's WhatsApp reminder passes the gate
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 281 passed, Ruff clean, frontend 22 pass, lint clean, build compiled | build needs network for Google Fonts |
+| Full check | `FULL=1 SKIP_INSTALL=1 ./init.sh` | agent 104 OK, backend 98 OK, pytest 283 passed, Ruff clean, frontend 22 pass, lint clean, build compiled | build needs network for Google Fonts |
 | Scenarios | `python scripts/demo/scenarios.py` | 4/4 passed | offline templates, SimClock at 15:00 IST |
 | Live backend | `MISSIONS_ENABLED=true CALLING_HOURS=0-24` + `POST /api/calls/scenarios/<name>` | DONE, DONE, AWAITING_CONFIRMATION, ESCALATED | Groq realizer |
 | Dashboard | "Run scenario" in `/missions`, "Speak as the merchant" on `/call/<id>` | call opened and played live; typed turns filled every panel | browser check |
@@ -38,7 +40,7 @@
 ## Blockers / Risks
 
 - The NRPA planner's choice varies with its seed (Gurnoor, B11; see `progress.md`, Blockers); Track A (A6) to look at
-- Voice calls (`/ws/voice`) are not yet tied to a mission; only text calls and scenarios reach the Live Call View
+- The mission voice route was checked up to `voice_ready`; a real spoken call with a microphone is still to try. Phone calls are not tied to missions
 - The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - OpenRouter has no credits; Groq's free tier rate limits make full online evaluations impossible
 - `gh` cannot be installed on this machine (downloads reset); PRs are opened in the browser
@@ -52,4 +54,4 @@
 
 ## Recommended Next Step
 
-- After the I1 review: give `/ws/voice` an optional `mission_id` that runs through `MissionCall`, so spoken calls show live in the Live Call View; then I3 phone demo hardening
+- After the I1 review: try "Talk by voice instead" on a mission with a microphone; look at the NRPA seed sensitivity Gurnoor found (A6); then I3 phone demo hardening

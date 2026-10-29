@@ -50,7 +50,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
   - `fakes.py`: in-memory fakes for every interface, used by tests of both tracks.
 - **Done when:** schemas round-trip to JSON, fakes satisfy the protocols, tests pass.
 
-### [ ] F0.3 Continuous integration
+### [x] F0.3 Continuous integration
 - **Branch:** `feat/F0.3-ci`
 - **Owner:** Member A (after F0.1)
 - **Owns:** `.github/workflows/`
