@@ -18,7 +18,16 @@ This is the pilot. It contains the existing multilingual voice sales agent that 
 - LangGraph agent with multi-path PageIndex retrieval over `data/knowledge/`
 - Browser voice client (Next.js) and Twilio Media Streams transport
 
-The Chanakya brain (belief tracker, Strategy Forest, look-ahead planner), missions, actions, merchant twins and evaluation are being added task by task.
+On top of it, the teammate layer is in place (Track B):
+
+- Mission intake through three doors, mission cards with starting worries, and a priority queue
+- A mission ledger and state machine; every step is an event, and any mission can be replayed
+- Typed tools on labelled mock business systems, behind a safety gate (AI disclosure, explicit consent, calling hours, do not call, no sensitive data, audit trail)
+- Verification and reminders: a mission is done only when a system confirms it
+- Handoff cards and a human queue
+- Mission Control, the Live Call View, a mock product page, a mock onboarding page and the landing page
+
+The Chanakya brain (belief tracker, Strategy Forest, look-ahead planner), merchant twins and evaluation are Track A and are being added task by task. See `progress.md`.
 
 ## Run locally
 
@@ -53,6 +62,32 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 
 ```bash
 .venv/bin/python -m backend.call_chanakya --help
+```
+
+### Missions and dashboards
+
+The mission, action and handoff APIs are off by default. Turn them on in `.env`:
+
+```bash
+MISSIONS_ENABLED=true
+CALLING_HOURS=0-24   # only for testing at night; the default is 9-21 Asia/Kolkata
+```
+
+Then, with the backend and frontend running:
+
+| Page | What it shows |
+|---|---|
+| `/` | Landing page with the live "try a merchant's line" demo |
+| `/demo/soundbox` | Mock product page: "Request a callback" opens a mission |
+| `/missions` | Mission Control: queue, mission cards, concern meter, ledger, handoffs, demo clock |
+| `/call/demo` | A scripted recorded call, played back event by event |
+| `/call/<mission id>` | The live call view of a real mission |
+| `/demo/onboard/<session>` | Mock onboarding page behind the SMS link |
+
+State lives in `.state/` (ignored by git); delete it to start fresh. An end-to-end check of the whole flow against a running backend:
+
+```bash
+.venv/bin/python scripts/demo/e2e_track_b.py http://127.0.0.1:8000
 ```
 
 ## Verify
