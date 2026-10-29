@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "description": "Starting worries for each mission trigger (docs/IDEA.md 3.2). These are modelling assumptions for the belief tracker, not product facts. Rows marked from_idea copy the table in docs/IDEA.md; the rest are design defaults to be recalibrated from completed missions.",
+    "reviewed_at": "2026-10-29"
+  },
+  "priors": {
+    "callback_request": {"source": "from_idea", "worries": {"hidden_charges": 0.5, "competitor_qr": 0.3, "just_busy": 0.2}},
+    "onboarding_stuck": {"source": "from_idea", "worries": {"setup_hassle": 0.45, "data_privacy": 0.3, "trust_in_caller": 0.25}},
+    "product_question": {"source": "design_default", "worries": {"hidden_charges": 0.4, "not_needed": 0.3, "trust_in_caller": 0.3}},
+    "card_machine_price_question": {"source": "from_idea", "worries": {"per_swipe_charges": 0.55, "rental_cost": 0.3, "setup_hassle": 0.15}},
+    "upi_rising_no_soundbox": {"source": "from_idea", "worries": {"competitor_qr": 0.5, "hidden_charges": 0.3, "not_needed": 0.2}},
+    "card_demand_no_pos": {"source": "design_default", "worries": {"per_swipe_charges": 0.4, "rental_cost": 0.3, "not_needed": 0.3}},
+    "soundbox_unused": {"source": "from_idea", "worries": {"rental_cost": 0.4, "customers_pay_cash": 0.35, "device_issue": 0.25}},
+    "rental_missed": {"source": "design_default", "worries": {"rental_cost": 0.5, "customers_pay_cash": 0.25, "device_issue": 0.25}},
+    "lead_list": {"source": "design_default", "worries": {"not_needed": 0.35, "competitor_qr": 0.35, "just_busy": 0.3}},
+    "field_note": {"source": "design_default", "worries": {"just_busy": 0.5, "setup_hassle": 0.25, "hidden_charges": 0.25}},
+    "dropped_call": {"source": "design_default", "worries": {"just_busy": 0.4, "trust_in_caller": 0.3, "hidden_charges": 0.3}}
+  }
+}
