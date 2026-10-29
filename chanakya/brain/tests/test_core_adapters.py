@@ -96,16 +96,25 @@ def test_belief_updates_and_realization_through_core_types():
     assert "card" in text.lower() and "Rs" not in text
 
 
-def test_brain_events_become_core_ledger_events():
+def test_brain_events_become_ledger_events_the_gate_handoffs_and_dashboard_can_parse():
     belief = brain.BeliefState(probabilities={"rental_cost": 1.0})
     move = brain.Move(type=brain.MoveType.TAKE_ACTION, tool="send_onboarding_link")
+    turn = brain.Turn(speaker="agent", text="Ho gaya.", move=move, pause_before_ms=300)
     events = [
         brain_events.BeliefUpdated(mission_id="m_core", belief=belief, latency_ms=2.0),
-        brain_events.PlanComputed(mission_id="m_core", plan=brain.PlanResult(move=move)),
-        brain_events.TurnCompleted(mission_id="m_core", turn=brain.Turn(speaker="agent", text="Ho gaya."), move=move),
+        brain_events.PlanComputed(mission_id="m_core", plan=brain.PlanResult(
+            move=move, candidates=[brain.ScoredMove(move=move, score=0.7, visits=4)])),
+        brain_events.TurnCompleted(mission_id="m_core", turn=turn, move=move),
     ]
-    kinds = [to_ledger_event(e).kind for e in events]
-    assert kinds == [core.EventKind.BELIEF_UPDATED, core.EventKind.PLAN_COMPUTED, core.EventKind.TURN_COMPLETED]
-    assert to_ledger_event(events[1]).payload["chosen"]["tool_call"]["tool"] == "send_onboarding_link"
-    core_move = to_core_move(move, "m_core")
-    assert core_move.tool_call.mission_id == "m_core"
+    ledger = [to_ledger_event(e) for e in events]
+    assert [e.kind for e in ledger] == [core.EventKind.BELIEF_UPDATED, core.EventKind.PLAN_COMPUTED,
+                                        core.EventKind.TURN_COMPLETED]
+    # The exact parses Track B performs on these payloads.
+    assert core.BeliefState.model_validate(ledger[0].payload).probabilities == {"rental_cost": 1.0}
+    plan = core.PlanResult.model_validate(ledger[1].payload)
+    assert plan.chosen.tool_call.tool == "send_onboarding_link" and plan.candidates[0].score == 0.7
+    parsed = core.Turn.model_validate(ledger[2].payload)
+    assert parsed.speaker == core.Speaker.AGENT and parsed.cues == {"pause_ms": 300.0}
+    assert to_ledger_event(brain_events.ActionDecided(mission_id="m_core", decision=brain.ActionDecision(
+        call=brain.ToolCall(tool="x"), verdict="executed", reason="ok"))) is None
+    assert to_core_move(move, "m_core").tool_call.mission_id == "m_core"

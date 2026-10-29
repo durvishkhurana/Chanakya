@@ -5,6 +5,7 @@ utterance supports each concern (an LLM scorer, or a deterministic lexical score
 sharpened by hesitation cues. Decay pulls stale beliefs slightly back toward uniform each turn.
 """
 
+import asyncio
 import logging
 import re
 import time
@@ -28,7 +29,10 @@ KEYWORDS: dict[str, tuple[str, ...]] = {
     "competitor_qr": ("already", "pehle se", "पहले से", "ਪਹਿਲਾਂ", "dusra", "doosre", "दूसरा", "other app", "another"),
     "settlement_delay": ("settlement", "bank mein", "बैंक में", "ਬੈਂਕ", "kab tak", "कब तक", "atak", "stuck"),
     "trust_in_caller": ("trust", "bharosa", "भरोसा", "ਭਰੋਸਾ", "fraud", "scam", "sach mein", "really from", "सच में"),
-    "just_busy": ("busy", "time nahi", "टाइम नहीं", "ਟਾਈਮ", "baad mein", "बाद में", "ਬਾਅਦ", "later", "customers hain"),
+    # "Later" alone is not a cue: "baad mein koi extra charge" is a charges worry, not a request to call back.
+    "just_busy": ("busy", "time nahi", "टाइम नहीं", "ਟਾਈਮ", "baad mein baat", "baad mein call", "baad mein phone",
+                  "बाद में बात", "बाद में कॉल", "बाद में फोन", "ਬਾਅਦ ਵਿੱਚ ਗੱਲ", "ਬਾਅਦ ਵਿੱਚ ਕਾਲ", "call later",
+                  "call me later", "talk later", "customers hain"),
     "device_issue": ("kharab", "खराब", "band ho", "बंद हो", "not working", "theek se", "ठीक से", "ਠੀਕ ਤਰ੍ਹਾਂ", "faulty"),
     "language_comfort": ("english", "अंग्रेज़ी", "ਅੰਗਰੇਜ਼ੀ", "samajh nahi", "समझ नहीं", "hindi mein", "my language"),
     "data_privacy": ("details", "jankari", "जानकारी", "ਜਾਣਕਾਰੀ", "document", "डॉक्यूमेंट", "privacy", "data"),
@@ -80,10 +84,11 @@ class LexicalScorer:
 class LLMScorer:
     """Asks a fast model how strongly the utterance supports each concern; falls back to lexical."""
 
-    def __init__(self, llm: LLMClient, bank: ConcernBank, role="rollout"):
+    def __init__(self, llm: LLMClient, bank: ConcernBank, role="rollout", timeout_s: float | None = None):
         self.llm = llm
         self.bank = bank
         self.role = role
+        self.timeout_s = timeout_s
         self.fallback = LexicalScorer(bank)
 
     async def score(self, text: str, history: list[Turn]) -> dict[str, float]:
@@ -97,10 +102,11 @@ class LLMScorer:
             "suggests the merchant holds that worry. Use 0 when there is no sign of it."
         )
         try:
-            reply = await complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=400)
+            reply = await asyncio.wait_for(
+                complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=400), self.timeout_s)
             raw = reply.get("scores", {})
             return {cid: max(0.0, min(1.0, float(raw.get(cid, 0.0)))) for cid in self.bank.ids}
-        except (LLMError, TypeError, ValueError, AttributeError):
+        except (LLMError, TimeoutError, TypeError, ValueError, AttributeError):
             return await self.fallback.score(text, history)
 
 

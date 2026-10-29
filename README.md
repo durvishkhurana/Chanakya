@@ -80,6 +80,8 @@ Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a stream
 .venv/bin/python -m backend.call_chanakya --help
 ```
 
+The demo runbook, including what callers hear when the network fails and how to record a backup video, is in [docs/PHONE_DEMO.md](docs/PHONE_DEMO.md).
+
 ### Missions and dashboards
 
 The mission, action and handoff APIs are off by default. Turn them on in `.env`:
@@ -107,6 +109,15 @@ State lives in `.state/` (ignored by git); delete it to start fresh. An end-to-e
 ```bash
 .venv/bin/python scripts/demo/e2e_track_b.py http://127.0.0.1:8000
 ```
+
+The demo storyline (docs/IDEA.md section 8) as four scenarios, each a real call on a real mission: the brain talks, the safety gate and mock systems act, the verifier confirms. A scripted merchant reacts to Chanakya's actual moves.
+
+```bash
+.venv/bin/python scripts/demo/scenarios.py                     # all four, in-process on a fresh ledger, offline
+.venv/bin/python scripts/demo/scenarios.py distressed_handoff  # one scenario; add --live for the configured LLM
+```
+
+On a running backend, "Run scenario" in Mission Control plays one live and opens its call (`POST /api/calls/scenarios/<name>`), and the Live Call View has a "Speak as the merchant" box (`POST /api/calls/<mission id>/say`) and a "Talk by voice instead" button (WebSocket `/api/calls/<mission id>/voice`, the browser voice protocol with the call running on that mission; needs the LLM and Sarvam keys). Scenarios: `card_machine_sale`, `callback_followup` (fast-forwards the demo clock a day), `soundbox_service`, `distressed_handoff`.
 
 ### Feature flags
 

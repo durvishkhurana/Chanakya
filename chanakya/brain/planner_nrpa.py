@@ -59,7 +59,7 @@ def outcome(state: TwinState, turns: int) -> float:
 class NRPAPlanner:
     """Implements ``Planner``. Deterministic for a given seed and conversation."""
 
-    def __init__(self, bank: ConcernBank | None = None, samples: int = 6, level: int = 2, iterations: int = 4,
+    def __init__(self, bank: ConcernBank | None = None, samples: int = 12, level: int = 2, iterations: int = 4,
                  depth: int = 2, budget_ms: float = 300.0, alpha: float = 1.0, seed: int = 0,
                  evaluations: int = 8, forest=None):
         if not 1 <= level <= 2:
@@ -74,25 +74,34 @@ class NRPAPlanner:
 
     # ── simulation model ────────────────────────────────────────────────
 
+    def strata(self, rng: random.Random) -> list[float]:
+        """One uniform draw per sample, one in each of ``samples`` equal slices of [0, 1), in random order."""
+        values = [(i + rng.random()) / self.samples for i in range(self.samples)]
+        rng.shuffle(values)
+        return values
+
     def sample_merchants(self, state: DialogueState, rng: random.Random) -> list[TwinState]:
         """Merchants consistent with the belief: hidden worries drawn from it, conversation so far replayed."""
         open_concerns = lib.open_concerns(state)
         resolved = lib.resolved_concerns(state)
         agent_turns = sum(1 for t in state.transcript.turns if t.speaker == "agent")
         card = state.card
+        # Stratified draws (Latin hypercube): the few sampled merchants cover the belief evenly instead of by luck,
+        # so the chosen move does not swing with the seed when worries are close (a 3-way tie splits 2/2/2 of 6).
+        u_none, u_count, *u_picks = (self.strata(rng) for _ in range(4))
         merchants = []
         for index in range(self.samples):
             pool = [(cid, p) for cid, p in open_concerns if p > 0]
             hidden = []
             # With little belief mass left on open worries, the merchant may simply have none left.
             top_p = open_concerns[0][1] if open_concerns else 0.0
-            none_left = rng.random() < max(0.0, min(0.85, 1 - 2.5 * top_p))
-            count = 0 if none_left else (1 if rng.random() < 0.6 else 2)
-            for _ in range(count):
+            none_left = u_none[index] < max(0.0, min(0.85, 1 - 2.5 * top_p))
+            count = 0 if none_left else (1 if u_count[index] < 0.6 else 2)
+            for draw in range(count):
                 if not pool:
                     break
                 total = sum(p for _, p in pool)
-                pick, acc = rng.random() * total, 0.0
+                pick, acc = u_picks[draw][index] * total, 0.0
                 for i, (cid, p) in enumerate(pool):
                     acc += p
                     if acc >= pick:

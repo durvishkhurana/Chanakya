@@ -5,6 +5,7 @@ Every LLM line is checked; anything that asks for sensitive data, invents money 
 the merchant is replaced by a deterministic template, which is also the offline realizer.
 """
 
+import asyncio
 import json
 import logging
 import re
@@ -126,11 +127,12 @@ LINES = {
     "hinglish": {
         "greet": "Namaste, main Chanakya hoon, ek independent AI assistant jo Paytm ke business payment products mein madad karta hai. Kya do minute baat kar sakte hain?",
         "discover": "Aapke grahak abhi payment kaise karte hain, cash, QR ya card?",
-        "consent_send_onboarding_link": "Kya main aapko official onboarding link bhej doon? Aap saaf haan kahenge tabhi bhejunga.",
+        "consent_send_onboarding_link": "Kya main aapko official onboarding link bhej doon, aur onboarding adhoori rahe toh reminder bhi? Aap saaf haan kahenge tabhi bhejunga.",
         "consent_book_field_visit": "Kya main technician visit book kar doon? Aap saaf haan kahenge tabhi karunga.",
         "consent_send_summary": "Kya main is baat-cheet ka chhota summary bhej doon? Aap saaf haan kahenge tabhi bhejunga.",
         "consent_other": "Kya main yeh kar doon? Aap saaf haan kahenge tabhi karunga.",
         "done": "Ho gaya. Yeh demo ka mock system hai, isliye asli onboarding Paytm ke official app ya site par hi hogi.",
+        "done_book_field_visit": "Ho gaya, technician visit demo ke mock system mein book ho gaya hai.",
         "not_done": "Abhi main yeh khud nahi kar sakta. Aap Paytm for Business ke official app ya website par onboarding kar sakte hain.",
         "followup": "Koi baat nahi, main aapko baad mein call karunga. Aapke liye kaunsa time theek rahega?",
         "escalate": "Main aapko ek insaani saathi se jodne ka intezaam karta hoon, aapko baat dobara nahi batani padegi.",
@@ -140,11 +142,12 @@ LINES = {
     "english": {
         "greet": "Hello, I'm Chanakya, an independent AI assistant for Paytm business payment products. Do you have two minutes?",
         "discover": "How do your customers pay right now: cash, QR or card?",
-        "consent_send_onboarding_link": "Shall I send you the official onboarding link? I will only send it if you clearly say yes.",
+        "consent_send_onboarding_link": "Shall I send you the official onboarding link, and a reminder if onboarding stays unfinished? I will only send it if you clearly say yes.",
         "consent_book_field_visit": "Shall I book a technician visit? I will only book it if you clearly say yes.",
         "consent_send_summary": "Shall I send you a short summary of this call? I will only send it if you clearly say yes.",
         "consent_other": "Shall I go ahead? I will only do it if you clearly say yes.",
         "done": "Done. This demo uses mock systems, so real onboarding happens only in Paytm's official app or site.",
+        "done_book_field_visit": "Done, the technician visit is booked in the demo's mock system.",
         "not_done": "I can't do that myself right now. You can onboard in the official Paytm for Business app or website.",
         "followup": "No problem, I will call you back later. What time suits you?",
         "escalate": "I will connect you with a human colleague, and you won't have to repeat yourself.",
@@ -214,7 +217,7 @@ class TemplateRealizer:
             case MoveType.CONFIRM_CONSENT:
                 return lines.get(f"consent_{move.tool}", lines["consent_other"])
             case MoveType.TAKE_ACTION:
-                return lines["done"] if last_action_executed(state, move.tool) else lines["not_done"]
+                return lines.get(f"done_{move.tool}", lines["done"]) if last_action_executed(state, move.tool) else lines["not_done"]
             case MoveType.SCHEDULE_FOLLOWUP:
                 return lines["followup"]
             case MoveType.ESCALATE:
@@ -226,10 +229,11 @@ class TemplateRealizer:
 class LLMRealizer:
     """Implements ``Realizer`` with the main model, the agent's sales rules and the move's sourced text."""
 
-    def __init__(self, llm: LLMClient, bank: ConcernBank | None = None, role="main"):
+    def __init__(self, llm: LLMClient, bank: ConcernBank | None = None, role="main", timeout_s: float | None = None):
         self.llm = llm
         self.bank = bank or default_bank()
         self.role = role
+        self.timeout_s = timeout_s
         self.templates = TemplateRealizer(self.bank)
         self.texts = knowledge_texts()
         self.last_fallback_reason = ""
@@ -249,8 +253,9 @@ class LLMRealizer:
             case MoveType.RECOMMEND:
                 return f"Recommend only {move.product}, with one sourced benefit that fits what the merchant said."
             case MoveType.CONFIRM_CONSENT:
-                return (f"Ask for an explicit yes before doing this action: {move.tool}. Say you will only do it if they "
-                        "clearly agree.")
+                extra = " Also ask about a reminder if onboarding stays unfinished." if move.tool == "send_onboarding_link" else ""
+                return (f"Ask for an explicit yes before doing this action: {move.tool}.{extra} Say you will only do it if "
+                        "they clearly agree.")
             case MoveType.TAKE_ACTION:
                 done = last_action_executed(state, move.tool)
                 return ("Confirm the action was done in the demo's mock system and that real onboarding happens in "
@@ -283,9 +288,11 @@ class LLMRealizer:
             'Return JSON {"text": "<what Chanakya says>"}.'
         )
         try:
-            reply = await complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=500)
+            reply = await asyncio.wait_for(
+                complete_json(self.llm, self.role, [{"role": "user", "content": prompt}], max_tokens=500),
+                self.timeout_s)
             text = spoken_text(str(reply.get("text", "")).strip())
-        except LLMError:
+        except (LLMError, TimeoutError):  # a slow provider on a live call gets the safe template, not silence
             text = ""
         problems = unsafe_reasons(text, move, state)
         if problems:
