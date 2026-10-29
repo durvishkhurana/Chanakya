@@ -521,6 +521,25 @@
       "evidence": "2026-10-29: pytest 129 passed (onboarding endpoints complete -> DONE); frontend 14 node tests, lint clean, build compiled; browser check against live backend: callback button -> mission card -> link sent -> mock onboarding completed -> ledger DONE verified by onboarding system."
     },
     {
+      "id": "B15",
+      "name": "Landing page",
+      "description": "Landing page for the demo, built with the design-taste and landing-page skills",
+      "track": "B",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/B15-landing-page",
+      "owns": [
+        "frontend/src/app/page.js",
+        "frontend/src/app/landing.css",
+        "frontend/src/components/landing/"
+      ],
+      "dependencies": [
+        "B14"
+      ],
+      "status": "done",
+      "done_when": "One primary action (Talk to Chanakya) above the fold, a live demo, credited pictures; design inspector shows 0 FAIL at 1440/768/390.",
+      "evidence": "2026-10-29: merged as PR #13; lint clean, tests pass, build compiled; design inspector 0 FAIL, 3 WARN (no honest video clip; blank-band reading at the block wordmark; 8px tile edge on phones)."
+    },
+    {
       "id": "I1",
       "name": "End-to-end demo scenarios",
       "description": "Full spec: docs/TASKS.md, task I1",
@@ -541,7 +560,8 @@
       ],
       "status": "not-started",
       "done_when": "Each scenario in docs/IDEA.md section 8 runs from one command and from the dashboard.",
-      "evidence": ""
+      "evidence": "",
+      "notes": "Partly started: scripts/demo/e2e_track_b.py drives the Track B flow end to end (17 checks). The voice and brain parts wait on A5 and A6."
     },
     {
       "id": "I2",
