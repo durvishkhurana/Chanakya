@@ -3,20 +3,24 @@
 ## Current State
 
 **Last Updated:** 2026-10-29
-**Active Feature:** Track A ported onto main's core contracts on `feat/track-a-on-main`; needs Gurnoor's review (it also carries a small `core:` change and the Windows fixes).
+**Active Feature:** Track A is complete on `feat/track-a-on-main` (ported onto main's core) and waits for Gurnoor's review together with a small `core:` change and the Windows fixes.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B14, B15 (merged on main) | B11 coach UI (A11 is ready); B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11 (on `feat/track-a-on-main`) | A9 (forest built, no measured gain), F0.3 (CI green on main not yet seen) |
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B14 (merged on main) | B10-B13 |
 | Integration | both | I2 measured results in `docs/results/` | I1, I3, I4 |
 
 ## Status
 
 ### What's Done
 
-- [x] F0.1 bootstrap, idea, harness (see Decisions)
-- [x] Track B on main: shared contracts (F0.2), mock systems and registry, safety gate, ledger and state machine, hand-offs, APIs, intake and queue, follow-ups and verification, Mission Control, Live Call View, demo pages
+- [x] F0.1 bootstrap, F0.2 shared contracts (`chanakya/core`)
+- [x] B1 mock systems and typed tool registry, B2 safety gate and audit, B3 mission ledger and state machine
+- [x] B4 handoff cards and queue, B5 API and live event stream, B6 three-door mission intake and queue
+- [x] B7 verification and reminders, B8 Mission Control, B9 Live Call View, B14 mock product and onboarding pages
+- [x] B15 landing page (design-taste and landing-page skills)
+- [x] `scripts/demo/e2e_track_b.py`: the whole Track B flow against a live backend, 17 checks
 - [x] Track A (Durvish), on `feat/track-a-on-main`:
   - A1 Concern Bank (13 concerns in Hindi, Hinglish, Punjabi, English, resolved only by sourced knowledge nodes), trigger priors, 68 seeded personas split planning/evaluation
   - A2 Twin-A and Twin-B with a deterministic judge and walk-away calibration (untreated agent loses 64-67%)
@@ -35,16 +39,19 @@
 
 ### What's Next
 
-1. Gurnoor: review and merge, in order, `fix/windows-dev-setup`, `feat/core-llm-providers` (core change), then `feat/track-a-on-main`
-2. Connect the brain to the mission runtime: adapters from `chanakya.core` PlanContext/BeliefTracker/Realizer to the Track A planner, belief tracker and realizer, and the real ActionGate instead of the mock gate
+1. Gurnoor: review and merge, in order, `fix/windows-dev-setup`, `feat/core-llm-providers` (core change), `feat/track-a-on-main`, `feat/brain-core-adapters`
+2. Connect the brain to the mission runtime: `feat/brain-core-adapters` exposes the planner, belief tracker and realizer through the core protocols and turns brain events into `turn_completed`, `belief_updated` and `plan_computed` ledger events; still to do is writing them through the ledger (or `POST /api/missions/{id}/events`) so the Live Call View renders live calls, checking the payload shapes it expects, and using the real ActionGate instead of the mock gate
 3. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-4. Track B: B10-B13; together: I1, I3, I4
+4. Track B: B11 coach mode UI (A11 engine is ready); optional B10, B12, B13. Together: I1 demo scenarios, I3 phone demo or backup video, I4 README and deck numbers
 
 ## Blockers / Risks
 
-- [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04; Groq is in use. Groq's free tier allows 8,000 tokens per minute on the main model, so full online evaluations are not possible on it
-- [ ] Twilio trial accounts block Media Streams; browser voice is the safe demo path
-- [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded by `feat/track-a-on-main` and should not be merged
+- [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
+- [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
+- [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
+- [ ] Live calls show empty planner panels until the brain's events reach the ledger; `/call/demo` is a labelled scripted recording until then
+- [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
+- [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
 
 ## Decisions Made
@@ -56,24 +63,26 @@
 
 - **Pitch: AI merchant-success teammate that gets the job done.** The voice agent was built earlier; the Chanakya brain plus missions and actions are the new work
 - **Mission intake has three doors:** the merchant raises a hand, the data says so, a human hands it over. Each trigger seeds the belief tracker's starting worries
-  - Alternatives considered: signal-only triggers with device repair and settlement missions. Rejected as not demonstrable and not believable on a call
-- **Model settings:** `deepseek/deepseek-v4-flash` with reasoning disabled (default mode garbled a simple answer); `openai/gpt-6-luna` with reasoning effort `none`
-- **Python 3.12** for all code; the inherited code runs on it unchanged
-- **Initial commit went straight to `main`** because the repository was empty; everything after goes through PRs
+- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write
+- **A mission is DONE only on system confirmation.** Two reminders at most, inside calling hours; "stop" ends with one passive check; then back to the queue as SCHEDULED with a callback time
+- **Missions API is behind `MISSIONS_ENABLED`** and mounted with appended lines in `backend/main.py`; the frontend reaches it through a same-origin `/api` proxy, so the backend's CORS policy is unchanged
+- **Design:** app screens use the framed-sheet style (IBM Plex Sans, green-grey frame); the landing page uses the well-kept board (League Spartan and Figtree, greys and mint). Styles are scoped (`.cx`, `.lp`) so they cannot collide
+- **Model settings:** `deepseek/deepseek-v4-flash` with reasoning disabled; `openai/gpt-6-luna` with reasoning effort `none`
+- **No AI attribution** in commits or PRs; every merge was checked on GitHub for co-authors
 
 ## Files Modified This Session
 
-- Root layout created from the old `sales_agent/` folder; `call_mira.py` renamed to `call_chanakya.py`
-- `agent/documents.py`, `agent/tools.py`, `backend/test_voice_api.py` - three Ruff findings fixed without changing behaviour
-- `requirements.lock.txt` - removed comment lines with another machine's local paths
-- Planning drafts moved out of the repository to `../paytm-archive/`
+- `chanakya/core/`, `chanakya/actions/`, `chanakya/missions/`, `chanakya/humans/` with tests in each package
+- `backend/main.py` (appended router mounts), `.env.example` (appended flags)
+- `frontend/`: landing page, Mission Control, Live Call View, demo pages, shared styles, `public/charts.js`, `public/assets/` (credited photos)
+- `docs/TASKS.md` (B1, B6, new B14), `README.md`, this file, `session-handoff.md`, `feature_list.json`
 
 ## Evidence of Completion
 
-- [x] Tests pass: `FULL=1 ./init.sh` → agent 94 OK, backend 94 OK, Ruff clean, frontend 9 pass, lint clean, build compiled
-- [x] Manual verification: backend `/api/health` returns `configured: true`; the built page shows "Talk to Chanakya"
-- [ ] Live browser voice call with the new keys not yet tried
+- [x] Tests pass: `SKIP_INSTALL=1 FULL=1 ./init.sh` on `main` at 8659d21 → agent 94 OK, backend 94 OK, pytest 129 passed, Ruff clean, frontend 19 passed, lint clean, build compiled
+- [x] End to end: `scripts/demo/e2e_track_b.py` against a live backend → 17/17 checks, 0 server errors
+- [x] Manual verification in a browser: callback → mission card → link sent through the gate → mock onboarding → DONE verified; Mission Control and the Live Call View update live; design inspector 0 FAIL on all three screens
 
 ## Notes for Next Session
 
-`.env` holds the real keys and is ignored by git. On macOS, `agent/` and `Agent/` look the same to the filesystem; imports must use lowercase `agent.` so they also work on Linux.
+`.env` holds the real keys and is ignored by git. To demo Track B at night set `CALLING_HOURS=0-24`. Delete `.state/` for a fresh ledger and mock systems.
