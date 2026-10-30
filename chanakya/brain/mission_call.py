@@ -136,9 +136,8 @@ class MissionCall:
         self.runtime = runtime
         self.mission_id = mission_id
         memory = configured_memory(runtime.settings.planner_memory)  # PLANNER_MEMORY: forest or neural (N2)
-        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=memory),
         leaf_value = configured_leaf_value(runtime.settings.planner_value)  # PLANNER_VALUE: formula or network (N3)
-        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=default_forest(), leaf_value=leaf_value),
+        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=memory, leaf_value=leaf_value),
                                 bus=LedgerBus(self), gate=LedgerGate(self), actions_enabled=True)
         self.recorded_consents = 0
         self.disclosed = False

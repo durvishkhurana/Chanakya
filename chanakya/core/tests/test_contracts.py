@@ -284,6 +284,8 @@ def test_planner_value_defaults_to_the_formula_and_rejects_unknown_values(monkey
     monkeypatch.setenv("PLANNER_VALUE", "learned")
     with pytest.raises(ValueError, match="PLANNER_VALUE"):
         Settings.from_env()
+
+
 def test_planner_memory_defaults_to_the_forest_and_rejects_unknown_values(monkeypatch):
     monkeypatch.delenv("PLANNER_MEMORY", raising=False)
     assert Settings.from_env().planner_memory == "forest" and Settings().planner_memory == "forest"

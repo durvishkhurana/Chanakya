@@ -43,6 +43,9 @@ def _planner_value() -> str:
     chosen = os.getenv("PLANNER_VALUE", "").strip().lower() or "formula"
     if chosen not in PLANNER_VALUES:
         raise ValueError(f"PLANNER_VALUE must be one of {', '.join(PLANNER_VALUES)}")
+    return chosen
+
+
 def _planner_memory() -> str:
     """``PLANNER_MEMORY`` if set, else ``forest`` (the Strategy Forest's trigram clusters)."""
     chosen = os.getenv("PLANNER_MEMORY", "").strip().lower() or "forest"
