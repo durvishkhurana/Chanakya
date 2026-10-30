@@ -621,6 +621,103 @@
       "done_when": "README final; deck numbers come only from docs/results/.",
       "evidence": "docs/I4-readme: README 'How it works' with docs/architecture.svg, a rewritten Status that quotes only results unchanged by the A6 re-measure and links docs/results for numbers, and three screenshots in docs/screenshots taken from a live backend running the I1 scenarios.",
       "notes": "Final once #19 (I1), #20 (A6) and #21 (I3) are merged: the README refers to their scenarios, results and runbook."
+    },
+    {
+      "id": "N0",
+      "name": "Neural baselines and labelled data",
+      "description": "Full spec: docs/TASKS.md, task N0",
+      "track": "N",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/N0-neural-baseline",
+      "owns": [
+        "chanakya/neural/",
+        "data/neural/",
+        "docs/results/neural-baseline/"
+      ],
+      "dependencies": [
+        "A3"
+      ],
+      "status": "done",
+      "done_when": "Baselines and the encoder choice are in docs/results/neural-baseline/ with the command that produced them.",
+      "evidence": "2026-10-30: python -m chanakya.neural.paraphrase --seed 7 -> 2,123 labelled lines (1,455 train from deepseek-v4-flash, 668 test from gpt-6-luna); python -m chanakya.neural.baseline --seed 7 --llm-sample 112 -> lexical 0.388, MiniLM 0.310, e5-small 0.437 (5.5 ms), LLM 0.777 (1.9 s) on 14 labels; planner 0.96/0.98 with and without the forest; encoder choice multilingual-e5-small; chanakya/neural/tests pass; docs/results/neural-baseline/README.md"
+    },
+    {
+      "id": "N1",
+      "name": "Neural worry scorer",
+      "description": "Full spec: docs/TASKS.md, task N1",
+      "track": "N",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/N1-worry-scorer",
+      "owns": [
+        "chanakya/neural/",
+        "agent/brain_agent.py",
+        "chanakya/humans/coach_engine.py",
+        "chanakya/eval/variants.py"
+      ],
+      "dependencies": [
+        "N0"
+      ],
+      "status": "not-started",
+      "done_when": "Beats the lexical scorer on held-out lines and is measured end to end in the harness over two seeds; tests never download a model.",
+      "evidence": ""
+    },
+    {
+      "id": "N2",
+      "name": "Semantic memory",
+      "description": "Full spec: docs/TASKS.md, task N2",
+      "track": "N",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/N2-semantic-memory",
+      "owns": [
+        "chanakya/neural/",
+        "chanakya/brain/forest/forest.py"
+      ],
+      "dependencies": [
+        "N1"
+      ],
+      "status": "not-started",
+      "done_when": "Win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.",
+      "evidence": ""
+    },
+    {
+      "id": "N3",
+      "name": "Value network for the planner",
+      "description": "Full spec: docs/TASKS.md, task N3",
+      "track": "N",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/N3-value-network",
+      "owns": [
+        "chanakya/neural/",
+        "chanakya/brain/planner_nrpa.py"
+      ],
+      "dependencies": [
+        "N1"
+      ],
+      "status": "not-started",
+      "done_when": "Win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.",
+      "evidence": ""
+    },
+    {
+      "id": "N4",
+      "name": "Show the neural brain",
+      "description": "Full spec: docs/TASKS.md, task N4",
+      "track": "N",
+      "owner": "Gurnoor Singh Pannu",
+      "branch": "feat/N4-neural-demo",
+      "owns": [
+        "frontend/src/components/call/",
+        "frontend/src/app/coach/",
+        "docs/architecture.svg",
+        "README.md"
+      ],
+      "dependencies": [
+        "N1",
+        "N2",
+        "N3"
+      ],
+      "status": "not-started",
+      "done_when": "./init.sh, NEURAL=1 ./init.sh, the demo scenarios and the end-to-end script pass with every neural flag on.",
+      "evidence": ""
     }
   ]
 }

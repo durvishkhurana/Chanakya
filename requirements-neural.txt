@@ -1,0 +1,4 @@
+# Optional: only the neural brain parts (tasks N0-N4) need these; ./init.sh and CI never install them.
+# multilingual-e5-small is the shared encoder (chosen in N0, docs/results/neural-baseline/).
+numpy>=2.0
+sentence-transformers>=6.0

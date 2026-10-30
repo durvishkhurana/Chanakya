@@ -31,3 +31,7 @@ build/
 
 # Design tooling working files
 .taste-skill/
+
+# Downloaded encoder models (fastembed, sentence-transformers)
+.cache/
+local_cache/

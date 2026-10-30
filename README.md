@@ -135,6 +135,18 @@ python -m chanakya.brain.forest.generate --seed 11                         # reg
 
 Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out` is given. Measured results, with their commands and seeds, are in [docs/results/](docs/results/README.md).
 
+### Neural brain (in progress, tasks N0-N4)
+
+Learned parts that replace the brain's hand-written guesses: a multilingual worry scorer, semantic memory and a value network for the planner. Their extra libraries are optional and never needed by `./init.sh`:
+
+```bash
+pip install -r requirements-neural.txt                               # encoder and numpy, only for the neural parts
+python -m chanakya.neural.paraphrase --seed 7                        # labelled lines from two model families (uses the LLM provider)
+python -m chanakya.neural.baseline --seed 7 --llm-sample 112         # baselines every neural scorer must beat
+```
+
+The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [docs/results/neural-baseline/](docs/results/neural-baseline/README.md).
+
 ## Verify
 
 ```bash

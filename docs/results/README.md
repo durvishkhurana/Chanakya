@@ -125,6 +125,12 @@ and 25% of finals changed: turn latency p50 1065 ms after speech vs 457 ms while
 (about 1070 ms) because changed finals are recomputed. A live run on Groq's free tier was dominated by
 rate-limit waits (8-15 s per turn), so planning while listening stays off by default.
 
+## 6. Neural brain baselines (N0)
+
+Worry scorers on 668 held-out merchant lines in four languages, and the encoder choice for the neural brain. Today's
+lexical scorer gets 0.388 of 14 labels right, the LLM scorer 0.777 at about 2 s per line, and `multilingual-e5-small`
+with no training 0.437 at about 5 ms. Details and commands: [neural-baseline/](neural-baseline/README.md).
+
 ## Not measured
 
 - A full online evaluation: Groq's free tier allows 8,000 tokens per minute on the main model, and a small
