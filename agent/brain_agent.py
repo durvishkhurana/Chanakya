@@ -125,6 +125,8 @@ class BrainAgent:
             if speculative:
                 return None
             events.append(await self._act(state, move.tool))
+        elif move.type == MoveType.TAKE_ACTION and move.tool in lib.READ_TOOLS and self.gate is not None:
+            events.append(await self._act(state, move.tool))  # a read (for example settlement status) needs no consent
         reply = await self.realizer.realize(move, state)
         agent_turn = Turn(speaker="agent", text=reply, language=language, move=move)
         state.moves.append(move)

@@ -25,7 +25,7 @@ from chanakya.sim.judge import Intent, TwinState, consent_chance, initial_state,
 
 from . import moves as lib
 from .concern_bank import ConcernBank, default_bank
-from .planner_rules import RuleBasedPlanner, consent_tool, mission_product
+from .planner_rules import PERMISSION_RULES, WINBACK_RULES, RuleBasedPlanner, consent_tool, mission_product
 
 # Rules that are never searched: safety and consent decisions always follow the baseline.
 FORCED_RULES = {"disclose_first", "distress", "declined", "sensitive_request", "consent_given", "finished",
@@ -226,7 +226,8 @@ class NRPAPlanner:
         started = time.perf_counter()
         deadline = started + self.budget_ms / 1000
         baseline_move, rule = self.baseline.choose(state)
-        if rule in FORCED_RULES or not lib.is_legal(baseline_move, state, self.bank):
+        if (rule in FORCED_RULES or rule in WINBACK_RULES or rule in PERMISSION_RULES
+                or not lib.is_legal(baseline_move, state, self.bank)):
             result = await self.baseline.plan(state)
             return result.model_copy(update={"tree": {"rule": rule, "searched": False}})
         rng = random.Random(f"{self.seed}:{state.card.mission_id}:{len(state.transcript.turns)}")

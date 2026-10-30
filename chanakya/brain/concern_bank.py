@@ -40,10 +40,15 @@ def load_priors(path: Path = DATA / "concerns" / "priors.json") -> dict[TriggerT
     return {TriggerType(trigger): dict(entry["worries"]) for trigger, entry in raw.items()}
 
 
-def load_personas(path: Path = DATA / "personas" / "personas.json", split: str | None = None) -> list[Persona]:
-    """Return personas, optionally only the ``planning`` or ``evaluation`` split."""
+def load_personas(path: Path = DATA / "personas" / "personas.json", split: str | None = None,
+                  relationship: str | None = "prospect") -> list[Persona]:
+    """Return personas, optionally only the ``planning`` or ``evaluation`` split.
+
+    Sales evaluations see prospects only; pass ``relationship="former"`` for win-back twins, or None for all.
+    """
     personas = [Persona.model_validate(item) for item in json.loads(path.read_text(encoding="utf-8"))["personas"]]
-    return [persona for persona in personas if split is None or persona.split == split]
+    return [persona for persona in personas if (split is None or persona.split == split)
+            and (relationship is None or persona.relationship == relationship)]
 
 
 def validate(concerns: dict[str, Concern], priors: dict[TriggerType, dict[str, float]],
@@ -73,6 +78,8 @@ def validate(concerns: dict[str, Concern], priors: dict[TriggerType, dict[str, f
         seen.add(persona.persona_id)
         problems.extend(f"{persona.persona_id}: unknown concern {c}" for c in persona.hidden_concerns
                         if c not in concerns)
+        if persona.relationship == "former" and persona.adversarial:
+            problems.append(f"{persona.persona_id}: a former customer persona cannot also be adversarial")
     return problems
 
 
@@ -109,7 +116,7 @@ class ConcernBank:
 def default_bank() -> ConcernBank:
     """Load, validate and cache the repository's Concern Bank."""
     concerns, priors = load_concerns(), load_priors()
-    problems = validate(concerns, priors, load_personas(), knowledge_node_ids())
+    problems = validate(concerns, priors, load_personas(relationship=None), knowledge_node_ids())
     if problems:
         raise ValueError("Concern Bank is inconsistent: " + "; ".join(problems))
     return ConcernBank(concerns, priors)

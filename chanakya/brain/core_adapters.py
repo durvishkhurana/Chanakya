@@ -23,6 +23,7 @@ TRIGGERS = {
     core.SignalKind.LEAD_LIST_ASSIGNED: brain.TriggerType.LEAD_LIST,
     core.SignalKind.FIELD_AGENT_NOTE: brain.TriggerType.FIELD_NOTE,
     core.SignalKind.HUMAN_CALL_DROPPED: brain.TriggerType.DROPPED_CALL,
+    core.SignalKind.MERCHANT_CHURNED: brain.TriggerType.MERCHANT_CHURNED,
 }
 # Concern ids used by Track B's intake rules that the Concern Bank names differently.
 CONCERN_ALIASES = {
@@ -31,6 +32,7 @@ CONCERN_ALIASES = {
     "cash_flow": "rental_cost",  # a missed rental is treated as the cost worry until the bank has its own entry
 }
 SPEAKERS = {core.Speaker.AGENT: "agent", core.Speaker.MERCHANT: "merchant", core.Speaker.HUMAN: "human_agent"}
+CORE_SPEAKERS = {value: key for key, value in SPEAKERS.items()}
 
 
 def concern_id(name: str | None) -> str | None:
@@ -49,19 +51,47 @@ def worries(probabilities: dict[str, float], bank: ConcernBank) -> dict[str, flo
     return {cid: p / total for cid, p in merged.items()} if total > 0 else bank.prior_for(brain.TriggerType.CALLBACK_REQUEST)
 
 
-def to_brain_card(mission: core.Mission, bank: ConcernBank | None = None) -> brain.MissionCard:
-    """The brain's view of a core mission."""
+def to_brain_merchant(merchant: core.Merchant) -> brain.Merchant:
+    """Core merchant -> brain merchant; owned devices become the brain's device list."""
+    devices = [name for name, owned in (("soundbox", merchant.has_soundbox), ("card_machine", merchant.has_card_machine))
+               if owned]
+    return brain.Merchant(merchant_id=merchant.id, name=merchant.name, business_type=merchant.business_type,
+                          city=merchant.city, language=merchant.language,
+                          contact_window=brain.ContactWindow(**merchant.contact_window.model_dump()),
+                          do_not_call=merchant.do_not_call, devices=devices, relationship=merchant.relationship,
+                          churned_at=merchant.churned_at)
+
+
+def to_core_merchant(merchant: brain.Merchant) -> core.Merchant:
+    """Brain merchant -> core merchant."""
+    window = core.ContactWindow(**merchant.contact_window.model_dump()) if merchant.contact_window else core.ContactWindow()
+    return core.Merchant(id=merchant.merchant_id, name=merchant.name, business_type=merchant.business_type,
+                         city=merchant.city, language=merchant.language, contact_window=window,
+                         do_not_call=merchant.do_not_call, has_soundbox="soundbox" in merchant.devices,
+                         has_card_machine="card_machine" in merchant.devices, relationship=merchant.relationship,
+                         churned_at=merchant.churned_at)
+
+
+def to_brain_card(mission: core.Mission, bank: ConcernBank | None = None,
+                  permission_first: bool = False) -> brain.MissionCard:
+    """The brain's view of a core mission.
+
+    ``permission_first`` is the PERMISSION_FIRST_ENABLED setting: lead-list missions then open by asking for two
+    minutes, because the merchant did not ask to be called.
+    """
     bank = bank or default_bank()
     card = mission.card
     trigger = TRIGGERS[card.signal_kind]
     return brain.MissionCard(
         mission_id=mission.id,
         merchant=brain.Merchant(merchant_id=card.merchant_id, name=card.merchant_name, business_type="unknown",
-                                city="unknown", language=card.language),
+                                city="unknown", language=card.language,
+                                relationship="former" if trigger == brain.TriggerType.MERCHANT_CHURNED else "customer"),
         kind=brain.MissionKind(card.mission_type.value), goal=card.goal, door=brain.Door(card.door.value),
         trigger=trigger, why_now=card.why_now,
         starting_worries=worries(card.starting_worries, bank) if card.starting_worries else bank.priors[trigger],
         chance=min(1.0, card.priority) if card.priority else 0.5, context=card.product or "",
+        permission_first=permission_first and trigger == brain.TriggerType.LEAD_LIST,
     )
 
 
@@ -174,7 +204,7 @@ def to_ledger_event(event: brain_events.Event) -> core.MissionEvent | None:
 
 def to_core_turn(turn: brain.Turn, mission_id: str) -> core.Turn:
     """Brain turn -> core turn; hesitation timing goes into ``cues``."""
-    speaker = {value: key for key, value in SPEAKERS.items()}[turn.speaker]
+    speaker = CORE_SPEAKERS[turn.speaker]
     cues = {"pause_ms": float(turn.pause_before_ms)} if turn.pause_before_ms is not None else {}
     return core.Turn(speaker=speaker, text=turn.text, language=turn.language, cues=cues, at=turn.at,
                      move=to_core_move(turn.move, mission_id) if turn.move else None)

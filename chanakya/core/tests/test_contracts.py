@@ -187,6 +187,26 @@ def test_flags_default_off(monkeypatch):
     assert Settings.from_env().missions_enabled
 
 
+def test_winback_and_permission_first_flags_default_off(monkeypatch):
+    for name in ("WINBACK_ENABLED", "PERMISSION_FIRST_ENABLED"):
+        monkeypatch.delenv(name, raising=False)
+    settings = Settings.from_env()
+    assert not settings.winback_enabled and not settings.permission_first_enabled
+    assert not Settings().winback_enabled and not Settings().permission_first_enabled
+    monkeypatch.setenv("WINBACK_ENABLED", "true")
+    monkeypatch.setenv("PERMISSION_FIRST_ENABLED", "1")
+    assert Settings.from_env().winback_enabled and Settings.from_env().permission_first_enabled
+
+
+def test_a_former_merchant_round_trips_with_its_churn_date():
+    merchant = Merchant(id="mer_x", name="x", business_type="kirana", city="Patna", relationship="former",
+                        churned_at="2026-09-01T00:00:00+00:00")
+    assert Merchant.model_validate_json(merchant.model_dump_json()) == merchant
+    assert Merchant(id="m", name="n", business_type="b", city="c").relationship == "customer"
+    with pytest.raises(ValidationError):
+        Merchant(id="m", name="n", business_type="b", city="c", relationship="ex")
+
+
 def test_twin_b_uses_a_different_model_family_by_default():
     models = Settings().models
     assert models["twin_a"].split("/")[0] != models["twin_b"].split("/")[0]

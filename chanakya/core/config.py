@@ -61,6 +61,8 @@ class Settings:
     actions_enabled: bool = False
     missions_enabled: bool = False
     coach_enabled: bool = False
+    winback_enabled: bool = False
+    permission_first_enabled: bool = False
     db_path: Path = REPO_ROOT / ".state" / "chanakya.db"
     timezone: str = "Asia/Kolkata"
     calling_hours: tuple[int, int] = (9, 21)
@@ -92,6 +94,8 @@ class Settings:
             actions_enabled=_flag("ACTIONS_ENABLED"),
             missions_enabled=_flag("MISSIONS_ENABLED"),
             coach_enabled=_flag("COACH_ENABLED"),
+            winback_enabled=_flag("WINBACK_ENABLED"),
+            permission_first_enabled=_flag("PERMISSION_FIRST_ENABLED"),
             db_path=Path(os.getenv("CHANAKYA_DB_PATH", str(REPO_ROOT / ".state" / "chanakya.db"))),
             timezone=os.getenv("CHANAKYA_TIMEZONE", "Asia/Kolkata"),
             calling_hours=(start, end),

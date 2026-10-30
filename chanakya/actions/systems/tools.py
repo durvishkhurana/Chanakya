@@ -45,6 +45,11 @@ class OnboardingLinkArgs(ProductArgs):
     language: str = "hi-IN"
 
 
+class ReminderArgs(MerchantArgs):
+    session_id: str
+    channel: Literal["sms", "whatsapp"] = "whatsapp"
+
+
 class SummaryArgs(MerchantArgs):
     channel: Literal["sms", "whatsapp"] = "whatsapp"
     text: str = Field(min_length=1, max_length=600)
@@ -154,6 +159,30 @@ def send_onboarding_link(db: MockDB, a: OnboardingLinkArgs, call: ToolCall) -> d
     return {"session_id": session_id, "link": link, "message_id": message_id, "body": body}
 
 
+REMINDER_TEXT = {
+    "hi-IN": "Namaste {name}, yaad dila rahe hain: aapka {product} onboarding abhi baaki hai. Link: {link}",
+    "pa-IN": "Sat Sri Akal {name}, yaad karwa rahe haan: tuhada {product} onboarding baaki hai. Link: {link}",
+    "en-IN": "Hello {name}, a reminder that your {product} onboarding is still open. Link: {link}",
+}
+
+
+def send_onboarding_reminder(db: MockDB, a: ReminderArgs, call: ToolCall) -> dict:
+    """The fixed reminder for an open onboarding session; there is no free text to fill in."""
+    merchant = _merchant(db, a.merchant_id)
+    session = db.one("SELECT * FROM onboarding_sessions WHERE id = ? AND merchant_id = ?", a.session_id, a.merchant_id)
+    if session is None:
+        raise LookupError(f"unknown onboarding session {a.session_id}")
+    if session["status"] == "completed":
+        raise LookupError(f"onboarding session {a.session_id} is already completed")
+    link = ONBOARDING_URL.format(session_id=a.session_id)
+    template = REMINDER_TEXT.get(merchant["language"], REMINDER_TEXT["en-IN"])
+    body = template.format(name=merchant["name"], product=session["product"].replace("_", " "), link=link)
+    message_id = new_id("msg")
+    db.write("INSERT INTO outbox VALUES (?, ?, ?, ?, ?, ?, 'sent', ?)",
+             message_id, a.merchant_id, call.mission_id, a.channel, body, link, now_iso())
+    return {"message_id": message_id, "body": body, "link": link}
+
+
 def send_summary(db: MockDB, a: SummaryArgs, call: ToolCall) -> dict:
     _merchant(db, a.merchant_id)
     message_id = new_id("msg")
@@ -241,6 +270,14 @@ def get_ticket_status(db: MockDB, a: TicketStatusArgs, call: ToolCall) -> dict:
     return {"ticket": row}
 
 
+def resolve_ticket(db: MockDB, ticket_id: str) -> dict:
+    """Called by the mock ticketing team, never by the agent: the issue behind a ticket is fixed."""
+    if db.one("SELECT id FROM tickets WHERE id = ?", ticket_id) is None:
+        raise LookupError(f"unknown ticket {ticket_id}")
+    db.write("UPDATE tickets SET status = 'resolved' WHERE id = ?", ticket_id)
+    return db.one("SELECT * FROM tickets WHERE id = ?", ticket_id)
+
+
 def get_settlement_status(db: MockDB, a: MerchantArgs, call: ToolCall) -> dict:
     _merchant(db, a.merchant_id)
     return {"settlements": db.all("SELECT * FROM settlements WHERE merchant_id = ? ORDER BY expected_on DESC", a.merchant_id)}
@@ -256,6 +293,9 @@ TOOLS: list[Tool] = [
     Tool("log_interaction", "crm", W, "Mock CRM: log a summary of a conversation.", InteractionArgs, log_interaction),
     Tool("send_onboarding_link", "messaging", W, "Mock messaging: send an onboarding link by SMS or WhatsApp.",
          OnboardingLinkArgs, send_onboarding_link, irreversible=True),
+    Tool("send_onboarding_reminder", "messaging", W,
+         "Mock messaging: send the fixed onboarding reminder for an open onboarding session.", ReminderArgs,
+         send_onboarding_reminder, irreversible=True),
     Tool("send_summary", "messaging", W, "Mock messaging: send the merchant a short summary.", SummaryArgs, send_summary,
          irreversible=True),
     Tool("get_onboarding_status", "onboarding", R, "Mock onboarding: status of the merchant's onboarding.",

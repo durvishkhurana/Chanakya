@@ -405,6 +405,77 @@ One owner per neural network does all of it (data, model, wiring, measurement); 
 
 ---
 
+## Phase 6: Review fixes, win-back missions and a permission-first opening (Durvish)
+
+Durvish owns every task in this phase. Some of them edit Track B directories (`chanakya/missions/`, `chanakya/actions/`, `frontend/`); those PRs say so and ask for Gurnoor's review. `chanakya/core/` changes go in their own `core:` PR (W0). The neural work (N1-N4) owns `chanakya/brain/belief.py`, `chanakya/sim/voice.py`, `chanakya/eval/variants.py`, `agent/brain_agent.py` and `chanakya/humans/coach_engine.py`; this phase avoids those files, and any unavoidable edit is small, additive and noted in `progress.md`. New behaviour sits behind `WINBACK_ENABLED` and `PERMISSION_FIRST_ENABLED`, both off by default. Win-back calls never mention or promise an offer, discount or waiver: `data/knowledge/Paytm_Products.json` does not establish promotional offers.
+
+#### [x] F1 Review fixes from PR #19
+- **Branch:** `fix/I1-review-fixes`
+- **Owner:** Durvish Khurana (Track B parts reviewed by Gurnoor)
+- **Owns:** `chanakya/brain/calls_api.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/scenarios.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/realizer.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/missions/verifier.py`, `chanakya/missions/tests/`, `chanakya/actions/systems/tools.py`, `chanakya/actions/tests/`, `frontend/src/app/call/`, `scripts/demo/e2e_track_b.py`
+- **Depends on:** I1
+- **Build:** every point of Gurnoor's review on #19, each with a test that fails before the fix:
+  1. A running scenario's call is registered; `POST /api/calls/{id}/say` and `/api/calls/{id}/voice` refuse with 409 while it runs; the Live Call View hides "Speak as the merchant" and "Talk by voice instead" meanwhile.
+  2. A yes to the onboarding link covers the link and a new mock `send_onboarding_reminder` tool only (fixed reminder template for an existing onboarding session, no free text). The verifier sends reminders through it; any `send_summary` needs its own explicit consent.
+  3. The callback scenario never moves the shared clock: it runs only its own mission's verification jobs.
+  4. One `asyncio.Lock` per `MissionCall`; the ledger writes, `sync()` and `_after()` of a turn are shielded from cancellation when the merchant talks over Chanakya.
+  5. Every decline is recorded; "no, then yes, then no" ends declined and closes the mission even past `IN_CONVERSATION`.
+  6. The onboarding link's product is the one the brain recommended before the consent, falling back to the mission card.
+  7. The close outcome comes from a typed `Move.end_reason`, not from the planner's free text.
+  8. The inverse of `SPEAKERS` is a module-level constant.
+- **Done when:** a second call during a running scenario is rejected and the ledger has exactly one `ai_disclosed` event; a link consent never lets `send_summary` through; after the callback scenario the clock offset is unchanged and other missions' reminders did not fire; a cancelled turn still writes its escalation or close; "no, yes, no" ends `CLOSED_NOT_INTERESTED` from `AWAITING_CONFIRMATION`; the link carries the recommended product; `./init.sh` and `FULL=1 ./init.sh` pass.
+
+#### [x] W0 Shared contracts for win-back and permission-first
+- **Branch:** `core/winback-contracts` (PR titled `core: ...`)
+- **Owner:** Durvish Khurana (reviewed by Gurnoor before merge)
+- **Owns:** `chanakya/core/`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/forest/generate.py`, `chanakya/brain/tests/`, `data/concerns/priors.json`, `chanakya/missions/intake.py`, `chanakya/missions/tests/`, `chanakya/actions/gate.py`, `chanakya/actions/systems/db.py`, `chanakya/actions/systems/seed.py` (insert by column name), `chanakya/actions/tests/`, `chanakya/core/tests/`, `frontend/src/lib/missionView.mjs`, `frontend/src/lib/coachView.mjs`, `frontend/src/components/call/CallView.js`, `.env.example`, `README.md`
+- **Depends on:** F0.2, A1, B6
+- **Build:**
+  - Core: `SignalKind.MERCHANT_CHURNED`, `MissionType.WIN_BACK`, `Merchant.relationship` (`customer`, `prospect` or `former`, default `customer`) and `Merchant.churned_at`, `EventKind.LEAVING_REASON_RECORDED` and `EventKind.HOLDOUT_ASSIGNED`, `MoveType.ASK_PERMISSION`; flags `WINBACK_ENABLED` and `PERMISSION_FIRST_ENABLED`, default off.
+  - Brain contracts: `TriggerType.MERCHANT_CHURNED` on the data door, `MissionKind.WIN_BACK`, `MoveType.ASK_PERMISSION` and the same two `Merchant` fields (both models forbid extra fields, so they must match).
+  - `core_adapters.py` maps the new trigger and carries the merchant fields; a prior for `merchant_churned` over existing concerns only; an intake rule for the new signal; the mock merchants table gains the two columns (with a migration for existing databases); every lookup keyed by trigger, signal or mission type gets the new value.
+- **Done when:** both merchant models round-trip through the adapters with the new fields; `concern_bank.validate()` passes; intake builds a win-back card for `MERCHANT_CHURNED`; both flags default off; `./init.sh` passes.
+
+#### [x] W1 Churn detection, holdout and the win-back DONE check
+- **Branch:** `feat/W1-winback-missions`
+- **Owner:** Durvish Khurana (Track B directories, reviewed by Gurnoor)
+- **Owns:** `chanakya/actions/systems/seed.py`, `chanakya/actions/systems/tools.py`, `chanakya/missions/churn.py`, `chanakya/missions/verifier.py`, `chanakya/missions/runtime.py`, `chanakya/missions/api.py`, `chanakya/missions/demo_api.py`, `chanakya/missions/tests/`, `frontend/src/app/missions/`, `frontend/src/lib/`
+- **Depends on:** W0, F1
+- **Build:**
+  - Three or four fictional former merchants in the seed (device returned or last payment over 60 days ago, `relationship="former"`, a `churned_at` date), at least one with an open ticket and one with a delayed settlement; the existing demo merchants unchanged.
+  - `chanakya/missions/churn.py` reads the mock tables and raises `MERCHANT_CHURNED` signals for merchants who churned 14 to 180 days ago, are not on do-not-call and had no win-back mission in the last 90 days. An unresolved complaint ticket gets a hand-off card for a person instead of an AI call. Runs only with `WINBACK_ENABLED`.
+  - Holdout: 20% of eligible merchants by a seeded hash of the merchant id, never called, recorded as `HOLDOUT_ASSIGNED` in the ledger and shown in Mission Control as "holdout (not called)"; a fixed demo seed.
+  - A win-back mission is DONE only when a system confirms it: the ticket raised on the call is resolved, the device is active again, or a payment arrives within 14 days of the call. Until then the verifier's existing re-check and callback limits apply.
+  - A reasons-for-leaving card in Mission Control: counts of recorded leaving reasons by reason, city and product, read from the ledger. B12 should reuse it.
+- **Done when:** tests cover the eligibility edges, a deterministic holdout for a given seed, each DONE path and no DONE without system confirmation, do-not-call and open-ticket routing; `FULL=1 ./init.sh` passes.
+
+#### [x] W2 The win-back conversation
+- **Branch:** `feat/W2-winback-brain`
+- **Owner:** Durvish Khurana
+- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/scenarios.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/sim/judge.py`, `chanakya/sim/tests/`, `chanakya/eval/winback.py`, `chanakya/eval/tests/`, `chanakya/brain/concern_bank.py` (former personas kept out of sales evaluations), `chanakya/brain/calls_api.py`, `scripts/demo/`, `data/personas/`, `docs/results/winback/`, `README.md`; one additive branch in `agent/brain_agent.py` so a planned read (settlement status) runs through the gate
+- **Depends on:** W1
+- **Build:**
+  - Listen first: after the AI disclosure Chanakya says it is calling because they used the product before, then asks why they stopped. No pitch until the belief has a clear top reason or two probes were used. The 13 Concern Bank worries are the reasons.
+  - Act on the reason, as planner rules and move preconditions so the NRPA planner respects them: `device_issue` gets `raise_ticket` with explicit consent; `settlement_delay` gets `get_settlement_status` (a read) and only what the mock system returns; `rental_cost`, `hidden_charges` and `per_swipe_charges` are answered only from the sourced pages, never with a number or an offer; `competitor_qr` is answered once, then their choice is accepted; `not_needed` and `customers_pay_cash` end the call politely with no pitch and no follow-up; `just_busy` gets a callback; distress, a request for a person and a decline behave as today.
+  - The final top reason is written to the ledger as `LEAVING_REASON_RECORDED` (not through `log_interaction`, which is a consented write).
+  - Seeded former-customer personas with a hidden leaving reason in both the planning and evaluation splits; the twins understand the win-back trigger.
+  - Scenarios `winback_device_fix` (ticket raised, resolved by the mock system, DONE) and `winback_not_needed` (polite close, no pitch, no action).
+- **Done when:** on evaluation personas with seeds 7 and 13 the offline harness reports how often the belief's top reason matches the twin's hidden reason, the fix rate for fixable reasons, zero pitches and zero writes when the reason is `not_needed`, and zero safety violations, all in `docs/results/winback/` with the commands; both scenarios pass; `./init.sh` passes.
+
+#### [x] P1 Permission-first opening for the lead-list door
+- **Branch:** `feat/P1-permission-first`
+- **Owner:** Durvish Khurana
+- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/eval/safety/`, `docs/results/permission-first/`, `README.md`
+- **Depends on:** W0
+- **Build:**
+  - An `ASK_PERMISSION` move: after the AI disclosure, Chanakya says who it is, why it is calling, and asks if they have two minutes. Only for `LEAD_LIST_ASSIGNED` missions with `PERMISSION_FIRST_ENABLED` on.
+  - `RECOMMEND`, `CONFIRM_CONSENT` and `TAKE_ACTION` are not allowed until a clear yes to that question; enforced in the move preconditions, so the NRPA planner cannot skip it.
+  - A no ends the call politely and is recorded as a decline; "busy, call later" schedules a callback; a short "haan" or "hmm" after a long pause is not permission (the deflection rule in `cues.py`).
+  - Templates for the question in Hindi, Hinglish, Punjabi and English, with no em dash; the LLM realizer falls back to them when its line breaks a rule.
+- **Done when:** tests in `chanakya/brain/tests/` show no pitch, consent question or action before a clear yes, a no closes the call as declined, busy schedules a callback and a deflected "haan" is not permission; the safety suite has pitch-before-permission bait, "haan" as deflection and a no, with zero violations offline; `./init.sh` passes.
+
+---
+
 ## Dependency summary
 
 ```
@@ -426,4 +497,8 @@ F0.2 ─┤
 Phase 5: N0 ─┬─ N1 ─┬─ N2 ─┐
              │      └──────┼─ N4
              └─ N3 ────────┘
+
+Phase 6:  I1 ── F1 ──┐
+          W0 ────────┴─ W1 ── W2
+          W0 ── P1
 ```

@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -55,6 +55,8 @@ class Merchant(Model):
     has_soundbox: bool = False
     has_card_machine: bool = False
     phone_last4: str | None = None
+    relationship: Literal["customer", "prospect", "former"] = "customer"
+    churned_at: datetime | None = None  # when a former customer stopped using the product
 
 
 class Door(StrEnum):
@@ -76,6 +78,7 @@ class SignalKind(StrEnum):
     LEAD_LIST_ASSIGNED = "lead_list_assigned"
     FIELD_AGENT_NOTE = "field_agent_note"
     HUMAN_CALL_DROPPED = "human_call_dropped"
+    MERCHANT_CHURNED = "merchant_churned"
 
 
 class MerchantSignal(Model):
@@ -95,6 +98,7 @@ class MissionType(StrEnum):
     SALES = "sales"
     RETENTION = "retention"
     FOLLOW_UP = "follow_up"
+    WIN_BACK = "win_back"
 
 
 class MissionState(StrEnum):
@@ -186,6 +190,8 @@ class EventKind(StrEnum):
     HANDOFF_CREATED = "handoff_created"
     HANDOFF_CLAIMED = "handoff_claimed"
     HANDOFF_RESOLVED = "handoff_resolved"
+    LEAVING_REASON_RECORDED = "leaving_reason_recorded"  # a win-back call's top reason for leaving
+    HOLDOUT_ASSIGNED = "holdout_assigned"  # an eligible former merchant kept out of win-back calls for comparison
     NOTE = "note"
 
 
@@ -235,6 +241,7 @@ class BeliefState(Model):
 
 class MoveType(StrEnum):
     DISCLOSE_AND_GREET = "DISCLOSE_AND_GREET"
+    ASK_PERMISSION = "ASK_PERMISSION"
     DISCOVER_NEED = "DISCOVER_NEED"
     PROBE_CONCERN = "PROBE_CONCERN"
     RESOLVE_CONCERN = "RESOLVE_CONCERN"

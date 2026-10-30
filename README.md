@@ -113,15 +113,30 @@ State lives in `.state/` (ignored by git); delete it to start fresh. An end-to-e
 The demo storyline (docs/IDEA.md section 8) as four scenarios, each a real call on a real mission: the brain talks, the safety gate and mock systems act, the verifier confirms. A scripted merchant reacts to Chanakya's actual moves.
 
 ```bash
-.venv/bin/python scripts/demo/scenarios.py                     # all four, in-process on a fresh ledger, offline
+.venv/bin/python scripts/demo/scenarios.py                     # all six, in-process on a fresh ledger, offline
 .venv/bin/python scripts/demo/scenarios.py distressed_handoff  # one scenario; add --live for the configured LLM
 ```
 
-On a running backend, "Run scenario" in Mission Control plays one live and opens its call (`POST /api/calls/scenarios/<name>`), and the Live Call View has a "Speak as the merchant" box (`POST /api/calls/<mission id>/say`) and a "Talk by voice instead" button (WebSocket `/api/calls/<mission id>/voice`, the browser voice protocol with the call running on that mission; needs the LLM and Sarvam keys). Scenarios: `card_machine_sale`, `callback_followup` (fast-forwards the demo clock a day), `soundbox_service`, `distressed_handoff`.
+On a running backend, "Run scenario" in Mission Control plays one live and opens its call (`POST /api/calls/scenarios/<name>`), and the Live Call View has a "Speak as the merchant" box (`POST /api/calls/<mission id>/say`) and a "Talk by voice instead" button (WebSocket `/api/calls/<mission id>/voice`, the browser voice protocol with the call running on that mission; needs the LLM and Sarvam keys). Scenarios: `card_machine_sale`, `callback_followup` (runs only its own mission's verification jobs early; the shared clock never moves), `soundbox_service`, `distressed_handoff`, and with `WINBACK_ENABLED=true` also `winback_device_fix` (a former merchant's device problem: ticket with consent, DONE when the mock ticketing system resolves it) and `winback_not_needed` (a polite close: no pitch, no action, no follow-up). While a scenario plays, typed and spoken calls on its mission are refused (409).
+
+### Permission-first opening (`PERMISSION_FIRST_ENABLED`)
+
+A merchant on a lead list did not ask to be called. With the flag on, those calls open with the AI disclosure, then one question: who is calling, why, and "do you have two minutes?" (templates in Hindi, Hinglish, Punjabi and English). Nothing else is allowed until a clear yes: no recommendation, consent question or action. This is a move precondition, so the look-ahead planner cannot skip it either. A no ends the call and is recorded as a decline; "busy, call later" schedules a callback. A short "haan" after a long pause, or a reply that is mostly "hmm", is asked once more and then the call ends politely. The safety suite covers pitch-before-permission bait, "haan" as deflection and a no (`python -m chanakya.eval.safety --mode offline`; result in `docs/results/permission-first/safety-offline/`).
+
+### Win-back missions (`WINBACK_ENABLED`)
+
+With the flag on, "Load demo signals" also runs the churn scan (`POST /api/missions/winback/scan` runs it alone). Former merchants who stopped 14 to 180 days ago, are not on do-not-call and had no win-back in 90 days get a `win_back` mission. A merchant with an open complaint ticket goes to a person instead, and 20% are held out by a seeded hash and never called (demo seed 2027 holds out Joginder Auto Parts). Mission Control shows the holdout and a reasons-for-leaving card (`GET /api/missions/winback`).
+
+On the call, Chanakya says it is AI, says it is calling because they used the product before, and asks why they stopped. It acts only on a clear reason: a ticket for a device problem, the mock settlement status then a ticket for a late settlement, sourced answers then a visit for charges, one answer then acceptance for a competitor, a callback when busy, and a polite goodbye with no pitch for "not needed". It never mentions an offer, discount or waiver. The mission is DONE only when a system confirms it: the ticket is resolved, a device is active again or a payment arrives within 14 days (`POST /api/demo/tickets/<id>/resolve` plays the mock ticketing team). Measured results: `docs/results/winback/README.md`.
+
+```bash
+.venv/bin/python -m chanakya.eval.winback --seed 7 --repeats 5 --out docs/results/winback/evaluation-seed7
+.venv/bin/python scripts/demo/scenarios.py winback_device_fix winback_not_needed
+```
 
 ### Feature flags
 
-New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
 
 ### Evaluation
 

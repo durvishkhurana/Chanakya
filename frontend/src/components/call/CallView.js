@@ -9,7 +9,7 @@ import { deriveCallView, doorLabel, languageLabel, percent, stateLabel, topWorri
 import "./call.css";
 
 const MOVE_LABELS = {
-  DISCLOSE_AND_GREET: "Greet and say it is an AI", DISCOVER_NEED: "Ask about the business", PROBE_CONCERN: "Gently raise a worry",
+  DISCLOSE_AND_GREET: "Greet and say it is an AI", ASK_PERMISSION: "Ask for two minutes first", DISCOVER_NEED: "Ask about the business", PROBE_CONCERN: "Gently raise a worry",
   RESOLVE_CONCERN: "Answer a worry with sourced facts", RECOMMEND: "Recommend one product", CONFIRM_CONSENT: "Ask for an explicit yes",
   TAKE_ACTION: "Take an action", SCHEDULE_FOLLOWUP: "Set the next step", ESCALATE: "Hand to a person", END_CALL_POLITELY: "End the call politely",
 };

@@ -2,7 +2,7 @@ import pytest
 
 from chanakya.actions.registry import InvalidArgumentsError, MockToolRegistry
 from chanakya.actions.systems.db import FailurePolicy, MockDB
-from chanakya.actions.systems.seed import MERCHANTS, seed
+from chanakya.actions.systems.seed import FORMER_MERCHANTS, MERCHANTS, seed
 from chanakya.actions.systems.tools import TOOLS, complete_onboarding, default_slot
 from chanakya.core.interfaces import ToolRegistry, UnknownToolError
 from chanakya.core.schemas import ToolCall, ToolKind
@@ -25,6 +25,7 @@ HAPPY = {
     "update_lead_stage": {"merchant_id": "mer_ramesh", "product": "soundbox", "stage": "interested"},
     "log_interaction": {"merchant_id": "mer_ramesh", "summary": "Asked about charges"},
     "send_onboarding_link": {"merchant_id": "mer_ramesh", "product": "soundbox", "language": "hi-IN"},
+    "send_onboarding_reminder": {"merchant_id": "mer_imran", "session_id": "onb_imran_stalled"},
     "send_summary": {"merchant_id": "mer_ramesh", "text": "Dhanyavaad"},
     "get_onboarding_status": {"merchant_id": "mer_imran"},
     "book_field_visit": {"merchant_id": "mer_gurpreet", "purpose": "technician", "slot": default_slot()},
@@ -116,7 +117,7 @@ def test_seed_is_idempotent():
     db = MockDB()
     seed(db)
     seed(db)
-    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS)
+    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + len(FORMER_MERCHANTS)
 
 
 def test_failures_are_reproducible_with_a_seed():
@@ -128,3 +129,47 @@ def test_failures_are_reproducible_with_a_seed():
 
     assert outcomes(7) == outcomes(7)
     assert True in outcomes(7) and False in outcomes(7)
+
+
+def test_the_reminder_is_fixed_text_for_an_open_session_only():
+    reg = registry()
+    sent = reg.execute(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled"))
+    assert sent.ok and "yaad dila rahe hain" in sent.data["body"] and sent.data["link"].endswith("onb_imran_stalled")
+    with pytest.raises(InvalidArgumentsError):
+        reg.validate(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled",
+                          text="Free rental for you"))
+    assert not reg.execute(call("send_onboarding_reminder", merchant_id="mer_ramesh", session_id="onb_imran_stalled")).ok
+    complete_onboarding(reg.db, "onb_imran_stalled")
+    done = reg.execute(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled"))
+    assert not done.ok and "already completed" in done.error
+
+
+def test_an_older_database_gains_the_win_back_columns_on_open(tmp_path):
+    import sqlite3
+
+    path = tmp_path / "old.db"
+    old = sqlite3.connect(path)
+    old.execute("CREATE TABLE merchants (id TEXT PRIMARY KEY, name TEXT NOT NULL, business_type TEXT NOT NULL, "
+                "city TEXT NOT NULL, language TEXT NOT NULL, start_hour INTEGER NOT NULL, end_hour INTEGER NOT NULL, "
+                "do_not_call INTEGER NOT NULL DEFAULT 0, has_soundbox INTEGER NOT NULL DEFAULT 0, "
+                "has_card_machine INTEGER NOT NULL DEFAULT 0, phone_last4 TEXT)")
+    old.execute("INSERT INTO merchants VALUES ('mer_old', 'Old', 'kirana', 'Patna', 'hi-IN', 9, 18, 0, 1, 0, NULL)")
+    old.commit()
+    old.close()
+    db = MockDB(path)
+    seed(db)
+    row = db.one("SELECT relationship, churned_at FROM merchants WHERE id = 'mer_old'")
+    assert row == {"relationship": "customer", "churned_at": None}
+    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + len(FORMER_MERCHANTS) + 1
+
+
+def test_former_merchants_are_seeded_with_a_reason_to_have_left():
+    db = MockDB()
+    seed(db)
+    former = db.all("SELECT id, churned_at FROM merchants WHERE relationship = 'former' ORDER BY id")
+    assert [m["id"] for m in former] == sorted(m[0] for m in FORMER_MERCHANTS) and all(m["churned_at"] for m in former)
+    assert db.all("SELECT relationship FROM merchants WHERE id = 'mer_ramesh'") == [{"relationship": "customer"}]
+    returned = {d["merchant_id"] for d in db.all("SELECT merchant_id FROM devices WHERE status = 'returned'")}
+    assert returned == {"mer_harish", "mer_joginder", "mer_kavita"}
+    assert db.one("SELECT status FROM settlements WHERE merchant_id = 'mer_joginder'")["status"] == "delayed"
+    assert db.one("SELECT status FROM tickets WHERE merchant_id = 'mer_kavita'")["status"] == "open"

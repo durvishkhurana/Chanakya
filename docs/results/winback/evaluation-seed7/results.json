@@ -1,0 +1,1059 @@
+{
+ "config": {
+  "seed": 7,
+  "repeats": 5,
+  "split": "evaluation",
+  "personas": [
+   "eval_former_01",
+   "eval_former_02",
+   "eval_former_03",
+   "eval_former_04",
+   "eval_former_05",
+   "eval_former_06",
+   "eval_former_07",
+   "eval_former_08",
+   "eval_former_09",
+   "eval_former_10"
+  ]
+ },
+ "summary": {
+  "calls": 50,
+  "reason_accuracy": 0.94,
+  "reason_matched": 47,
+  "fixable_calls": 30,
+  "fix_rate": 0.9,
+  "fixed": 27,
+  "not_needed_calls": 15,
+  "not_needed_pitches": 1,
+  "not_needed_writes": 0,
+  "identified_not_needed_calls": 14,
+  "identified_not_needed_pitches_or_writes": 0,
+  "safety_violations": 0,
+  "outcomes": {
+   "fixed": 27,
+   "ended:accepted_choice": 9,
+   "ended:not_needed": 14
+  },
+  "by_reason": {
+   "competitor_qr": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 0,
+    "acted_on": {
+     "competitor_qr": 5
+    }
+   },
+   "customers_pay_cash": {
+    "calls": 5,
+    "reason_matched": 4,
+    "fixed": 0,
+    "acted_on": {
+     "customers_pay_cash": 4,
+     "trust_in_caller": 1
+    }
+   },
+   "device_issue": {
+    "calls": 10,
+    "reason_matched": 9,
+    "fixed": 7,
+    "acted_on": {
+     "device_issue": 9,
+     "trust_in_caller": 1
+    }
+   },
+   "just_busy": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "just_busy": 5
+    }
+   },
+   "not_needed": {
+    "calls": 10,
+    "reason_matched": 9,
+    "fixed": 0,
+    "acted_on": {
+     "not_needed": 9,
+     "customers_pay_cash": 1
+    }
+   },
+   "per_swipe_charges": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "per_swipe_charges": 5
+    }
+   },
+   "rental_cost": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "rental_cost": 5
+    }
+   },
+   "settlement_delay": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "settlement_delay": 5
+    }
+   }
+  }
+ },
+ "calls": [
+  {
+   "persona_id": "eval_former_01",
+   "seed": 70000,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_01",
+   "seed": 70001,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_01",
+   "seed": 70002,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_01",
+   "seed": 70003,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_01",
+   "seed": 70004,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_02",
+   "seed": 70100,
+   "hidden_reason": "device_issue",
+   "acted_reason": "trust_in_caller",
+   "final_top": "trust_in_caller",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(trust_in_caller)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_02",
+   "seed": 70101,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_02",
+   "seed": 70102,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_02",
+   "seed": 70103,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_02",
+   "seed": 70104,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_03",
+   "seed": 70200,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_03",
+   "seed": 70201,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_03",
+   "seed": 70202,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_03",
+   "seed": 70203,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "settlement_delay",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_03",
+   "seed": 70204,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "settlement_delay",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_04",
+   "seed": 70300,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_04",
+   "seed": 70301,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_04",
+   "seed": 70302,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_04",
+   "seed": 70303,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_04",
+   "seed": 70304,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_05",
+   "seed": 70400,
+   "hidden_reason": "per_swipe_charges",
+   "acted_reason": "per_swipe_charges",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(per_swipe_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_05",
+   "seed": 70401,
+   "hidden_reason": "per_swipe_charges",
+   "acted_reason": "per_swipe_charges",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(per_swipe_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_05",
+   "seed": 70402,
+   "hidden_reason": "per_swipe_charges",
+   "acted_reason": "per_swipe_charges",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(per_swipe_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_05",
+   "seed": 70403,
+   "hidden_reason": "per_swipe_charges",
+   "acted_reason": "per_swipe_charges",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(per_swipe_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_05",
+   "seed": 70404,
+   "hidden_reason": "per_swipe_charges",
+   "acted_reason": "per_swipe_charges",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(per_swipe_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_06",
+   "seed": 70500,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_06",
+   "seed": 70501,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_06",
+   "seed": 70502,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_06",
+   "seed": 70503,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_06",
+   "seed": 70504,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_07",
+   "seed": 70600,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_07",
+   "seed": 70601,
+   "hidden_reason": "not_needed",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "PROBE_CONCERN(rental_cost)",
+    "PROBE_CONCERN(hidden_charges)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_07",
+   "seed": 70602,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_07",
+   "seed": 70603,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_07",
+   "seed": 70604,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_08",
+   "seed": 70700,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_08",
+   "seed": 70701,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_08",
+   "seed": 70702,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "trust_in_caller",
+   "final_top": "trust_in_caller",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(trust_in_caller)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_08",
+   "seed": 70703,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_08",
+   "seed": 70704,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_09",
+   "seed": 70800,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_09",
+   "seed": 70801,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_09",
+   "seed": 70802,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_09",
+   "seed": 70803,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_09",
+   "seed": 70804,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "eval_former_10",
+   "seed": 70900,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_10",
+   "seed": 70901,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_10",
+   "seed": 70902,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_10",
+   "seed": 70903,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "eval_former_10",
+   "seed": 70904,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  }
+ ]
+}

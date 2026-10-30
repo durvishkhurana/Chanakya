@@ -8,7 +8,7 @@ import AppShell from "../../components/missions/AppShell";
 import ConcernMeter from "../../components/missions/ConcernMeter";
 import { api, useMissionStream } from "../../lib/chanakyaApi";
 import {
-  deriveCallView, doorLabel, eventSummary, groupMissions, languageLabel, missionCounts, percent, stateLabel, time, topWorries, worryLabel,
+  countRows, deriveCallView, doorLabel, eventSummary, groupMissions, languageLabel, missionCounts, percent, stateLabel, time, topWorries, worryLabel,
 } from "../../lib/missionView.mjs";
 
 const TABS = [["queue", "Queue"], ["active", "In progress"], ["finished", "Finished"], ["handoffs", "Hand-offs"]];
@@ -106,6 +106,7 @@ function MissionControl() {
           : <div className="panel"><p className="meta">Select a mission to see its card, the concern meter and its ledger.</p></div>}
       </aside>
     </div>
+    <Winback version={events.length} />
   </AppShell>;
 }
 
@@ -249,4 +250,30 @@ function Handoffs({ cards, busy, act }) {
       <Link className="btn small ghost" href={`/missions?m=${card.mission_id}`}>Open mission</Link>
     </div>
   </article>)}</div>;
+}
+
+/** Win-back at a glance (WINBACK_ENABLED): who is held out for comparison, and why former merchants left. */
+function Winback({ version }) {
+  const [data, setData] = useState(null);
+  useEffect(() => { api("/api/missions/winback").then(setData).catch(() => setData(null)); }, [version]);
+  if (!data?.enabled) return null;
+  const { holdouts, reasons } = data;
+  const groups = [["Reason", reasons.by_reason, worryLabel], ["City", reasons.by_city], ["Product", reasons.by_product, (p) => p.replaceAll("_", " ")]];
+  return <section aria-label="Win-back" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, marginTop: 24 }}>
+    <div className="panel">
+      <header><h2>Win-back holdout</h2><span className="meta">Mock merchants</span></header>
+      <p className="meta" style={{ marginBottom: 12 }}>One in five eligible former merchants is not called, so the win-back rate can be compared with doing nothing.</p>
+      {holdouts.length === 0 ? <p className="meta">Nobody is held out yet. Load the demo signals to run the churn scan.</p>
+        : <ul className="facts">{holdouts.map((h) => <li key={h.merchant_id} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontSize: 13 }}><span className="pill">holdout (not called)</span>
+          <span>{h.merchant_name} · {h.city} · stopped {h.days} days ago</span></li>)}</ul>}
+    </div>
+    <div className="panel">
+      <header><h2>Reasons for leaving</h2><span className="meta num">{reasons.total} recorded</span></header>
+      {reasons.total === 0 ? <p className="meta">No win-back call has recorded a reason yet.</p>
+        : groups.map(([title, counts, label]) => <div key={title} style={{ marginBottom: 12 }}>
+          <h3 className="subhead">{title}</h3>
+          <dl className="facts">{countRows(counts, label).map((r) => <div key={r.key} className="fact"><dt className="num">{r.count} · {percent(r.share)}</dt><dd>{r.label}</dd></div>)}</dl>
+        </div>)}
+    </div>
+  </section>;
 }
