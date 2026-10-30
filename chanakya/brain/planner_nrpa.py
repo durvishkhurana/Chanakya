@@ -10,6 +10,7 @@ import copy
 import math
 import random
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from chanakya.brain.contracts.schemas import (
@@ -43,16 +44,35 @@ class Rollout:
     sequence: list[tuple[str, str]]
 
 
-def outcome(state: TwinState, turns: int) -> float:
-    """One score for every way a simulated call can end, minus call time."""
+# The value of a call that is still going when the look-ahead stops: (simulated twin, conversation, turns) -> value.
+LeafValue = Callable[[TwinState, DialogueState, int], float]
+
+
+def terminal_value(state: TwinState) -> float | None:
+    """The score of a simulated call that has ended, or None while it is still going."""
     if state.consented:
-        value = REWARD_CONSENT
-    elif state.followup_agreed:
-        value = REWARD_FOLLOWUP
-    elif state.ended:
-        value = PENALTY_WALK_AWAY if state.willingness <= 0.08 or state.patience <= 0 else 0.0
-    else:
-        value = BOOTSTRAP * consent_chance(state)
+        return REWARD_CONSENT
+    if state.followup_agreed:
+        return REWARD_FOLLOWUP
+    if state.ended:
+        return PENALTY_WALK_AWAY if state.willingness <= 0.08 or state.patience <= 0 else 0.0
+    return None
+
+
+def formula_value(state: TwinState, dialogue: DialogueState | None = None, turns: int = 0) -> float:
+    """The hand-written horizon guess for an unfinished call: a fraction of today's chance of a yes."""
+    return BOOTSTRAP * consent_chance(state)
+
+
+def outcome(state: TwinState, turns: int, dialogue: DialogueState | None = None,
+            leaf_value: LeafValue | None = None) -> float:
+    """One score for every way a simulated call can end, minus call time.
+
+    An unfinished call is valued by ``leaf_value`` (the N3 value network) when given, else by the formula.
+    """
+    value = terminal_value(state)
+    if value is None:
+        value = (leaf_value or formula_value)(state, dialogue, turns)
     return value - TURN_COST * turns
 
 
@@ -61,7 +81,7 @@ class NRPAPlanner:
 
     def __init__(self, bank: ConcernBank | None = None, samples: int = 12, level: int = 2, iterations: int = 4,
                  depth: int = 2, budget_ms: float = 300.0, alpha: float = 1.0, seed: int = 0,
-                 evaluations: int = 8, forest=None):
+                 evaluations: int = 8, forest=None, leaf_value: LeafValue | None = None):
         if not 1 <= level <= 2:
             raise ValueError("NRPA level must be 1 or 2")
         self.bank = bank or default_bank()
@@ -71,6 +91,8 @@ class NRPAPlanner:
         self.evaluations = evaluations
         # Strategy Forest (A9): moves that worked in similar states become the first candidates.
         self.forest = forest
+        # N3: a learned value for unfinished simulated calls (PLANNER_VALUE=network); None keeps the formula.
+        self.leaf_value = leaf_value
 
     # ── simulation model ────────────────────────────────────────────────
 
@@ -163,7 +185,7 @@ class NRPAPlanner:
             sequence.append(self.code(intent, move))
             intent = judge_turn(sim, move, "", rng)
             turns += 1
-        return Rollout(outcome(sim, turns), sequence)
+        return Rollout(outcome(sim, turns, state, self.leaf_value), sequence)
 
     def adapt(self, policy: dict, best: Rollout) -> dict:
         """Standard NRPA adaptation: raise the best sequence's codes, lower the alternatives in proportion."""

@@ -21,6 +21,7 @@ from chanakya.brain.contracts import schemas as brain
 from chanakya.brain.core_adapters import to_brain_card, to_ledger_event
 from chanakya.brain.forest.forest import default_forest
 from chanakya.brain.planner_nrpa import NRPAPlanner
+from chanakya.brain.value.network import configured_leaf_value
 from chanakya.core import schemas as core
 
 S = core.MissionState
@@ -134,7 +135,8 @@ class MissionCall:
     def __init__(self, runtime, mission_id: str, llm=None, planner=None):
         self.runtime = runtime
         self.mission_id = mission_id
-        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=default_forest()),
+        leaf_value = configured_leaf_value(runtime.settings.planner_value)  # PLANNER_VALUE: formula or network (N3)
+        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=default_forest(), leaf_value=leaf_value),
                                 bus=LedgerBus(self), gate=LedgerGate(self), actions_enabled=True)
         self.recorded_consents = 0
         self.disclosed = False
