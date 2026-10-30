@@ -2,15 +2,14 @@
 
 ## Current State
 
-**Last Updated:** 2026-10-30
-**Active Feature:** N0 neural baselines on `feat/N0-neural-baseline` (done); next N1 neural worry scorer. I1 (#19), A6 seed stability (#20), I3 fallbacks (#21) and I4 README (#22) are merged.
+**Last Updated:** 2026-10-29
+**Active Feature:** none in progress. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
-| Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
-| N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
+| Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
 
 ## Status
 
@@ -47,11 +46,11 @@
 
 ### What's Next
 
-1. Gurnoor: N1 neural worry scorer on e5-small (sigmoid head, calibrated on a validation split, selected by `WORRY_SCORER` from a small `core:` PR, run through ONNX); first, Gurnoor and Durvish write the hand-written test set (about 150 lines each), plus a twin voice that speaks the held-out lines so the harness can measure it end to end
-2. Then N2 semantic memory and N3 value network (both after N1), then N4 to show them in the Live Call View and coach mode
-3. Durvish: the eight review points on #19 are still open on main; the first three matter for the demo (a second brain on a running scenario's mission, a link yes approving any `send_summary`, the callback scenario moving the live clock)
-4. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3)
-5. Track B: optional B10, B12, B13
+1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
+2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
+3. A6: Gurnoor found the NRPA choice varies with its seed on the coach recording; look at why so few samples flip the choice
+4. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
+5. Track B: optional B10, B12, B13. Together: I3 backup video (docs/PHONE_DEMO.md, path A)
 
 ## Blockers / Risks
 
