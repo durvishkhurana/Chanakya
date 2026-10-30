@@ -136,7 +136,7 @@ On the call, Chanakya says it is AI, says it is calling because they used the pr
 
 ### Feature flags
 
-New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNER_MEMORY` picks where the look-ahead planner finds moves that worked in similar moments: `forest` (default, the Strategy Forest's trigram clusters) or `neural` (e5 plus belief nearest-moment memory, task N2). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
 
 ### Evaluation
 
@@ -157,7 +157,7 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 | Part | Replaces | Setting | Status |
 |---|---|---|---|
 | Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
-| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` (setting added) | in progress |
 | Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | planned |
 
 All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries are optional and never needed by `./init.sh`:
