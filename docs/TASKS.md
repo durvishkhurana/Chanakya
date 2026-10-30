@@ -310,7 +310,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. Gurnoor owns this phase, including the small wiring edits in `chanakya/brain/`; Durvish reviews those.
 
-#### [ ] N0 Baselines and labelled data
+#### [x] N0 Baselines and labelled data
 - **Branch:** `feat/N0-neural-baseline`
 - **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-baseline/`
 - **Build:** labelled merchant lines in four languages from two model families (train from the Twin-A model, test from the Twin-B model, nothing close to a Concern Bank phrasing); baselines for today's lexical scorer, the LLM scorer and two candidate encoders; the encoder choice.

@@ -637,9 +637,9 @@
       "dependencies": [
         "A3"
       ],
-      "status": "in-progress",
+      "status": "done",
       "done_when": "Baselines and the encoder choice are in docs/results/neural-baseline/ with the command that produced them.",
-      "evidence": ""
+      "evidence": "2026-10-30: python -m chanakya.neural.paraphrase --seed 7 -> 2,123 labelled lines (1,455 train from deepseek-v4-flash, 668 test from gpt-6-luna); python -m chanakya.neural.baseline --seed 7 --llm-sample 112 -> lexical 0.388, MiniLM 0.310, e5-small 0.437 (5.5 ms), LLM 0.777 (1.9 s) on 14 labels; planner 0.96/0.98 with and without the forest; encoder choice multilingual-e5-small; chanakya/neural/tests pass; docs/results/neural-baseline/README.md"
     },
     {
       "id": "N1",

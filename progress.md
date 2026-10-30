@@ -2,14 +2,15 @@
 
 ## Current State
 
-**Last Updated:** 2026-10-29
-**Active Feature:** I1 demo scenarios on `feat/I1-demo-scenarios` (PR open): the brain now talks on real missions, so live calls fill the Live Call View. Track A (#15-#17) and B11 coach mode (#18) are merged.
+**Last Updated:** 2026-10-30
+**Active Feature:** N0 neural baselines on `feat/N0-neural-baseline` (done); next N1 neural worry scorer. I1 (#19), A6 seed stability (#20), I3 fallbacks (#21) and I4 README (#22) are merged.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
-| Integration | both | I2 measured results in `docs/results/`; I1 demo scenarios (PR open) | I3, I4 |
+| Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
+| N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
 
 ## Status
 
@@ -35,6 +36,7 @@
   - `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission; every turn, belief and plan goes to the ledger in the core shapes, AI disclosure and explicit consent are recorded where the gate checks them, writes go through Track B's `ActionGate` and mock systems, distress opens an urgent hand-off, a clear no closes the mission
   - `chanakya/brain/scenarios.py` and `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command, 4/4 passing
   - `chanakya/brain/calls_api.py` (`/api/calls`, behind `MISSIONS_ENABLED`): run a scenario or speak as the merchant; Mission Control has a "Run scenario" control and the Live Call View a "Speak as the merchant" box; `/api/calls/<id>/voice` runs a spoken browser call on the mission ("Talk by voice instead")
+- [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
 
@@ -45,13 +47,16 @@
 
 ### What's Next
 
-1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
-2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
-3. A6: Gurnoor found the NRPA choice varies with its seed on the coach recording; look at why so few samples flip the choice
-4. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-5. Track B: optional B10, B12, B13. Together: I3 phone demo or backup video, I4 README and deck numbers
+1. Gurnoor: N1 neural worry scorer on e5-small (trained, calibrated head behind `NEURAL_BELIEF_ENABLED`), plus a twin voice that speaks the held-out lines so the harness can measure it end to end
+2. Then N2 semantic memory and N3 value network (both after N1), then N4 to show them in the Live Call View and coach mode
+3. Durvish: the eight review points on #19 are still open on main; the first three matter for the demo (a second brain on a running scenario's mission, a link yes approving any `send_summary`, the callback scenario moving the live clock)
+4. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3)
+5. Track B: optional B10, B12, B13
 
 ## Blockers / Risks
+
+- [ ] Review points on #19 not yet fixed on main: scenario calls are not registered (a typed or spoken line starts a second brain), a yes to the link is recorded for every `send_summary`, the callback scenario moves the shared clock by at least 26 hours, voice barge-in can cut `say()` halfway, only the first decline is recorded
+- [ ] The neural parts need `requirements-neural.txt` (PyTorch through sentence-transformers) and a one-time model download of about 470 MB; `./init.sh` and CI do not install them
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
