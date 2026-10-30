@@ -166,7 +166,8 @@ class MissionCall:
         for target, reason in ((S.CONTACTING, "Chanakya is calling"), (S.IN_CONVERSATION, "merchant picked up")):
             if mission.state in {S.CREATED, S.SCHEDULED} or (mission.state == S.CONTACTING and target == S.IN_CONVERSATION):
                 mission = await self.runtime.ledger.advance(self.mission_id, target, reason=reason)
-        self.agent.start(self.mission_id, to_brain_card(mission))
+        self.agent.start(self.mission_id, to_brain_card(
+            mission, permission_first=self.runtime.settings.permission_first_enabled))
 
     async def say(self, text: str, language: str | None = None) -> str | None:
         """The merchant says ``text``; returns what Chanakya says back, or None once the call is over.
@@ -239,6 +240,11 @@ class MissionCall:
         mission, ledger = self.mission, self.runtime.ledger
         if not mission.is_open:
             return
+        if move.end_reason == brain.EndReason.DECLINED and not self.declined:
+            # A plain "no" to "do you have two minutes?" is a decline even without the usual decline words.
+            self.declined = True
+            await ledger.record(self.mission_id, core.EventKind.CONSENT_DECLINED,
+                                {"utterance": self.state.last_merchant_text(), "scope": "permission"})
         ends = move.type in lib.TERMINAL_MOVES or move.type == brain.MoveType.SCHEDULE_FOLLOWUP
         fixed = move.type == brain.MoveType.TAKE_ACTION and move.tool in lib.WRITE_TOOLS
         if ends or fixed:

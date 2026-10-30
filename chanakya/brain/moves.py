@@ -6,6 +6,8 @@ Hard rules enforced here, before any planner scores anything:
 - CONFIRM_CONSENT names exactly one known write tool.
 - After the merchant declines, only END_CALL_POLITELY or ESCALATE remain.
 - Unknown concerns, products and tools are rejected, never improvised.
+- Permission-first missions (lead list): nothing but the permission question, a callback or a goodbye until the
+  merchant clearly says yes to "do you have two minutes?".
 - Win-back missions listen first: no answer, consent question or action until the reason for leaving is clear
   (or two probes were used); then only the fix that fits that reason, and nothing at all for "not needed".
 """
@@ -15,7 +17,7 @@ import re
 from chanakya.brain.contracts.schemas import DialogueState, MissionKind, Move, MoveType
 
 from .concern_bank import ConcernBank
-from .cues import DEFLECTIONS, FILLERS
+from .cues import DEFLECTIONS, FILLERS, hesitation
 
 PRODUCTS = ("qr", "soundbox", "card_machine", "gateway", "payment_links")
 # Typed tools from docs/IDEA.md 3.7; the action registry (Track B) is the source of truth at run time.
@@ -67,6 +69,14 @@ DENIAL = re.compile(
     r"|दिक्कत नहीं|समस्या नहीं|ਸਮੱਸਿਆ ਨਹੀਂ",
     re.IGNORECASE,
 )
+# Answers to "do you have two minutes?" (permission-first opening).
+BUSY = re.compile(r"\b(busy|call later|later|baad mein (?:call|baat|phone)|abhi time nahi|time nahi hai|kal call"
+                  r"|shaam ko call)\b|बाद में (?:कॉल|बात)|अभी टाइम नहीं|ਬਾਅਦ ਵਿੱਚ|ਹੁਣੇ ਸਮਾਂ ਨਹੀਂ", re.IGNORECASE)
+GO_AHEAD = re.compile(r"\b(boliye|bataiye|batao|go ahead|tell me|haan ji|ji haan|sure|zaroor|bilkul)\b"
+                      r"|बोलिए|बताइए|ज़रूर|ਦੱਸੋ|ਬੋਲੋ|ਜ਼ਰੂਰ", re.IGNORECASE)
+PERMISSION_OPEN = frozenset({MoveType.ASK_PERMISSION, MoveType.SCHEDULE_FOLLOWUP, MoveType.END_CALL_POLITELY,
+                             MoveType.ESCALATE, MoveType.DISCLOSE_AND_GREET})
+MAX_PERMISSION_ASKS = 2
 # "Let me think" is not an answer to "why did you stop?".
 HESITANT = re.compile(r"\b(sochna padega|think about it|pata nahi|dekhte hain|not sure)\b|सोचना पड़ेगा|पता नहीं|ਸੋਚਣਾ ਪਵੇਗਾ",
                       re.IGNORECASE)
@@ -120,6 +130,41 @@ def ruled_out_concerns(state: DialogueState) -> set[str]:
             ruled_out.add(probed)
             probed = None
     return ruled_out
+
+
+def permission_reply(turn) -> str:
+    """Read an answer to "do you have two minutes?": ``yes``, ``no``, ``busy`` or ``unclear``.
+
+    A short "haan" after a long pause is polite deflection (``cues.hesitation``), and a reply that is mostly
+    fillers ("hmm... haan") is no answer either; both are ``unclear``, never permission.
+    """
+    text = turn.text
+    if BUSY.search(text):
+        return "busy"
+    if merchant_declined(text) or (NEGATION.search(text) and not AFFIRM.search(text) and not GO_AHEAD.search(text)):
+        return "no"
+    if hesitation(turn).deflection or HESITANT.search(text) or len(FILLERS.findall(text)) * 3 >= max(1, len(text.split())):
+        return "unclear"
+    if NEGATION.search(text):
+        return "unclear"
+    return "yes" if AFFIRM.search(text) or GO_AHEAD.search(text) else "unclear"
+
+
+def permission_answers(state: DialogueState) -> list[str]:
+    """The merchant's answer to each permission question so far, in order."""
+    answers, asked = [], False
+    for turn in state.transcript.turns:
+        if turn.speaker == "agent":
+            asked = turn.move is not None and turn.move.type == MoveType.ASK_PERMISSION
+        elif asked and turn.speaker == "merchant":
+            answers.append(permission_reply(turn))
+            asked = False
+    return answers
+
+
+def permission_granted(state: DialogueState) -> bool:
+    """Whether the merchant clearly said yes to the permission question (always true when none is needed)."""
+    return not state.card.permission_first or "yes" in permission_answers(state)
 
 
 def is_winback(state: DialogueState) -> bool:
@@ -245,6 +290,12 @@ def violations(move: Move, state: DialogueState, bank: ConcernBank) -> list[str]
             problems.append("unknown_tool")
     if is_winback(state):
         problems.extend(winback_violations(move, state))
+    if move.type == MoveType.ASK_PERMISSION:
+        asks = sum(1 for m in state.moves if m.type == MoveType.ASK_PERMISSION)
+        if not state.card.permission_first or permission_granted(state) or asks >= MAX_PERMISSION_ASKS:
+            problems.append("permission_not_needed")
+    elif not permission_granted(state) and move.type not in PERMISSION_OPEN:
+        problems.append("permission_first")
     return problems
 
 
@@ -257,7 +308,8 @@ def legal_moves(state: DialogueState, bank: ConcernBank, product: str, consent_t
                 top_concerns: int = 3) -> list[Move]:
     """Every legal candidate worth considering: moves for the top open concerns plus the mission moves."""
     open_concerns = [cid for cid, _ in open_belief(state).top(top_concerns)]
-    candidates = [Move(type=MoveType.DISCLOSE_AND_GREET), Move(type=MoveType.DISCOVER_NEED)]
+    candidates = [Move(type=MoveType.DISCLOSE_AND_GREET), Move(type=MoveType.ASK_PERMISSION),
+                  Move(type=MoveType.DISCOVER_NEED)]
     for cid in open_concerns:
         candidates += [Move(type=MoveType.PROBE_CONCERN, concern=cid), Move(type=MoveType.RESOLVE_CONCERN, concern=cid)]
     candidates += [

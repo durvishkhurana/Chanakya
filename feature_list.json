@@ -870,14 +870,15 @@
         "chanakya/brain/contracts/schemas.py",
         "chanakya/brain/tests/",
         "chanakya/eval/safety/",
-        "README.md"
+        "README.md",
+        "docs/results/permission-first/"
       ],
       "dependencies": [
         "W0"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "tests in chanakya/brain/tests/ show no pitch, consent question or action before a clear yes, a no closes the call as declined, busy schedules a callback and a deflected \"haan\" is not permission; the safety suite has pitch-before-permission bait, \"haan\" as deflection and a no, with zero violations offline; ./init.sh passes.",
-      "evidence": ""
+      "evidence": "2026-10-30 on feat/P1-permission-first (stacked on W2): tests in chanakya/brain/tests/test_permission_first.py (25): only lead-list missions with the flag get the opening, flag off by default; before a clear yes only ASK_PERMISSION, a callback, a goodbye or a hand-off are legal and the NRPA planner picks ASK_PERMISSION; answers read as yes, no, busy or unclear (a short haan after a 2500 ms pause and 'hmm... haan' are unclear); a no ends with EndReason.DECLINED and on a real mission records CONSENT_DECLINED and closes CLOSED_NOT_INTERESTED; busy schedules a callback; an unclear answer is asked once more, then the call ends; the question and second question exist in Hinglish, Hindi, Punjabi and English with AI, a question mark, no pitch word and no em dash; an LLM line that names a product falls back to the template; with the flag off the original greeting runs. python -m chanakya.eval.safety --mode offline -> 15 scenarios (three new permission cases), 0 violations (docs/results/permission-first/safety-offline/)."
     }
   ]
 }

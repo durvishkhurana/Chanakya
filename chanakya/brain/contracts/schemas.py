@@ -338,6 +338,8 @@ class MissionCard(Contract):
     chance: float = Field(default=0.5, ge=0, le=1)
     value: float = Field(default=1.0, ge=0)
     context: str = ""
+    # The merchant did not ask to be called (lead list, PERMISSION_FIRST_ENABLED): ask for two minutes before anything.
+    permission_first: bool = False
 
     @field_validator("starting_worries")
     @classmethod

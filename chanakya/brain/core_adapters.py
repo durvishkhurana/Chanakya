@@ -72,8 +72,13 @@ def to_core_merchant(merchant: brain.Merchant) -> core.Merchant:
                          churned_at=merchant.churned_at)
 
 
-def to_brain_card(mission: core.Mission, bank: ConcernBank | None = None) -> brain.MissionCard:
-    """The brain's view of a core mission."""
+def to_brain_card(mission: core.Mission, bank: ConcernBank | None = None,
+                  permission_first: bool = False) -> brain.MissionCard:
+    """The brain's view of a core mission.
+
+    ``permission_first`` is the PERMISSION_FIRST_ENABLED setting: lead-list missions then open by asking for two
+    minutes, because the merchant did not ask to be called.
+    """
     bank = bank or default_bank()
     card = mission.card
     trigger = TRIGGERS[card.signal_kind]
@@ -86,6 +91,7 @@ def to_brain_card(mission: core.Mission, bank: ConcernBank | None = None) -> bra
         trigger=trigger, why_now=card.why_now,
         starting_worries=worries(card.starting_worries, bank) if card.starting_worries else bank.priors[trigger],
         chance=min(1.0, card.priority) if card.priority else 0.5, context=card.product or "",
+        permission_first=permission_first and trigger == brain.TriggerType.LEAD_LIST,
     )
 
 

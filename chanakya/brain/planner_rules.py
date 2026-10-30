@@ -28,6 +28,9 @@ PRODUCT_BY_TRIGGER = {
 }
 PRODUCT_WORDS = {"card": "card_machine", "pos": "card_machine", "soundbox": "soundbox", "qr": "qr",
                  "link": "payment_links", "gateway": "gateway", "website": "gateway"}
+# The permission-first opening is never searched either.
+PERMISSION_RULES = frozenset({"ask_permission", "ask_permission_again", "permission_declined", "permission_busy",
+                              "permission_unclear"})
 # Win-back rules are never searched by the look-ahead planner (they are also move preconditions).
 WINBACK_RULES = frozenset({"winback_ask_why", "winback_probe", "winback_busy", "winback_not_needed",
                            "winback_settlement_read", "winback_answer", "winback_fix", "winback_accept_choice",
@@ -87,6 +90,8 @@ class RuleBasedPlanner:
         if "SCHEDULE_FOLLOWUP" in done:
             return Move(type=MoveType.END_CALL_POLITELY, reason="follow-up scheduled",
                         end_reason=EndReason.FOLLOWUP_SCHEDULED), "after_followup"
+        if not lib.permission_granted(state):
+            return self.permission(state)
         if lib.is_winback(state):
             return self.winback(state)
         asked = state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT
@@ -117,6 +122,20 @@ class RuleBasedPlanner:
         if asks < 2:
             return ask, "ask_consent"
         return Move(type=MoveType.SCHEDULE_FOLLOWUP, args={"channel": "call"}), "no_consent_yet"
+
+    def permission(self, state: DialogueState) -> tuple[Move, str]:
+        """Before any pitch on a call the merchant did not ask for: two minutes? A no ends it, busy reschedules."""
+        answers = lib.permission_answers(state)
+        if not answers:
+            return Move(type=MoveType.ASK_PERMISSION), "ask_permission"
+        if answers[-1] == "no":
+            return Move(type=MoveType.END_CALL_POLITELY, reason="no to two minutes",
+                        end_reason=EndReason.DECLINED), "permission_declined"
+        if answers[-1] == "busy":
+            return Move(type=MoveType.SCHEDULE_FOLLOWUP, args={"channel": "call"}), "permission_busy"
+        if len(answers) < lib.MAX_PERMISSION_ASKS:
+            return Move(type=MoveType.ASK_PERMISSION, reason="answer was not a clear yes"), "ask_permission_again"
+        return Move(type=MoveType.END_CALL_POLITELY, reason="no clear yes to two minutes"), "permission_unclear"
 
     def winback(self, state: DialogueState) -> tuple[Move, str]:
         """Listen first, then act on the reason for leaving: fix it if a system can, otherwise stop politely."""

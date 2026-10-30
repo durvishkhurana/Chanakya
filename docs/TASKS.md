@@ -431,10 +431,10 @@ Durvish owns every task in this phase. Some of them edit Track B directories (`c
   - Scenarios `winback_device_fix` (ticket raised, resolved by the mock system, DONE) and `winback_not_needed` (polite close, no pitch, no action).
 - **Done when:** on evaluation personas with seeds 7 and 13 the offline harness reports how often the belief's top reason matches the twin's hidden reason, the fix rate for fixable reasons, zero pitches and zero writes when the reason is `not_needed`, and zero safety violations, all in `docs/results/winback/` with the commands; both scenarios pass; `./init.sh` passes.
 
-#### [ ] P1 Permission-first opening for the lead-list door
+#### [x] P1 Permission-first opening for the lead-list door
 - **Branch:** `feat/P1-permission-first`
 - **Owner:** Durvish Khurana
-- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/eval/safety/`, `README.md`
+- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/eval/safety/`, `docs/results/permission-first/`, `README.md`
 - **Depends on:** W0
 - **Build:**
   - An `ASK_PERMISSION` move: after the AI disclosure, Chanakya says who it is, why it is calling, and asks if they have two minutes. Only for `LEAD_LIST_ASSIGNED` missions with `PERMISSION_FIRST_ENABLED` on.
