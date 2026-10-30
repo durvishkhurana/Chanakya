@@ -47,7 +47,7 @@
 
 ### What's Next
 
-1. Gurnoor: N1 neural worry scorer on e5-small (trained, calibrated head behind `NEURAL_BELIEF_ENABLED`), plus a twin voice that speaks the held-out lines so the harness can measure it end to end
+1. Gurnoor: N1 neural worry scorer on e5-small (sigmoid head, calibrated on a validation split, selected by `WORRY_SCORER` from a small `core:` PR, run through ONNX); first, Gurnoor and Durvish write the hand-written test set (about 150 lines each), plus a twin voice that speaks the held-out lines so the harness can measure it end to end
 2. Then N2 semantic memory and N3 value network (both after N1), then N4 to show them in the Live Call View and coach mode
 3. Durvish: the eight review points on #19 are still open on main; the first three matter for the demo (a second brain on a running scenario's mission, a link yes approving any `send_summary`, the callback scenario moving the live clock)
 4. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3)

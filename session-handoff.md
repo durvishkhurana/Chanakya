@@ -47,4 +47,4 @@
 
 ## Recommended Next Step
 
-- N1: train a calibrated 13-worry head on e5-small embeddings of the train lines, expose it as `EmbeddingScorer` behind `NEURAL_BELIEF_ENABLED`, and measure it on the test lines against 0.388 (lexical) and 0.777 (LLM)
+- N1: train a calibrated 13-worry head on e5-small embeddings of the train lines, expose it as `EmbeddingScorer` selected by `WORRY_SCORER` (see the revised N1 in `docs/TASKS.md`: ONNX runtime, sigmoid outputs, hand-written test set first), and measure it on the test lines against 0.388 (lexical) and 0.777 (LLM)
