@@ -165,6 +165,10 @@ def make_variant(name: str, llm=None, llm_agent=None):
         return BrainVariant(name, llm=llm)
     if name == "chanakya_no_belief":
         return BrainVariant(name, llm=llm, belief=False)
+    if name == "chanakya_value":
+        from chanakya.brain.value.network import default_network
+
+        return BrainVariant(name, llm=llm, planner=NRPAPlanner(leaf_value=default_network().leaf_value))
     if name == "chanakya_forest":
         from chanakya.brain.forest.forest import default_forest
 

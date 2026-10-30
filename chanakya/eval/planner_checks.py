@@ -3,6 +3,7 @@
     python -m chanakya.eval.planner_checks lookahead   # consent rate, Twin-A, planning x seeds 0-9, evaluation x 0-4
     python -m chanakya.eval.planner_checks stability   # coach recording: does the suggestion depend on the seed?
     python -m chanakya.eval.planner_checks forest      # look-ahead consent with and without the Strategy Forest prior
+    python -m chanakya.eval.planner_checks lookahead --value network   # the same with the N3 value network
 
 Offline and deterministic: template twins, lexical belief, no network.
 """
@@ -24,6 +25,7 @@ from chanakya.humans.coach_api import FIXTURE
 from chanakya.humans.coach_engine import CoachEngine
 
 BANK = default_bank()
+LEAF_VALUE = None  # set by --value network: the N3 value network replaces the planner's horizon formula
 
 
 class TimedPlanner(NRPAPlanner):
@@ -48,7 +50,7 @@ async def lookahead() -> None:
     for split, seeds in (("planning", 10), ("evaluation", 5)):
         personas = [p for p in load_personas(split=split) if not p.adversarial]
         baseline = await consent_rate(lambda: RuleBasedPlanner(BANK), personas, seeds)
-        nrpa = await consent_rate(lambda: TimedPlanner(BANK), personas, seeds)
+        nrpa = await consent_rate(lambda: TimedPlanner(BANK, leaf_value=LEAF_VALUE), personas, seeds)
         print(f"{split}: {len(personas)} personas x seeds 0-{seeds - 1} ({len(personas) * seeds} calls): "
               f"baseline {baseline:.3f}, look-ahead {nrpa:.3f}")
     times = TimedPlanner.times
@@ -77,7 +79,7 @@ async def stability(seeds: int = 42) -> None:
                                                                     language="hi-IN"),
                            kind=MissionKind.SALES, goal="Coach a telecaller's call", door=Door.HUMAN, trigger=trigger,
                            why_now="stability check", starting_worries=BANK.priors[trigger])
-        engine, keys = CoachEngine(card), []
+        engine, keys = CoachEngine(card, planner=NRPAPlanner(BANK, leaf_value=LEAF_VALUE)), []
         for turn in recording["turns"]:
             move = parse_move(turn["move"]) if turn.get("move") else None
             suggestion = await engine.observe(Turn(speaker=turn["speaker"], text=turn["text"], move=move))
@@ -94,7 +96,14 @@ async def stability(seeds: int = 42) -> None:
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="Planner measurements for docs/results.")
     parser.add_argument("check", choices=["lookahead", "stability", "forest"])
+    parser.add_argument("--value", choices=["formula", "network"], default="formula",
+                        help="leaf value for the look-ahead planner (N3)")
     args = parser.parse_args(argv)
+    global LEAF_VALUE
+    if args.value == "network":
+        from chanakya.brain.value.network import default_network
+
+        LEAF_VALUE = default_network().leaf_value
     asyncio.run({"lookahead": lookahead, "stability": stability, "forest": forest}[args.check]())
 
 

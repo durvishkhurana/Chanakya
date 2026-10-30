@@ -1,0 +1,3 @@
+planning: 30 personas x seeds 0-9 (300 calls): baseline 0.670, look-ahead 0.963
+evaluation: 30 personas x seeds 0-4 (150 calls): baseline 0.847, look-ahead 0.927
+planner time: p50 181 ms, p90 203 ms, max 303 ms over 1672 plans

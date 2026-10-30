@@ -10,7 +10,7 @@
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B12, B14, B15 | B10, B13 (optional) |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
-| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results | N1 hand-written test set, N2 semantic memory, N3 value network, N4 demo |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results; N3 value network (measured, no gain) | N1 hand-written test set, N2 semantic memory, N4 demo |
 | W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
 
 ## Status
@@ -63,7 +63,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 Phase 5, neural brain (one owner per network, full plan in `docs/TASKS.md`):
 
 1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`, about 150 lines, about 40 per slice), then re-run `python -m chanakya.neural.train_worry --seed 7` to add its per-slice results and mark N1 done
-2. N3, Durvish: the `PLANNER_VALUE` core PR, self-play data, the value network, the `leaf_value` hook and held-out measurement
+2. N3, Durvish: done. The value network (2,100 self-play calls) gives no gain on held-out evaluation personas: success 0.94/0.92 vs formula 0.96/0.98 (seeds 7/13), look-ahead consent 0.927 vs 0.953, planner p50 181 vs 113 ms, seed stability 5/42 vs 21/42; it beats the formula only on the planning personas it trained on (0.963 vs 0.920). `PLANNER_VALUE` stays `formula` by default (`docs/results/neural-value-network/`)
 3. N2, Durvish: the `PLANNER_MEMORY` core PR, e5 + belief nearest-moment memory built from train-split lines, measured with the test-split voice
 4. N4, Gurnoor, after N1-N3: show the neural scorer and value estimate in the Live Call View and coach mode
 
