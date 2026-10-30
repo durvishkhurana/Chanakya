@@ -3,67 +3,54 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Tracks A and B and Phase 4 (except the I3 backup video) are on `main`. Phase 5: N1 (Gurnoor) is merged and working, waiting only for the hand-written test set; N2 and N3 (Durvish) not started; N4 (Gurnoor) after them. Phase 6 (Durvish: the #19 review fixes, win-back missions, the permission-first opening) is merged; see the Phase 6 section below
-- Branch / commit: N1 merged from `feat/N1-worry-scorer`
+- Current status: everything planned is built. Left: Gurnoor's hand-written N1 test set, the I3 phone demo or backup video, a real-microphone call, and Gurnoor's review of work merged without it. A9 and N4 are blocked on measured results, not on code (see below)
+- Branches: `fix/codebase-review` (bug fixes from a full review) and `feat/finish-remaining` (built on it: B10 UI, B13, N4, measurements, docs)
 
-## Completed This Session
+## Completed This Session (2026-10-31, Durvish)
 
-- [x] N0 baselines and labelled lines (#24); revised N1 spec after Durvish's review (#25); `WORRY_SCORER` setting (#26)
-- [x] Phase 5 split, one owner per network (#28); N0-N4 entries restored after #23 dropped them (#29)
-- [x] On `feat/N1-worry-scorer`: ONNX encoder, 13-sigmoid worry head with calibration, `EmbeddingScorer` and `select_scorer`, training script, hand-written set file, guide and checker, tests
-- [x] Harness files updated to the final Phase 5 plan: `docs/TASKS.md`, `feature_list.json`, `progress.md`, this file, README, a Phase 5 section in `CLAUDE.md`
+- [x] N3 value network measured and merged (#36); N2 semantic memory built, measured and merged (#38)
+- [x] Codebase review, on `fix/codebase-review`:
+  - the N2/N3 merge left `backend/main.py` and `chanakya/brain/mission_call.py` unable to import and `PLANNER_VALUE` always None; the planner now gets both settings
+  - the ledger, scheduler and hand-off queue shared one SQLite connection with unlocked reads across threads (the flaky scenario test); every use now holds the store's lock, and the mock systems database has the same lock
+  - `get_ticket_status` could read another merchant's ticket; it now needs the merchant id
+  - visit slots and callback times must be ISO date-times; device usage tolerates zone-less rows
+- [x] On `feat/finish-remaining`:
+  - B10: Gurnoor's approval queue merged in, plus the Mission Control Approvals tab
+  - B13: `chanakya/actions/systems/messaging_channels.py` (templates per channel and language, simulated inbox, replies move the mission), `/api/messages`, thread and reply box on the mission detail
+  - N4: `core:` beliefs carry the scorer's evidence and name; Live Call View and coach mode show what the scorer heard; coach mode shows each suggestion's look-ahead value and follows `PLANNER_VALUE` and `PLANNER_MEMORY=neural`; architecture diagram and README updated
+  - win-back re-measured with the embedding scorer; every planner variant measured with the embedding scorer
+  - README repaired after the N2 merge (duplicate rows and paragraphs); the demo script prints Hindi on Windows consoles
 
 ## Verification Evidence
 
-| Check | Command | Result | Notes |
-|---|---|---|---|
-| Everything on main | `SKIP_INSTALL=1 ./init.sh` | passed | 292 pytest after #26 |
-| Neural tests (N1 branch) | `python -m pytest chanakya/neural` | 10 passed | fake encoder, no network |
-| ONNX vs PyTorch encoder | encoder comparison on four lines | cosine 1.0 | 2.4 ms per line |
-| Worry head | `python -m chanakya.neural.train_worry --seed 7` | embedding 0.648, lexical 0.388 | three families plus Concern Bank and template lines; 668 held-out test lines; calibration error 0.0052 |
-| Full calls, held-out lines | `python -m chanakya.eval.harness --merchants 100 --seed 7/13 --variants chanakya,chanakya_embedding --voice test` | success 0.84/0.77 vs 0.62/0.62 | walk-away 0.12/0.22 vs 0.34/0.36; belief top-1 0.50/0.53 vs 0.26/0.29; template voice 0.91/0.96 vs 0.96/0.98 |
-| Encoder fine-tuning probe | scratch experiment, 10 epochs | validation 0.72, test 0.55 | learns the training model's style; not adopted |
-
-## Files Changed
-
-- Phase 5 docs: `docs/TASKS.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `README.md`, `CLAUDE.md`
-- N1 branch: `chanakya/neural/` (encoder, head, scorer, train_worry, human_set and tests), `data/neural/`, `requirements*.txt`
+| Check | Command | Result |
+|---|---|---|
+| Everything, with the real encoder | `NEURAL=1 FULL=1 ./init.sh` on `feat/finish-remaining` | passed, 477 pytest, Ruff clean, frontend lint, tests and build |
+| End to end, every neural setting on | backend with `MISSIONS_ENABLED=true CALLING_HOURS=0-24 WORRY_SCORER=embedding PLANNER_MEMORY=neural PLANNER_VALUE=network`, then `python scripts/demo/e2e_track_b.py http://127.0.0.1:8767` | 18/18 |
+| Demo scenarios, every neural setting on | `WORRY_SCORER=embedding PLANNER_MEMORY=neural PLANNER_VALUE=network python scripts/demo/scenarios.py` | 5/6: `winback_device_fix` fails (see Blockers); 6/6 with the default scorer |
+| Approvals and messages in the browser | live backend with `APPROVAL_TOOLS=book_field_visit`, `soundbox_service` scenario | the visit waited, was approved as Sunita and executed; the thread shows the SMS template |
+| Planner variants with the embedding scorer | `docs/results/neural-combined/README.md` | no consistent gain from forest, memory or value network |
+| Win-back with the embedding scorer | `docs/results/winback/README.md` | reason accuracy 0.90/0.84 vs 0.94/0.88; no gain |
 
 ## Decisions Made
 
-- One owner per neural network; settings `WORRY_SCORER`, `PLANNER_MEMORY`, `PLANNER_VALUE` with defaults that keep today's behaviour
-- The encoder runs on ONNX Runtime; numpy is a base requirement; encoder weights are never committed
-- `WORRY_SCORER` unset keeps today's choice (LLM scorer on live calls when an LLM is configured), so the new default never downgrades live calls
-- The hand-written test set is Gurnoor's to write, by hand, and is never used for training, tuning or calibration
+- Defaults stay `WORRY_SCORER` unset (lexical), `PLANNER_MEMORY=forest`, `PLANNER_VALUE=formula`: N2 and N3 show no gain
+- Coach mode keeps planning without the forest unless `PLANNER_MEMORY=neural`, so its replay is unchanged
+- The N1 head was not retrained or tuned on the win-back demo line; N4 stays blocked until a head reads it
 
 ## Blockers / Risks
 
-- N1 (0.648) is still below the LLM scorer (0.777), which is too slow for live turns; fine-tuning the encoder added under 2 points
-- The hand-written test set is empty, and N1 cannot be marked done without it
-- Closing the laptop lid pauses long runs
-
-## Phase 6 (Durvish): merged
-
-- Tasks D1, F1, W0, W1, W2 and P1, each on its own branch (`docs/winback-permission-specs`, `fix/I1-review-fixes`, `core/winback-contracts`, `feat/W1-winback-missions`, `feat/W2-winback-brain`, `feat/P1-permission-first`), stacked and merged through their PRs
-- F1: one brain per mission while a scenario runs; a link yes covers only the link and the fixed-text `send_onboarding_reminder`; the callback scenario never moves the shared clock; turns are locked and shielded; every decline is recorded and closes the mission; the link carries the recommended product; a typed `Move.end_reason`
-- W0: win-back and permission-first contracts in `chanakya/core` and the brain contracts; `WINBACK_ENABLED` and `PERMISSION_FIRST_ENABLED`, both off
-- W1: churn detection (`chanakya/missions/churn.py`), a 20% seeded holdout, DONE only on system confirmation, Mission Control holdout and reasons-for-leaving cards. B12 should reuse `leaving_reasons()`
-- W2: listen first, act only on a clear reason, never an offer; measured offline in `docs/results/winback/` (held-out reason accuracy 0.94 / 0.88, fix rate 0.90 / 0.83 on seeds 7 / 13, with the caveats listed there)
-- P1: lead-list calls ask for two minutes before anything else; safety suite 15 scenarios, 0 violations
-- Verification before the merge: `SKIP_INSTALL=1 FULL=1 ./init.sh` passed on the top branch (pytest 397 before N1 landed; re-run after merging #31, see below)
-- Reviews owed: merged at the owner's request without Gurnoor's review. He should still review F1, W0 and W1 (Track B directories and shared contracts). W2 added a three-line read branch to `agent/brain_agent.py`; N1's wiring there should keep it
-- Open risks: the win-back evidence rule was tuned after reading evaluation seed 7 traces; live calls do not pass answer pauses into the brain, so the long-pause "haan" rule only works where a pause is known; win-back is measured offline only; `scripts/demo/e2e_track_b.py` was updated but not re-run live
+- N4 done-when needs all demo scenarios with every neural setting on; `winback_device_fix` fails with `WORRY_SCORER=embedding` (head: rental cost 0.35, device issue 0.34)
+- A9 has no consistent measured gain with either scorer
+- `gh` was installed on Durvish's machine, but its login had not completed, so the last two branches may be pushed without PRs; see the next step
+- Work merged at the owner's request without Gurnoor's review: F1, W0, W1, the two `core:` settings, the codebase fixes, B10's UI, B13, N4
 
 ## Next Session Startup
 
-1. Read `CLAUDE.md`, including the Phase 5 rules in section 7.
-2. Read `feature_list.json`, `progress.md` and Phase 5 in `docs/TASKS.md`.
-3. Review this handoff.
-4. Run `./init.sh`; for neural work, `pip install -r requirements-neural.txt` and `python -m chanakya.neural.encoder --download`.
+1. Read `CLAUDE.md`, `progress.md` and this file; run `./init.sh` (and `NEURAL=1 ./init.sh` for neural work, with `HF_HOME` on a drive with space).
+2. If `fix/codebase-review` and `feat/finish-remaining` have no PRs yet: `gh auth login`, then open and merge `fix/codebase-review` first, then `feat/finish-remaining` (it contains the fix branch, so no conflict).
 
 ## Recommended Next Step
 
-- B12 is merged: `/insights` with `python -m chanakya.insights.seed` for a simulated ledger. Optional next on Track B: B10 approval queue, B13 multi-channel messaging
-
-- N1: Gurnoor writes the hand-written test set by hand, then `python -m chanakya.neural.train_worry --seed 7` adds its per-slice results; mark N1 done with that evidence
-- Durvish: N3 value network (needs nothing), then N2 semantic memory, which can use `LinesVoice` with the train split (`chanakya/sim/voice.py`) to build memory and `--voice test` to evaluate; re-measure win-back with the embedding scorer (`python -m chanakya.eval.winback`)
+- Gurnoor: the hand-written test set, then retrain or re-check N1 and re-run the demo scenarios with `WORRY_SCORER=embedding` to close N4
+- I3: the backup video or the allowlisted phone call (`docs/PHONE_DEMO.md`)
