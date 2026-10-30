@@ -664,7 +664,7 @@
       ],
       "status": "in-progress",
       "done_when": "Per-line accuracy (embedding vs lexical vs LLM) on the hand-written set by slice and on N0's test split, embedding beating lexical overall; calibration error before and after temperature scaling; consent rate and belief top-1 accuracy with the test-split lines voice, seeds 7 and 13; p50 and p90 ms per turn; CI unchanged apart from numpy.",
-      "evidence": ""
+      "evidence": "2026-10-31: ONNX e5-small encoder (identical to PyTorch, 2.5 ms/line); 384-128-13 sigmoid head trained on 4,334 lines from three model families plus Concern Bank and template lines (python -m chanakya.neural.train_worry --seed 7): 0.648 of 14 labels on 668 held-out lines vs lexical 0.388 and LLM 0.777, calibration error 0.0052. Full calls (harness, 100 merchants, seeds 7/13): with held-out lines success 0.84/0.77 vs 0.62/0.62, walk-away 0.12/0.22 vs 0.34/0.36, belief top-1 0.50/0.53 vs 0.26/0.29; with the template voice 0.91/0.96 vs 0.96/0.98; 0 safety violations; p50 turn 50 ms vs 34 ms. docs/results/neural-worry-scorer/. Missing for done: the hand-written test set (Gurnoor, by hand)."
     },
     {
       "id": "N2",

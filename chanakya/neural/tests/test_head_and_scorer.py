@@ -83,3 +83,15 @@ def test_the_brain_agent_and_the_eval_variant_follow_worry_scorer(monkeypatch):
     monkeypatch.setattr("chanakya.neural.scorer.load_embedding_scorer", lambda: None)
     with pytest.raises(RuntimeError, match="worry_head"):
         make_variant("chanakya_embedding")
+
+
+def test_reference_rows_add_every_bank_phrasing_and_everyday_templates_as_no_worry():
+    from chanakya.neural.train_worry import reference_rows
+
+    bank = default_bank()
+    rows = reference_rows(bank)
+    phrasings = {p for cid in bank.ids for p in bank.phrasings(cid)}
+    assert {r["text"] for r in rows if r["model"] == "concern-bank"} == phrasings
+    everyday = [r for r in rows if r["model"] == "twin-template"]
+    assert everyday and all(r["concern"] == "none" for r in everyday)
+    assert all(r["split"] == "train" for r in rows)

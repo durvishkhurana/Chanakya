@@ -4,16 +4,16 @@
   "data_sha256": "b22f4de5a5fe1ec6",
   "seed": 7,
   "heads": {
-    "logistic": 0.1841,
-    "network (128 hidden)": 0.162
+    "logistic": 0.1838,
+    "network (128 hidden)": 0.1613
   },
   "chosen": "network (128 hidden)",
   "calibration": {
     "temperature": 1.047,
-    "ece_before": 0.0057,
-    "ece_after": 0.0046,
-    "bce_before": 0.162,
-    "bce_after": 0.1617
+    "ece_before": 0.0061,
+    "ece_after": 0.0052,
+    "bce_before": 0.1613,
+    "bce_after": 0.1609
   },
   "test_split": {
     "lexical (today)": {
@@ -32,19 +32,19 @@
       "latency_ms_p90": 0.08
     },
     "embedding (N1)": {
-      "threshold": 0.153,
+      "threshold": 0.12,
       "lines": 668,
-      "accuracy": 0.627,
-      "worry_accuracy": 0.641,
-      "no_worry_accuracy": 0.435,
+      "accuracy": 0.648,
+      "worry_accuracy": 0.666,
+      "no_worry_accuracy": 0.413,
       "by_language": {
-        "english": 0.649,
-        "hindi": 0.661,
+        "english": 0.685,
+        "hindi": 0.679,
         "hinglish": 0.611,
-        "punjabi": 0.589
+        "punjabi": 0.619
       },
-      "latency_ms_p50": 2.83,
-      "latency_ms_p90": 3.53
+      "latency_ms_p50": 2.73,
+      "latency_ms_p90": 3.38
     }
   },
   "human_set": null

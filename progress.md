@@ -3,14 +3,14 @@
 ## Current State
 
 **Last Updated:** 2026-10-31
-**Active Feature:** N1 neural worry scorer (Gurnoor) on `feat/N1-worry-scorer`. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video. Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 are merged (see `session-handoff.md`).
+**Active Feature:** N1 neural worry scorer (Gurnoor): merged to main and working; only the hand-written test set is left before it is done. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video. Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 are merged (see `session-handoff.md`).
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
-| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice | N1 worry scorer (in progress), N2 semantic memory, N3 value network, N4 demo |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results | N1 hand-written test set, N2 semantic memory, N3 value network, N4 demo |
 | W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
 
 ## Status
@@ -37,6 +37,13 @@
   - `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission; every turn, belief and plan goes to the ledger in the core shapes, AI disclosure and explicit consent are recorded where the gate checks them, writes go through Track B's `ActionGate` and mock systems, distress opens an urgent hand-off, a clear no closes the mission
   - `chanakya/brain/scenarios.py` and `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command, 4/4 passing
   - `chanakya/brain/calls_api.py` (`/api/calls`, behind `MISSIONS_ENABLED`): run a scenario or speak as the merchant; Mission Control has a "Run scenario" control and the Live Call View a "Speak as the merchant" box; `/api/calls/<id>/voice` runs a spoken browser call on the mission ("Talk by voice instead")
+- [x] N1 neural worry scorer (Gurnoor), everything but the hand-written set:
+  - **Encoder and head:** ONNX e5-small encoder, and a 384-128-13 sigmoid head trained on 4,334 lines from three model families plus the Concern Bank and template lines. 0.648 vs lexical 0.388 on held-out lines, calibration error 0.0052, 2.7 ms per line.
+  - **Belief tracker:** turns calibrated scores into Bayesian odds ratios.
+  - **Wiring:** `WORRY_SCORER` is wired into the brain agent, coach mode and the `chanakya_embedding` variant.
+  - **Lines voice:** `LinesVoice` for twins (`--voice test|train`), plus a belief top-1 metric.
+  - **Full calls with held-out lines:** success 0.84/0.77 vs 0.62/0.62, walk-away 0.12/0.22 vs 0.34/0.36 (seeds 7/13). With template sentences: 0.91/0.96 vs 0.96/0.98.
+  - **Also:** `NEURAL=1 ./init.sh`, and the e5 report cited in IDEA.md
 - [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
@@ -54,13 +61,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 
 Phase 5, neural brain (one owner per network, full plan in `docs/TASKS.md`):
 
-1. N1, Gurnoor, on `feat/N1-worry-scorer`:
-   - more training lines from two more model families, then retrain
-   - the belief tracker odds-ratio path, `select_scorer` wiring and a `chanakya_embedding` variant
-   - a lines voice for twins (N2 needs it too) and the belief top-1 accuracy metric
-   - full-call results
-   - the hand-written test set, written by Gurnoor himself
-   - the e5 citation and `NEURAL=1 ./init.sh`
+1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`, about 150 lines, about 40 per slice), then re-run `python -m chanakya.neural.train_worry --seed 7` to add its per-slice results and mark N1 done
 2. N3, Durvish: the `PLANNER_VALUE` core PR, self-play data, the value network, the `leaf_value` hook and held-out measurement
 3. N2, Durvish: the `PLANNER_MEMORY` core PR, e5 + belief nearest-moment memory built from train-split lines, measured with the test-split voice
 4. N4, Gurnoor, after N1-N3: show the neural scorer and value estimate in the Live Call View and coach mode
@@ -76,7 +77,7 @@ Other:
 
 - [x] Review points on #19 fixed on `fix/I1-review-fixes` (F1): one brain per mission while a scenario runs, a link yes covers only the link and the new fixed-text `send_onboarding_reminder`, the callback scenario no longer moves the clock, turns are locked and shielded, every decline is recorded and closes the mission
 - [ ] The neural parts need `requirements-neural.txt` and a one-time encoder download of about 470 MB; `./init.sh` and CI do not install them. From N1 the encoder runs on ONNX Runtime, so PyTorch is no longer needed; numpy joins `requirements.txt`
-- [ ] N1 accuracy is 0.536 on N0's test split (lexical 0.394, LLM 0.777); fine-tuning the encoder learned the training model's style (validation 0.72, test 0.55), so more model families in the training data come next
+- [ ] N1 is at 0.648 of 14 labels on held-out lines (lexical 0.388, LLM 0.777); fine-tuning the encoder adds under 2 points and is not adopted. On Concern Bank sentences the lexical scorer stays slightly ahead (0.96/0.98 vs 0.91/0.96 success). The hand-written set is still empty
 - [ ] #23 dropped the N0-N4 entries from `feature_list.json` in a merge (restored in #29); check that file after resolving merge conflicts
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
