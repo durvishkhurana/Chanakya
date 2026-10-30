@@ -305,3 +305,12 @@ def test_approval_settings_default_to_none_and_parse_a_tool_list(monkeypatch):
     monkeypatch.setenv("APPROVAL_TIMEOUT_MINUTES", "5")
     settings = Settings.from_env()
     assert settings.approval_tools == ("book_field_visit", "raise_ticket") and settings.approval_timeout_minutes == 5
+
+
+def test_a_belief_can_carry_the_scorer_evidence_and_old_payloads_still_parse():
+    from chanakya.core.schemas import BeliefState
+
+    old = BeliefState.model_validate({"probabilities": {"rental_cost": 1.0}, "turn": 2})
+    assert old.evidence == {} and old.scorer is None
+    new = BeliefState(probabilities={"rental_cost": 3, "trust": 1}, evidence={"rental_cost": 0.8}, scorer="embedding")
+    assert new.probabilities["rental_cost"] == 0.75 and new.evidence["rental_cost"] == 0.8
