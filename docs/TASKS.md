@@ -300,15 +300,24 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Branch:** `feat/I3-phone-demo`
 - **Build:** Twilio path tested with the allowlisted number; fallbacks for network failures; recorded backup video.
 
-#### [ ] I4 README, architecture diagram and pitch assets
+#### [x] I4 README, architecture diagram and pitch assets
 - **Branch:** `docs/I4-readme`
 - **Build:** final README, architecture image, screenshots, measured numbers for the deck.
 
 ---
 
-## Phase 5: Neural brain (Gurnoor)
+## Phase 5: Neural brain (Gurnoor and Durvish)
 
-Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. Gurnoor owns this phase, including the small wiring edits in `chanakya/brain/`; Durvish reviews those.
+Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. One owner per neural network, each doing the whole of it (data, model, wiring, measurement); the other reviews.
+
+| Task | Owner |
+|---|---|
+| N1 worry scorer (including the belief tracker change, the held-out twin voice and full-call results) | Gurnoor |
+| N2 semantic memory | Durvish |
+| N3 planner value network | Durvish |
+| N4 demo screens | Gurnoor |
+
+Shared code goes through the owner: the encoder (`chanakya/neural/encoder.py`) is Gurnoor's and N2 imports it; `chanakya/brain/forest/` and `chanakya/brain/planner_nrpa.py` are Durvish's. Settings follow the `WORRY_SCORER` pattern (#26) in small `core:` PRs.
 
 #### [x] N0 Baselines and labelled data
 - **Branch:** `feat/N0-neural-baseline`
@@ -316,7 +325,7 @@ Learned parts that replace the brain's hand-written guesses. Each one sits behin
 - **Build:** labelled merchant lines in four languages from two model families (train from the Twin-A model, test from the Twin-B model, nothing close to a Concern Bank phrasing); baselines for today's lexical scorer, the LLM scorer and two candidate encoders; the encoder choice.
 - **Done when:** baselines and the encoder choice are in `docs/results/neural-baseline/` with the command that produced them.
 
-#### [ ] N1 Neural worry scorer
+#### [ ] N1 Neural worry scorer (Gurnoor)
 - **Branch:** `feat/N1-worry-scorer`, after a small `core:` PR on `core/worry-scorer-setting`
 - **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-worry-scorer/`; wiring in `chanakya/brain/belief.py`, `agent/brain_agent.py`, `chanakya/humans/coach_engine.py`, `chanakya/eval/variants.py`, `chanakya/sim/voice.py`
 - **Depends on:** N0, and the hand-written test set below being committed before any training
@@ -351,18 +360,24 @@ Learned parts that replace the brain's hand-written guesses. Each one sits behin
   - **Speed:** p50 and p90 milliseconds per turn on a laptop CPU, with a target under 10 ms.
   - **Tests:** use a fake embedder that returns fixed vectors; any test needing the real model is skipped when the model is absent; CI is unchanged.
 
-#### [ ] N2 Semantic memory
+#### [ ] N2 Semantic memory (Durvish)
 - **Branch:** `feat/N2-semantic-memory`
-- **Owns:** `chanakya/neural/`, an embedding hook in `chanakya/brain/forest/forest.py`
-- **Depends on:** N1
-- **Build:** the Strategy Forest's hashed trigram vectors replaced by sentence embeddings plus the belief, with nearest-moment lookup; behind `NEURAL_MEMORY_ENABLED`.
+- **Owns:** `chanakya/brain/forest/`, `chanakya/brain/memory/`, `data/neural/memory*`, `docs/results/neural-memory/`
+- **Depends on:** the N1 encoder (`chanakya/neural/encoder.py`, on `feat/N1-worry-scorer` until N1 merges)
+- **Build:**
+  - **Representation:** the Strategy Forest's hashed trigram vectors are replaced by e5 sentence embeddings plus the belief vector, with nearest-moment lookup instead of 24 fixed clusters. The Wilson-scored move values stay.
+  - **Setting:** `PLANNER_MEMORY=forest|neural`, added in a small `core:` PR.
+  - **Data:** the memory is built from transcripts whose merchant lines are N0 train-split paraphrases, not the 82 template sentences. Evaluation uses the held-out twin voice, so no test line is in memory.
 - **Done when:** win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.
 
-#### [ ] N3 Value network for the planner
+#### [ ] N3 Value network for the planner (Durvish)
 - **Branch:** `feat/N3-value-network`
-- **Owns:** `chanakya/neural/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
-- **Depends on:** N1
-- **Build:** a value network trained on self-play twin calls replaces the planner's fixed horizon guess (`0.8 × consent_chance`); optional policy prior for candidate order; behind `NEURAL_PLANNER_ENABLED`.
+- **Owns:** `chanakya/brain/value/`, `data/neural/value_net.npz`, `docs/results/neural-value-network/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
+- **Depends on:** nothing to start
+- **Build:**
+  - **Model:** a value network trained on self-play twin calls (planning personas only) replaces the planner's fixed horizon guess (`0.8 × consent_chance`).
+  - **Optional:** a second self-play round with the network-guided planner, and a policy prior for candidate order.
+  - **Setting:** `PLANNER_VALUE=formula|network`, added in a small `core:` PR.
 - **Done when:** win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.
 
 #### [ ] N4 Show the neural brain

@@ -2,16 +2,16 @@
 
 ## Current State
 
-**Last Updated:** 2026-10-30
-**Active Feature:** Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 done on six stacked branches, rebased onto main at `8de04f8` and pushed; PRs not opened yet (see `session-handoff.md`). N1 neural worry scorer is next on Gurnoor's side.
+**Last Updated:** 2026-10-31
+**Active Feature:** N1 neural worry scorer (Gurnoor) on `feat/N1-worry-scorer`. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video. Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 are merged (see `session-handoff.md`).
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
-| Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
-| N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
-| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes, W0 contracts, W1 win-back missions, W2 win-back brain, P1 permission-first | PRs to open and review |
+| Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice | N1 worry scorer (in progress), N2 semantic memory, N3 value network, N4 demo |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
 
 ## Status
 
@@ -52,11 +52,15 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 
 ### What's Next
 
-1. Gurnoor: N1 neural worry scorer on e5-small (sigmoid head, calibrated on a validation split, selected by `WORRY_SCORER` from a small `core:` PR, run through ONNX); first, Gurnoor and Durvish write the hand-written test set (about 150 lines each), plus a twin voice that speaks the held-out lines so the harness can measure it end to end
-2. Then N2 semantic memory and N3 value network (both after N1), then N4 to show them in the Live Call View and coach mode
-3. Durvish: the eight review points on #19 are still open on main; the first three matter for the demo (a second brain on a running scenario's mission, a link yes approving any `send_summary`, the callback scenario moving the live clock)
-4. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3)
-5. Track B: optional B10, B12, B13
+- N1 (Gurnoor): worry model on `feat/N1-worry-scorer` (ONNX e5-small, 13-sigmoid head, calibrated); more training lines from other model families, then the belief tracker change, the held-out twin voice and full-call results. Gurnoor writes the hand-written test lines
+- N2 and N3 (Durvish): semantic memory and the planner value network, each with its own `core:` setting PR (see `docs/TASKS.md`, Phase 5)
+- Durvish: the first three #19 review fixes (`fix/I1-review-fixes`)
+
+1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
+2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
+3. A6: Gurnoor found the NRPA choice varies with its seed on the coach recording; look at why so few samples flip the choice
+4. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
+5. Track B: optional B10, B12, B13. Together: I3 backup video (docs/PHONE_DEMO.md, path A)
 
 ## Blockers / Risks
 

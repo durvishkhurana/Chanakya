@@ -617,10 +617,10 @@
         "I1",
         "I2"
       ],
-      "status": "in-progress",
+      "status": "done",
       "done_when": "README final; deck numbers come only from docs/results/.",
-      "evidence": "docs/I4-readme: README 'How it works' with docs/architecture.svg, a rewritten Status that quotes only results unchanged by the A6 re-measure and links docs/results for numbers, and three screenshots in docs/screenshots taken from a live backend running the I1 scenarios.",
-      "notes": "Final once #19 (I1), #20 (A6) and #21 (I3) are merged: the README refers to their scenarios, results and runbook."
+      "evidence": "Merged in #22 after #19, #20 and #21: README 'How it works' with docs/architecture.svg, Status rewritten, three screenshots in docs/screenshots from a live backend running the I1 scenarios. The README quotes only results unchanged by the A6 re-measure and links docs/results (commands and seeds) for every other number, so deck numbers come from docs/results. Checked on main at b8f591e: every README link and image path exists.",
+      "notes": ""
     },
     {
       "id": "N0",
@@ -654,14 +654,14 @@
         "docs/results/neural-worry-scorer/",
         "chanakya/brain/belief.py",
         "agent/brain_agent.py",
-        "chanakya/humans/coach_engine.py",
+        "chanakya/humans/coach_api.py",
         "chanakya/eval/variants.py",
         "chanakya/sim/voice.py"
       ],
       "dependencies": [
         "N0"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "On a hand-written test set (about 300 lines, committed before training, never LLM-written), per-line accuracy by slice (Hinglish, negation, no worry, Punjabi) for embedding vs lexical vs LLM, and the embedding scorer beats lexical overall; calibration error before and after temperature scaling; consent rate and belief top-1 accuracy in the offline harness with a held-out-lines twin voice, seeds 7 and 13; p50 and p90 ms per turn; WORRY_SCORER setting added in a core: PR first; tests use a fake embedder and CI is unchanged.",
       "evidence": ""
     },
@@ -670,11 +670,13 @@
       "name": "Semantic memory",
       "description": "Full spec: docs/TASKS.md, task N2",
       "track": "N",
-      "owner": "Gurnoor Singh Pannu",
+      "owner": "Durvish Khurana",
       "branch": "feat/N2-semantic-memory",
       "owns": [
-        "chanakya/neural/",
-        "chanakya/brain/forest/forest.py"
+        "chanakya/brain/forest/",
+        "chanakya/brain/memory/",
+        "data/neural/memory*",
+        "docs/results/neural-memory/"
       ],
       "dependencies": [
         "N1"
@@ -688,14 +690,16 @@
       "name": "Value network for the planner",
       "description": "Full spec: docs/TASKS.md, task N3",
       "track": "N",
-      "owner": "Gurnoor Singh Pannu",
+      "owner": "Durvish Khurana",
       "branch": "feat/N3-value-network",
       "owns": [
-        "chanakya/neural/",
+        "chanakya/brain/value/",
+        "data/neural/value_net.npz",
+        "docs/results/neural-value-network/",
         "chanakya/brain/planner_nrpa.py"
       ],
       "dependencies": [
-        "N1"
+        "N0"
       ],
       "status": "not-started",
       "done_when": "Win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.",
