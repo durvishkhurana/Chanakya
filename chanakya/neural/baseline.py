@@ -154,7 +154,13 @@ def main() -> None:
     results = {"train_model": train[0]["model"], "test_model": test[0]["model"],
                "languages": sorted({r["language"] for r in test}), "scorers": {},
                "command": f"python -m chanakya.neural.baseline --seed {args.seed} --llm-sample {args.llm_sample}"}
-    results["scorers"]["lexical (today)"] = asyncio.run(evaluate_scorer(LexicalScorer(bank), train, test))
+    def done(name: str, result: dict) -> None:
+        results["scorers"][name] = result
+        print(f"{name}: accuracy {result['accuracy']}, p50 {result['latency_ms_p50']} ms", flush=True)
+
+    done("lexical (today)", asyncio.run(evaluate_scorer(LexicalScorer(bank), train, test)))
+    for name in filter(None, args.encoders.split(",")):
+        done(f"{name} (nearest centroid)", evaluate_encoder(name, train, test))
     if args.llm_sample:
         from dotenv import load_dotenv
 
@@ -162,13 +168,10 @@ def main() -> None:
 
         load_dotenv(Path(__file__).resolve().parents[2] / ".env")
         llm = default_llm()
-        scorer = LLMScorer(llm, bank)
-        scorer.fallback = NoEvidence(bank)  # a failed call counts as a miss, not as a lexical answer
+        scorer = LLMScorer(llm, bank, timeout_s=45)
+        scorer.fallback = NoEvidence(bank)  # a failed or slow call counts as a miss, not as a lexical answer
         sample = lambda rows: stratified(rows, args.llm_sample // 14 or 1, args.seed)
-        results["scorers"][f"LLM ({llm.settings.models['rollout']})"] = asyncio.run(
-            evaluate_scorer(scorer, sample(train), sample(test)))
-    for name in filter(None, args.encoders.split(",")):
-        results["scorers"][f"{name} (nearest centroid)"] = evaluate_encoder(name, train, test)
+        done(f"LLM ({llm.settings.models['rollout']})", asyncio.run(evaluate_scorer(scorer, sample(train), sample(test))))
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (args.out / "report.md").write_text(report(results), encoding="utf-8")
