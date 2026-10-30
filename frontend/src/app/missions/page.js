@@ -12,7 +12,8 @@ import {
   countRows, deriveCallView, doorLabel, eventSummary, groupMissions, languageLabel, missionCounts, percent, stateLabel, time, topWorries, worryLabel,
 } from "../../lib/missionView.mjs";
 
-const TABS = [["queue", "Queue"], ["active", "In progress"], ["finished", "Finished"], ["handoffs", "Hand-offs"]];
+const TABS = [["queue", "Queue"], ["active", "In progress"], ["finished", "Finished"], ["handoffs", "Hand-offs"], ["approvals", "Approvals"]];
+const SIDE_TABS = ["handoffs", "approvals"];
 
 export default function MissionControlPage() {
   return <Suspense fallback={null}><MissionControl /></Suspense>;
@@ -22,18 +23,21 @@ function MissionControl() {
   const params = useSearchParams();
   const [rows, setRows] = useState(null);
   const [handoffs, setHandoffs] = useState([]);
+  const [approvals, setApprovals] = useState([]);
   const [clock, setClock] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
-  const [tab, setTab] = useState(params.get("tab") === "handoffs" ? "handoffs" : "queue");
+  const [tab, setTab] = useState(SIDE_TABS.includes(params.get("tab")) ? params.get("tab") : "queue");
   const [selected, setSelected] = useState(params.get("m"));
   const { events, connected } = useMissionStream({ replay: 0 });
 
   const load = useCallback(async () => {
     try {
-      const [missions, cards, now] = await Promise.all([api("/api/missions"), api("/api/handoffs"), api("/api/missions/clock")]);
+      const [missions, cards, now, requests] = await Promise.all([api("/api/missions"), api("/api/handoffs"),
+        api("/api/missions/clock"), api("/api/approvals").catch(() => [])]);
       setRows(missions);
       setHandoffs(cards);
+      setApprovals(requests);
       setClock(now.now);
       setError("");
     } catch (e) {
@@ -94,16 +98,17 @@ function MissionControl() {
       <section aria-label="Missions">
         <div className="tabs" role="tablist">
           {TABS.map(([id, label]) => <button key={id} role="tab" aria-selected={tab === id} onClick={() => { setTab(id); setSelected(null); }}>
-            {label}<span className="n">{id === "queue" ? groups.waiting.length : id === "active" ? groups.active.length : id === "finished" ? groups.finished.length : counts.handoffsOpen}</span>
+            {label}<span className="n">{id === "queue" ? groups.waiting.length : id === "active" ? groups.active.length : id === "finished" ? groups.finished.length : id === "handoffs" ? counts.handoffsOpen : approvals.filter((a) => a.status === "pending").length}</span>
           </button>)}
         </div>
         {tab === "handoffs"
           ? <Handoffs cards={handoffs} busy={busy} act={act} />
+          : tab === "approvals" ? <Approvals requests={approvals} busy={busy} act={act} />
           : <MissionTable rows={listed} tab={tab} loading={rows === null} selectedId={selectedId} onSelect={setSelected}
               onLoadDemo={() => act("feed", () => api("/api/missions/signals/demo-feed", { method: "POST" }))} />}
       </section>
       <aside className="stack" aria-label="Selected mission">
-        {selectedId && tab !== "handoffs" ? <MissionDetail key={selectedId} id={selectedId} version={events.length} busy={busy} act={act} />
+        {selectedId && !SIDE_TABS.includes(tab) ? <MissionDetail key={selectedId} id={selectedId} version={events.length} busy={busy} act={act} />
           : <div className="panel"><p className="meta">Select a mission to see its card, the concern meter and its ledger.</p></div>}
       </aside>
     </div>
@@ -251,6 +256,33 @@ function Handoffs({ cards, busy, act }) {
       <Link className="btn small ghost" href={`/missions?m=${card.mission_id}`}>Open mission</Link>
     </div>
   </article>)}</div>;
+}
+
+const APPROVAL_PILL = { pending: ["warn", "Waiting for approval"], approved: ["pos", "Approved"], rejected: ["neg", "Rejected"], expired: ["neg", "Timed out"] };
+
+/** Approval queue (B10): high-risk actions wait here for a person; approving runs them through the full safety gate. */
+function Approvals({ requests, busy, act }) {
+  if (!requests.length) return <div className="empty">No action is waiting for approval. Tools listed in APPROVAL_TOOLS stop here before they run.</div>;
+  return <div>{requests.map((r) => {
+    const [tone, label] = APPROVAL_PILL[r.status] || ["", r.status];
+    const args = Object.entries(r.call?.args || {}).filter(([key]) => key !== "merchant_id");
+    return <article key={r.approval_id} className="handoff">
+      <div className="handoff-head">
+        <span className="name">{r.merchant_name} · {r.tool.replaceAll("_", " ")}</span>
+        <span className={`pill ${tone}`}>{label}</span>
+      </div>
+      {args.length > 0 && <p className="meta">{args.map(([key, value]) => `${key.replaceAll("_", " ")}: ${value}`).join(" · ")}</p>}
+      <p className="meta">Requested {r.requested_at?.slice(11, 16)} UTC · {r.status === "pending" ? `escalates at ${r.expires_at?.slice(11, 16)} UTC` : `${r.status} by ${r.decided_by}${r.note ? `: ${r.note}` : ""}`}</p>
+      {r.verdict && <p className="meta">Gate result: {r.verdict}{r.verdict_reason && r.verdict_reason !== "ok" ? ` (${r.verdict_reason})` : ""}</p>}
+      <div className="actions" style={{ justifyContent: "flex-start" }}>
+        {r.status === "pending" && <>
+          <button className="btn small" disabled={!!busy} onClick={() => act("approve", () => api(`/api/approvals/${r.approval_id}/approve`, { method: "POST", body: { by: "Sunita" } }))}>Approve as Sunita</button>
+          <button className="btn small ghost" disabled={!!busy} onClick={() => act("reject", () => api(`/api/approvals/${r.approval_id}/reject`, { method: "POST", body: { by: "Sunita", note: "Not now" } }))}>Reject</button>
+        </>}
+        <Link className="btn small ghost" href={`/missions?m=${r.mission_id}`}>Open mission</Link>
+      </div>
+    </article>;
+  })}</div>;
 }
 
 /** Win-back at a glance (WINBACK_ENABLED): who is held out for comparison, and why former merchants left. */
