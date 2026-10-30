@@ -63,3 +63,23 @@ def test_selection_keeps_the_old_default_and_falls_back_when_the_model_is_missin
     assert isinstance(select_scorer("embedding", bank), LexicalScorer)
     monkeypatch.setenv("WORRY_SCORER", "embedding")
     assert configured_worry_scorer() == "embedding"
+
+
+def test_the_brain_agent_and_the_eval_variant_follow_worry_scorer(monkeypatch):
+    import pytest
+
+    from agent.brain_agent import BrainAgent
+    from chanakya.eval.variants import make_variant
+
+    encoder, x, y = toy()
+    fake = EmbeddingScorer(encoder, train(x, y, x, y, ["rental_cost", "just_busy"], hidden=0, seed=1, lr=0.05, epochs=50))
+    monkeypatch.setattr("chanakya.neural.scorer.load_embedding_scorer", lambda: fake)
+    monkeypatch.delenv("WORRY_SCORER", raising=False)
+    assert isinstance(BrainAgent().scorer, LexicalScorer)
+    assert isinstance(BrainAgent(llm=object()).scorer, LLMScorer), "unset keeps the LLM scorer on live calls"
+    monkeypatch.setenv("WORRY_SCORER", "embedding")
+    assert BrainAgent(llm=object()).scorer is fake
+    assert make_variant("chanakya_embedding").agent.scorer is fake
+    monkeypatch.setattr("chanakya.neural.scorer.load_embedding_scorer", lambda: None)
+    with pytest.raises(RuntimeError, match="worry_head"):
+        make_variant("chanakya_embedding")

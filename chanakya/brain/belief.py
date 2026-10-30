@@ -47,6 +47,11 @@ SHARPNESS = 3.0
 START_SMOOTHING = 0.15
 
 
+def _odds(p: float) -> float:
+    p = min(max(p, 1e-4), 1 - 1e-4)
+    return p / (1 - p)
+
+
 def _normalise(text: str) -> str:
     return re.sub(r"[^\w\s]", " ", text.lower())
 
@@ -136,8 +141,17 @@ class BayesianBeliefTracker:
         })
 
     def likelihood(self, evidence: dict[str, float], cue: Hesitation) -> dict[str, float]:
-        """Turn evidence scores and hesitation into a likelihood per concern."""
+        """Turn evidence scores and hesitation into a likelihood per concern.
+
+        A scorer with ``base_rates`` returns calibrated probabilities (the N1 embedding scorer). For it the likelihood
+        is the Bayesian odds ratio of the score against the worry's training base rate, with no tuned sharpening; a
+        line scored at the base rates leaves the belief where it was.
+        """
         boost = {cid: 1 + HESITATION_WEIGHT * cue.score if cid in UNSPOKEN_CONCERNS else 1.0 for cid in evidence}
+        base_rates = getattr(self.scorer, "base_rates", None)
+        if base_rates:
+            return {cid: _odds(evidence[cid]) / _odds(base_rates.get(cid, 1 / len(evidence))) * boost[cid]
+                    for cid in evidence}
         return {cid: (EPSILON + evidence[cid]) ** SHARPNESS * boost[cid] for cid in evidence}
 
     async def update(self, belief: BeliefState, turn: Turn, history: list[Turn]) -> BeliefState:

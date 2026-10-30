@@ -138,3 +138,39 @@ def test_latency_is_recorded_for_every_update():
     run(tracker, {"hidden_charges": 1.0}, merchant("Koi hidden charge?"))
     assert tracker.last_latency_ms >= 0 and tracker.last_evidence["hidden_charges"] > 0
 
+
+
+class CalibratedStub:
+    """A scorer that says its scores are calibrated (it has base_rates), like the N1 embedding scorer."""
+
+    def __init__(self, scores, base_rate=1 / 14):
+        self.scores = scores
+        self.base_rates = {cid: base_rate for cid in BANK.ids}
+
+    async def score(self, text, history):
+        return {cid: self.scores.get(cid, self.base_rates[cid]) for cid in BANK.ids}
+
+
+def test_calibrated_scores_at_the_base_rate_leave_the_belief_where_it_was():
+    prior = BANK.priors[TriggerType.CALLBACK_REQUEST]
+    tracker = BayesianBeliefTracker(BANK, scorer=CalibratedStub({}), decay=0.0)
+    start = tracker.start(prior)
+    after = run(tracker, prior, merchant("Haan ji, boliye"))
+    assert all(abs(after.probabilities[c] - start.probabilities[c]) < 1e-9 for c in BANK.ids)
+
+
+def test_a_confident_calibrated_score_moves_the_belief_to_that_worry():
+    prior = BANK.priors[TriggerType.CALLBACK_REQUEST]
+    tracker = BayesianBeliefTracker(BANK, scorer=CalibratedStub({"rental_cost": 0.9}))
+    after = run(tracker, prior, merchant("Har mahine kitna dena padega?"))
+    assert max(after.probabilities, key=after.probabilities.get) == "rental_cost"
+    assert after.probabilities["rental_cost"] > 0.5
+
+
+def test_scorers_without_base_rates_keep_the_tuned_lexical_likelihood():
+    tracker = BayesianBeliefTracker(BANK)
+    cue = hesitation(merchant("kiraya"))
+    evidence = {cid: 0.0 for cid in BANK.ids} | {"rental_cost": 0.5}
+    from chanakya.brain.belief import EPSILON, SHARPNESS
+
+    assert tracker.likelihood(evidence, cue)["rental_cost"] == pytest.approx((EPSILON + 0.5) ** SHARPNESS)

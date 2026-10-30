@@ -121,13 +121,16 @@ async def start(request: StartRequest) -> dict:
         _sessions.pop(next(iter(_sessions)))
     # The planner seeds from the mission id, so a fixed id makes the recorded call replay the same way every time.
     pinned = {"mission_id": "coach_recorded"} if request.recorded else {}
+    from chanakya.neural.scorer import configured_worry_scorer, select_scorer
+
     engine = CoachEngine(MissionCard(
         **pinned,
         merchant=Merchant(merchant_id="coach_merchant", name=request.merchant_name, business_type=request.business_type,
                           city=request.city, language=request.language),
         kind=MissionKind.SALES, goal="Coach a telecaller's call", door=Door.HUMAN, trigger=request.trigger,
         why_now="A telecaller is on the call; Chanakya coaches silently",
-        starting_worries=default_bank().priors[request.trigger]))
+        starting_worries=default_bank().priors[request.trigger]),
+        scorer=select_scorer(configured_worry_scorer(), default_bank()))
     session = Session(engine)
     _sessions[session.id] = session
     return session.view()

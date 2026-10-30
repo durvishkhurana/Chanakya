@@ -51,3 +51,29 @@ def test_prompts_are_seeded_and_never_ask_for_prices(tmp_path):
     path = tmp_path / "lines.jsonl"
     path.write_text('{"text": "a", "split": "train"}\n{"text": "b", "split": "test"}\n', encoding="utf-8")
     assert [r["text"] for r in load("test", path)] == ["b"]
+
+
+def test_extending_adds_only_new_train_lines_clear_of_the_test_split():
+    from chanakya.neural.paraphrase import extend
+
+    bank = default_bank()
+    existing = [{"text": "Settlement kitne din mein aata hai account mein?", "split": "test"},
+                {"text": "Mera bhai bhi yahi machine use karta hai", "split": "train"}]
+    new = [{"text": "Settlement kitne din mein aata hai account mein", "split": "train"},  # close to a test line
+           {"text": "mera bhai bhi yahi machine use karta hai", "split": "train"},       # repeats a train line
+           {"text": "Paisa account mein kab aayega, roz ka hisaab chahiye", "split": "train"},
+           {"text": "Yeh test line nahi banni chahiye", "split": "test"}]
+    rows = extend(existing, new, bank)
+    assert rows[:2] == existing and [r["text"] for r in rows[2:]] == ["Paisa account mein kab aayega, roz ka hisaab chahiye"]
+
+
+def test_dashes_from_a_model_become_commas():
+    import asyncio as aio
+
+    from chanakya.neural.paraphrase import ask
+
+    class Dashy:
+        async def complete(self, role, messages, **kwargs):
+            return '{"lines": ["Pehle batao \\u2014 koi charge?", "  "]}'
+
+    assert aio.run(ask(Dashy(), "twin_a", "x", 1)) == ["Pehle batao, koi charge?"]
