@@ -3,8 +3,8 @@
 ## Current Objective
 
 - Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Tracks A and B and Phase 4 (except the I3 backup video) are on `main`. Phase 5, the neural brain, is under way with one owner per network: N1 (Gurnoor) in progress, N2 and N3 (Durvish) not started, N4 (Gurnoor) after them. Phase 6 (Durvish: the #19 review fixes, win-back missions, the permission-first opening) is merged; see the Phase 6 section below
-- Branch / commit: N1 work is on `feat/N1-worry-scorer` (pushed, not merged); this handoff is from `docs/phase5-harness`
+- Current status: Tracks A and B and Phase 4 (except the I3 backup video) are on `main`. Phase 5: N1 (Gurnoor) is merged and working, waiting only for the hand-written test set; N2 and N3 (Durvish) not started; N4 (Gurnoor) after them. Phase 6 (Durvish: the #19 review fixes, win-back missions, the permission-first opening) is merged; see the Phase 6 section below
+- Branch / commit: N1 merged from `feat/N1-worry-scorer`
 
 ## Completed This Session
 
@@ -20,7 +20,8 @@
 | Everything on main | `SKIP_INSTALL=1 ./init.sh` | passed | 292 pytest after #26 |
 | Neural tests (N1 branch) | `python -m pytest chanakya/neural` | 10 passed | fake encoder, no network |
 | ONNX vs PyTorch encoder | encoder comparison on four lines | cosine 1.0 | 2.4 ms per line |
-| Worry head (N1 branch) | `python -m chanakya.neural.train_worry --seed 7` | embedding 0.536, lexical 0.394 | N0 test split, 14 labels; calibration error 0.0049 after scaling |
+| Worry head | `python -m chanakya.neural.train_worry --seed 7` | embedding 0.648, lexical 0.388 | three families plus Concern Bank and template lines; 668 held-out test lines; calibration error 0.0052 |
+| Full calls, held-out lines | `python -m chanakya.eval.harness --merchants 100 --seed 7/13 --variants chanakya,chanakya_embedding --voice test` | success 0.84/0.77 vs 0.62/0.62 | walk-away 0.12/0.22 vs 0.34/0.36; belief top-1 0.50/0.53 vs 0.26/0.29; template voice 0.91/0.96 vs 0.96/0.98 |
 | Encoder fine-tuning probe | scratch experiment, 10 epochs | validation 0.72, test 0.55 | learns the training model's style; not adopted |
 
 ## Files Changed
@@ -37,7 +38,7 @@
 
 ## Blockers / Risks
 
-- N1 accuracy (0.536) is well short of the LLM (0.777); the next lever is training lines from more model families, not a bigger model
+- N1 (0.648) is still below the LLM scorer (0.777), which is too slow for live turns; fine-tuning the encoder added under 2 points
 - The hand-written test set is empty, and N1 cannot be marked done without it
 - Closing the laptop lid pauses long runs
 
@@ -62,5 +63,5 @@
 
 ## Recommended Next Step
 
-- N1: generate training lines from Mistral and one more model family, retrain, then the belief tracker change, the lines voice and full-call results
-- Durvish: N3 first (it needs nothing from N1), then N2 once the lines voice lands; re-measure win-back with the embedding scorer (`python -m chanakya.eval.winback`)
+- N1: Gurnoor writes the hand-written test set by hand, then `python -m chanakya.neural.train_worry --seed 7` adds its per-slice results; mark N1 done with that evidence
+- Durvish: N3 value network (needs nothing), then N2 semantic memory, which can use `LinesVoice` with the train split (`chanakya/sim/voice.py`) to build memory and `--voice test` to evaluate; re-measure win-back with the embedding scorer (`python -m chanakya.eval.winback`)

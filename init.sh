@@ -3,6 +3,7 @@
 #   ./init.sh                 Python tests, Ruff, frontend lint and tests
 #   FULL=1 ./init.sh          also the frontend production build
 #   SKIP_INSTALL=1 ./init.sh  never install dependencies
+#   NEURAL=1 ./init.sh        also the neural brain: encoder libraries, model download, checks with the real model
 set -euo pipefail
 
 APP_ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -52,6 +53,19 @@ fi
 if [ -f pyproject.toml ] && grep -q '\[tool.ruff' pyproject.toml; then
   echo "--- Ruff lint"
   "$PY" -m ruff check .
+fi
+
+if [ -n "${NEURAL:-}" ]; then
+  echo "--- Neural brain (real encoder)"
+  if [ -z "${SKIP_INSTALL:-}" ]; then
+    "$PY" -m pip install -q -r "$APP_ROOT/requirements-neural.txt"
+    "$PY" -m chanakya.neural.encoder --download
+  else
+    "$PY" -m chanakya.neural.encoder
+  fi
+  "$PY" -m chanakya.neural.human_set
+  # The same tests again, now that the model is present: the ones that skip without it run here.
+  "$PY" -m pytest -q chanakya/neural chanakya/brain/tests/test_belief.py
 fi
 
 FRONTEND="$APP_ROOT/frontend"

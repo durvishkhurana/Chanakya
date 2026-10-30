@@ -58,10 +58,10 @@ class CountingLLM:
 class BrainVariant:
     """Chanakya (belief, look-ahead planner, realizer, gated mock actions) or its no-belief ablation."""
 
-    def __init__(self, name: str, llm=None, planner=None, belief: bool = True):
+    def __init__(self, name: str, llm=None, planner=None, belief: bool = True, scorer=None):
         self.name = name
         self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(), gate=FakeSafetyGate(),
-                                actions_enabled=True, scorer=None if belief else NullScorer())
+                                actions_enabled=True, scorer=scorer if belief else NullScorer())
         self.thread = "eval"
 
     async def open(self, card: MissionCard) -> None:
@@ -173,4 +173,13 @@ def make_variant(name: str, llm=None, llm_agent=None):
         from chanakya.brain.forest.forest import default_forest
 
         return BrainVariant(name, llm=llm, planner=NRPAPlanner(forest=default_forest()))
+    if name == "chanakya_embedding":
+        from chanakya.neural.scorer import load_embedding_scorer
+
+        scorer = load_embedding_scorer()
+        if scorer is None:  # an evaluation must never quietly fall back to the lexical scorer
+            raise RuntimeError("chanakya_embedding needs the encoder and data/neural/worry_head.npz: "
+                               "pip install -r requirements-neural.txt; python -m chanakya.neural.encoder --download; "
+                               "python -m chanakya.neural.train_worry")
+        return BrainVariant(name, llm=llm, scorer=scorer)
     raise ValueError(f"Unknown variant {name}")

@@ -7,6 +7,10 @@ The N0 train split is divided once (seeded, per label) into fit lines and a 15% 
 trains on the fit lines, stops early and is calibrated on validation only; the no-worry threshold is tuned on
 validation too. The N0 test split (another model family) and the hand-written set are never seen before
 scoring. A logistic head and a one-hidden-layer network are both trained; the lower validation loss wins.
+
+The fit lines also include the Concern Bank's own phrasings (labelled with their worry) and the twins' everyday
+template lines (no worry), the sentences the lexical scorer is built from. N0 dropped every test line close to a
+Concern Bank phrasing, so the test split stays held out.
 """
 
 import argparse
@@ -29,6 +33,18 @@ from chanakya.neural.paraphrase import NONE, OUT, load
 from chanakya.neural.scorer import HEAD, EmbeddingScorer
 
 VALIDATION_SHARE = 0.15
+EVERYDAY = ("opening", "acknowledge", "agree", "hesitate", "deny_concern", "decline", "hang_up")
+
+
+def reference_rows(bank) -> list[dict]:
+    """Concern Bank phrasings with their worry, and the twins' everyday template lines with no worry."""
+    from chanakya.sim.voice import TEMPLATES
+
+    rows = [{"text": text, "concern": cid, "language": language, "split": "train", "model": "concern-bank"}
+            for cid in bank.ids for language, texts in bank.concerns[cid].phrasings.items() for text in texts]
+    rows += [{"text": lines[kind], "concern": NONE, "language": language, "split": "train", "model": "twin-template"}
+             for language, lines in TEMPLATES.items() for kind in EVERYDAY if kind in lines]
+    return rows
 
 
 def split_validation(rows: list[dict], seed: int) -> tuple[list[dict], list[dict]]:
@@ -92,6 +108,7 @@ def main() -> None:
     bank = default_bank()
     concerns = list(bank.ids)
     fit_rows, val_rows = split_validation(load("train"), args.seed)
+    fit_rows += reference_rows(bank)
     test_rows = load("test")
     x_fit, x_val = encode(encoder, fit_rows), encode(encoder, val_rows)
     y_fit, y_val = targets(fit_rows, concerns), targets(val_rows, concerns)

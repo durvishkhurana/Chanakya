@@ -7,12 +7,17 @@ split comes from the ``twin_a`` model and the test split from ``twin_b``. Lines 
 phrasing, or to a line in the other split, are dropped.
 
     python -m chanakya.neural.paraphrase --seed 7      # writes data/neural/worry_lines.jsonl
+    python -m chanakya.neural.paraphrase --seed 11 --extend-train mistralai/mistral-small-2603 --extend-train z-ai/glm-5.3-flash
+
+``--extend-train`` adds train lines written by other model families (never the test family) and leaves the test
+split untouched; new lines close to any test line are dropped.
 """
 
 import argparse
 import asyncio
 import json
 import random
+import re
 from pathlib import Path
 
 from chanakya.brain.belief import dice, trigrams
@@ -54,7 +59,9 @@ async def ask(llm, role: str, text: str, seed: int) -> list[str]:
         try:
             reply = await complete_json(llm, role, [{"role": "user", "content": text}], max_tokens=1500,
                                         temperature=0.9, seed=seed + attempt)
-            return [line.strip() for line in reply.get("lines", []) if isinstance(line, str) and line.strip()]
+            lines = [re.sub(r"\s*[\u2014\u2013]\s*", ", ", line).strip() for line in reply.get("lines", [])
+                     if isinstance(line, str)]  # no em or en dashes in merchant lines, whatever the model writes
+            return [line for line in lines if line]
         except LLMError:
             continue
     return []
@@ -77,12 +84,28 @@ def clean(rows: list[dict], bank: ConcernBank) -> list[dict]:
     return kept
 
 
-async def generate(llm, seed: int, bank: ConcernBank | None = None, parallel: int = 4) -> list[dict]:
+def extend(existing: list[dict], new: list[dict], bank: ConcernBank) -> list[dict]:
+    """``existing`` plus the new train lines that repeat nothing and stay clear of the bank and of every test line."""
+    reference = [trigrams(p) for cid in bank.ids for p in bank.phrasings(cid)]
+    reference += [trigrams(r["text"]) for r in existing if r["split"] == "test"]
+    seen = {" ".join(r["text"].lower().split()) for r in existing}
+    kept = []
+    for row in new:
+        key = " ".join(row["text"].lower().split())
+        if row["split"] != "train" or key in seen or any(dice(trigrams(row["text"]), p) >= TOO_CLOSE for p in reference):
+            continue
+        seen.add(key)
+        kept.append(row)
+    return existing + kept
+
+
+async def generate(llm, seed: int, bank: ConcernBank | None = None, parallel: int = 4,
+                   splits: dict | None = None) -> list[dict]:
     """Every (split, concern or none, language) batch, generated with a bounded number of requests at once."""
     bank = bank or default_bank()
     rng = random.Random(seed)
     jobs = []
-    for split, (role, count) in SPLITS.items():
+    for split, (role, count) in (splits or SPLITS).items():
         for label in [*bank.ids, NONE]:
             brief = NONE_BRIEF if label == NONE else f"is worried that: {bank.concerns[label].description}"
             for language in LANGUAGES:
@@ -113,9 +136,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate labelled merchant lines for the worry scorer.")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--out", type=Path, default=OUT)
+    parser.add_argument("--extend-train", action="append", default=[], metavar="MODEL",
+                        help="Add train lines from this model to the existing file; repeatable")
     args = parser.parse_args()
     load_dotenv(Path(__file__).resolve().parents[2] / ".env")
-    rows = asyncio.run(generate(default_llm(), args.seed))
+    if args.extend_train:
+        import dataclasses
+
+        from chanakya.core.config import Settings
+
+        bank, rows, base = default_bank(), load(path=args.out), Settings.from_env()
+        for number, model in enumerate(args.extend_train):
+            llm = default_llm(dataclasses.replace(base, models={**base.models, "twin_a": model}))
+            new = asyncio.run(generate(llm, args.seed + number, bank, splits={"train": SPLITS["train"]}))
+            before = len(rows)
+            rows = extend(rows, new, bank)
+            print(f"{model}: {len(new)} generated, {len(rows) - before} kept")
+    else:
+        rows = asyncio.run(generate(default_llm(), args.seed))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     counts = {s: sum(r["split"] == s for r in rows) for s in SPLITS}
