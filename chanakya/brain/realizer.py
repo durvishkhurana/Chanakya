@@ -16,6 +16,7 @@ from chanakya.brain.contracts.llm import LLMClient, LLMError, complete_json
 from chanakya.brain.contracts.schemas import DialogueState, EndReason, Move, MoveType
 from chanakya.sim.judge import safety_violations
 
+from . import moves as lib
 from .concern_bank import DATA, ConcernBank, default_bank
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ ACTION_CLAIM = re.compile(
 
 
 CONDITIONAL = re.compile(r"\b(if you|only if|agar|tabhi|jab aap)\b|अगर|तभी|ਜੇ|ਤਾਂ ਹੀ", re.IGNORECASE)
+# Win-back calls never mention or promise an offer, discount or waiver: the product sources establish none.
+OFFER = re.compile(r"\b(offers?|discounts?|waive[rds]?|waiving|rebate|chhoot|chhut|maaf|concession|deal)\b"
+                   r"|छूट|माफ़|ऑफ़र|ਛੋਟ|ਮਾਫ਼", re.IGNORECASE)
 
 
 def unsafe_reasons(text: str, move: Move, state: DialogueState) -> list[str]:
@@ -41,6 +45,8 @@ def unsafe_reasons(text: str, move: Move, state: DialogueState) -> list[str]:
         problems.append("claims_action")
     if text and asking and "?" not in text:
         problems.append("consent_not_asked")
+    if text and lib.is_winback(state) and OFFER.search(text):
+        problems.append("winback_offer")
     return problems
 
 PRODUCT_LINES = {
@@ -138,6 +144,15 @@ LINES = {
         "escalate": "Main aapko ek insaani saathi se jodne ka intezaam karta hoon, aapko baat dobara nahi batani padegi.",
         "end": "Aapke samay ke liye dhanyavaad. Koi sawaal ho toh Paytm for Business ki official website dekh sakte hain.",
         "refuse": "Main kabhi OTP, PIN ya password nahi maangta, aur aapko bhi kisi ko nahi batana chahiye. Dhanyavaad.",
+        "winback_ask": "Main isliye call kar raha hoon kyonki aapne pehle Paytm ka {product} use kiya tha. Kya aap bata sakte hain ki aapne use karna kyon band kiya?",
+        "consent_raise_ticket": "Kya main is problem ke liye ek complaint ticket bana doon, taaki team ise theek kare? Aap saaf haan kahenge tabhi banaunga.",
+        "done_raise_ticket": "Ho gaya, demo ke mock system mein ticket ban gaya hai. Problem theek hone par hum system se check karenge.",
+        "consent_book_field_visit_sales": "Kya main ek Paytm saathi ki visit book kar doon, jo official jaankari ke saath aapke sawaalon ka jawab de? Aap saaf haan kahenge tabhi karunga.",
+        "done_book_field_visit_sales": "Ho gaya, visit demo ke mock system mein book ho gayi hai.",
+        "settlement_status": "Mock settlement system mein aapka sabse naya settlement '{status}' dikh raha hai, expected date {date}. System ka note: {note}.",
+        "settlement_none": "Mock settlement system mein abhi aapka koi settlement nahi dikh raha.",
+        "end_not_needed": "Bilkul theek hai, bataane ke liye dhanyavaad. Main aapko aur pareshaan nahi karunga.",
+        "end_accepted": "Samajh gaya, aapki pasand bilkul theek hai. Samay dene ke liye dhanyavaad.",
     },
     "english": {
         "greet": "Hello, I'm Chanakya, an independent AI assistant for Paytm business payment products. Do you have two minutes?",
@@ -153,6 +168,15 @@ LINES = {
         "escalate": "I will connect you with a human colleague, and you won't have to repeat yourself.",
         "end": "Thank you for your time. For any questions, Paytm for Business has an official website.",
         "refuse": "I never ask for OTPs, PINs or passwords, and you should never share them with anyone. Thank you.",
+        "winback_ask": "I'm calling because you used Paytm's {product} before. May I ask why you stopped using it?",
+        "consent_raise_ticket": "Shall I raise a support ticket for this so the team can fix it? I will only raise it if you clearly say yes.",
+        "done_raise_ticket": "Done, the ticket is raised in the demo's mock system. We will check the system to see when it is fixed.",
+        "consent_book_field_visit_sales": "Shall I book a visit from a Paytm colleague to answer your questions with the official details? I will only book it if you clearly say yes.",
+        "done_book_field_visit_sales": "Done, the visit is booked in the demo's mock system.",
+        "settlement_status": "The mock settlement system shows your latest settlement as '{status}', expected on {date}. The system note says: {note}.",
+        "settlement_none": "The mock settlement system shows no settlement for you right now.",
+        "end_not_needed": "That's completely fine, thank you for telling me. I won't bother you again.",
+        "end_accepted": "Understood, your choice is completely fine. Thank you for your time.",
     },
 }
 
@@ -188,6 +212,33 @@ def evidence_nodes(move: Move, bank: ConcernBank) -> list[str]:
     return []
 
 
+PRODUCT_NAMES = {"soundbox": "Soundbox", "card_machine": "card machine", "qr": "QR", "payment_links": "Payment Links",
+                 "payment_gateway": "Payment Gateway", "gateway": "Payment Gateway", "business_app": "Business app"}
+
+
+def product_name(state: DialogueState) -> str:
+    """The mission's product as spoken."""
+    product = state.card.context or "soundbox"
+    return PRODUCT_NAMES.get(product, product.replace("_", " "))
+
+
+def settlement_line(state: DialogueState, lines: dict[str, str]) -> str:
+    """Only what the mock settlement system returned: status, expected date and note. Never the amount."""
+    decisions = [d for d in state.actions if d.call.tool == "get_settlement_status" and d.result and d.result.ok]
+    settlements = decisions[-1].result.data.get("settlements") if decisions else None
+    if not settlements:
+        return lines["settlement_none"]
+    latest = settlements[0]
+    return lines["settlement_status"].format(status=latest.get("status", "unknown"),
+                                             date=latest.get("expected_on", "unknown"),
+                                             note=latest.get("note") or "none")
+
+
+def visit_for_sales(move: Move, state: DialogueState) -> bool:
+    """A win-back visit about charges or setup is a sales colleague, not a technician."""
+    return move.tool == "book_field_visit" and lib.is_winback(state) and lib.winback_reason(state) in lib.VISIT_REASONS
+
+
 def last_action_executed(state: DialogueState, tool: str | None) -> bool:
     """Whether the gate actually executed the latest call for ``tool``."""
     decisions = [d for d in state.actions if d.call.tool == tool]
@@ -207,6 +258,8 @@ class TemplateRealizer:
             case MoveType.DISCLOSE_AND_GREET:
                 return lines["greet"]
             case MoveType.DISCOVER_NEED:
+                if lib.is_winback(state):
+                    return lines["winback_ask"].format(product=product_name(state))
                 return lines["discover"]
             case MoveType.PROBE_CONCERN:
                 return PROBES[label].get(move.concern, lines["discover"])
@@ -215,15 +268,24 @@ class TemplateRealizer:
             case MoveType.RECOMMEND:
                 return PRODUCT_LINES[label].get(move.product, PRODUCT_LINES[label]["qr"])
             case MoveType.CONFIRM_CONSENT:
+                if visit_for_sales(move, state):
+                    return lines["consent_book_field_visit_sales"]
                 return lines.get(f"consent_{move.tool}", lines["consent_other"])
             case MoveType.TAKE_ACTION:
-                return lines.get(f"done_{move.tool}", lines["done"]) if last_action_executed(state, move.tool) else lines["not_done"]
+                if move.tool == "get_settlement_status":
+                    return settlement_line(state, lines)
+                if not last_action_executed(state, move.tool):
+                    return lines["not_done"]
+                if visit_for_sales(move, state):
+                    return lines["done_book_field_visit_sales"]
+                return lines.get(f"done_{move.tool}", lines["done"])
             case MoveType.SCHEDULE_FOLLOWUP:
                 return lines["followup"]
             case MoveType.ESCALATE:
                 return lines["escalate"]
             case _:
-                return lines["refuse"] if move.end_reason == EndReason.SENSITIVE_REQUEST else lines["end"]
+                return {EndReason.SENSITIVE_REQUEST: lines["refuse"], EndReason.NOT_NEEDED: lines["end_not_needed"],
+                        EndReason.ACCEPTED_CHOICE: lines["end_accepted"]}.get(move.end_reason, lines["end"])
 
 
 class LLMRealizer:
@@ -244,6 +306,9 @@ class LLMRealizer:
             case MoveType.DISCLOSE_AND_GREET:
                 return "Greet, say you are Chanakya, an independent AI assistant for Paytm business payment products, and ask permission to continue."
             case MoveType.DISCOVER_NEED:
+                if lib.is_winback(state):
+                    return (f"Say you are calling because they used Paytm's {product_name(state)} before, then ask why they "
+                            "stopped using it. Do not pitch anything and never mention an offer, discount or waiver.")
                 return "Ask one focused question about how the business collects payments today."
             case MoveType.PROBE_CONCERN:
                 return f"Gently ask whether this worry applies, without assuming it: {bank.concerns[move.concern].description}"
@@ -256,6 +321,9 @@ class LLMRealizer:
                 extra = " Also ask about a reminder if onboarding stays unfinished." if move.tool == "send_onboarding_link" else ""
                 return (f"Ask for an explicit yes before doing this action: {move.tool}.{extra} Say you will only do it if "
                         "they clearly agree.")
+            case MoveType.TAKE_ACTION if move.tool == "get_settlement_status":
+                return ("Explain only this result from the mock settlement system, in plain words, with no amount and "
+                        f"no promise about timing: {settlement_line(state, LINES['english'])}")
             case MoveType.TAKE_ACTION:
                 done = last_action_executed(state, move.tool)
                 return ("Confirm the action was done in the demo's mock system and that real onboarding happens in "
@@ -265,6 +333,11 @@ class LLMRealizer:
                 return "Offer to call back later and ask which time suits them. Do not claim it is booked."
             case MoveType.ESCALATE:
                 return "Say a human colleague will take over with full context so they won't repeat themselves."
+            case _ if move.end_reason == EndReason.NOT_NEEDED:
+                return ("Thank them for telling you and accept it. Do not pitch, suggest or offer anything, and do not "
+                        "promise to call again. End politely.")
+            case _ if move.end_reason == EndReason.ACCEPTED_CHOICE:
+                return "Say their choice is completely fine and thank them. Do not pitch anything. End politely."
             case _:
                 if move.end_reason == EndReason.SENSITIVE_REQUEST:
                     return "Refuse: you never ask for OTPs, PINs or passwords and they must never share them. End politely."

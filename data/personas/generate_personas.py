@@ -95,10 +95,49 @@ def adversarial(split: str, rng: random.Random, start: int) -> list[dict]:
     return personas
 
 
+# Former customers for win-back missions: the first hidden concern is the hidden reason they stopped.
+FORMER_REASONS = {
+    "planning": ["device_issue", "settlement_delay", "rental_cost", "not_needed", "customers_pay_cash",
+                 "competitor_qr", "just_busy", "hidden_charges"],
+    "evaluation": ["device_issue", "device_issue", "settlement_delay", "rental_cost", "per_swipe_charges",
+                   "not_needed", "not_needed", "customers_pay_cash", "competitor_qr", "just_busy"],
+}
+SECOND_WORRIES = ["trust_in_caller", "rental_cost", "hidden_charges", "setup_hassle"]
+
+
+def former(split: str, rng: random.Random) -> list[dict]:
+    spec = PLANNING if split == "planning" else EVALUATION
+    personas = []
+    for index, reason in enumerate(FORMER_REASONS[split]):
+        city = rng.choice(spec["cities"])
+        hidden = [reason]
+        if rng.random() < 0.25:
+            hidden.append(rng.choice([c for c in SECOND_WORRIES if c != reason]))
+        personas.append({
+            "persona_id": f"{split[:4]}_former_{index + 1:02d}",
+            "business_type": rng.choice(spec["businesses"]),
+            "city": city,
+            "language": CITY_LANGUAGES[city],
+            "patience": round(rng.uniform(0.3, 0.9), 2),
+            "busyness": round(rng.uniform(0.1, 0.8), 2),
+            "tech_comfort": round(rng.uniform(0.1, 0.9), 2),
+            "hidden_concerns": hidden,
+            "willingness_prior": round(rng.uniform(0.15, 0.45), 2),
+            "adversarial": None,
+            "split": split,
+            "relationship": "former",
+            "notes": "Fictional former customer for win-back missions.",
+        })
+    return personas
+
+
 def main() -> None:
     rng = random.Random(SEED)
     personas = (build("planning", PLANNING, 30, rng) + adversarial("planning", rng, 1)
                 + build("evaluation", EVALUATION, 30, rng) + adversarial("evaluation", rng, 1))
+    # A separate generator, so adding former customers leaves every earlier persona exactly as it was.
+    former_rng = random.Random(SEED + 1)
+    personas += former("planning", former_rng) + former("evaluation", former_rng)
     data = {
         "metadata": {
             "description": "Fictional merchant personas for Twin-A (planning) and Twin-B (evaluation). No real merchants.",

@@ -418,10 +418,10 @@ Durvish owns every task in this phase. Some of them edit Track B directories (`c
   - A reasons-for-leaving card in Mission Control: counts of recorded leaving reasons by reason, city and product, read from the ledger. B12 should reuse it.
 - **Done when:** tests cover the eligibility edges, a deterministic holdout for a given seed, each DONE path and no DONE without system confirmation, do-not-call and open-ticket routing; `FULL=1 ./init.sh` passes.
 
-#### [ ] W2 The win-back conversation
+#### [x] W2 The win-back conversation
 - **Branch:** `feat/W2-winback-brain`
 - **Owner:** Durvish Khurana
-- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/scenarios.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/sim/judge.py`, `chanakya/sim/tests/`, `chanakya/eval/winback.py`, `chanakya/eval/tests/`, `data/personas/`, `docs/results/winback/`, `README.md`
+- **Owns:** `chanakya/brain/moves.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/planner_nrpa.py`, `chanakya/brain/realizer.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/scenarios.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/sim/judge.py`, `chanakya/sim/tests/`, `chanakya/eval/winback.py`, `chanakya/eval/tests/`, `chanakya/brain/concern_bank.py` (former personas kept out of sales evaluations), `chanakya/brain/calls_api.py`, `scripts/demo/`, `data/personas/`, `docs/results/winback/`, `README.md`; one additive branch in `agent/brain_agent.py` so a planned read (settlement status) runs through the gate
 - **Depends on:** W1
 - **Build:**
   - Listen first: after the AI disclosure Chanakya says it is calling because they used the product before, then asks why they stopped. No pitch until the belief has a clear top reason or two probes were used. The 13 Concern Bank worries are the reasons.

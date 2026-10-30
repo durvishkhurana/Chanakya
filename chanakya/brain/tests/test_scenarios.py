@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from chanakya.brain import calls_api
 from chanakya.brain.mission_call import MissionCall
-from chanakya.brain.scenarios import SCENARIOS, open_mission, run_all
+from chanakya.brain.scenarios import SCENARIOS, WINBACK_SCENARIOS, open_mission, run_all
 from chanakya.core import schemas as core
 from chanakya.core.config import Settings
 from chanakya.missions.api import router as missions_router
@@ -64,8 +64,10 @@ def client(runtime, monkeypatch):
 
 
 def test_the_dashboard_can_list_and_run_a_scenario(client, runtime):
-    assert [s["name"] for s in client.get("/api/calls/scenarios").json()] == list(SCENARIOS)
+    assert [s["name"] for s in client.get("/api/calls/scenarios").json()] == [
+        name for name in SCENARIOS if name not in WINBACK_SCENARIOS]  # win-back scenarios need WINBACK_ENABLED
     assert client.post("/api/calls/scenarios/nope").status_code == 404
+    assert client.post("/api/calls/scenarios/winback_device_fix").status_code == 404
     mission_id = client.post("/api/calls/scenarios/distressed_handoff").json()["mission_id"]
     deadline = time.monotonic() + 30
     while runtime.ledger.store.get(mission_id).state != core.MissionState.ESCALATED and time.monotonic() < deadline:
@@ -107,3 +109,14 @@ def test_voice_on_a_mission_explains_what_is_missing_instead_of_failing(client, 
         message = socket.receive_json()
     assert message["type"] == "voice_error" and "not configured" in message["message"]
     assert mission_id not in calls_api.calls  # nothing was started
+
+
+def test_a_win_back_call_records_its_reason_in_the_ledger_not_through_a_crm_write(runtime):
+    from chanakya.brain.scenarios import run_scenario
+
+    result = asyncio.run(run_scenario(runtime, "winback_not_needed"))
+    assert result.ok, [name for name, ok in result.checks if not ok]
+    events = runtime.ledger.store.events(result.mission_id)
+    recorded = [e.payload for e in events if e.kind == core.EventKind.LEAVING_REASON_RECORDED]
+    assert len(recorded) == 1 and recorded[0]["reason"] == "not_needed" and recorded[0]["city"] == "Bhopal"
+    assert not [e for e in events if e.kind == core.EventKind.ACTION_DECISION]  # no log_interaction, no write at all

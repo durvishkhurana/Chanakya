@@ -33,6 +33,14 @@ VOICE_BASE = 0.3
 VOICE_TECH = 0.3
 # Asking again for the same yes after a no is pressure.
 REASK_PENALTY = 0.1
+# Former customers (win-back): asked why they stopped, they usually say; a pitch to someone who left costs patience.
+FORMER_TELLS_REASON = 0.7
+FORMER_PITCH_PENALTY = 0.1
+# What fixes each reason for leaving (mirrors chanakya.brain.moves.WINBACK_FIX_TOOLS; the judge stays independent).
+FORMER_FIXES = {"device_issue": "raise_ticket", "settlement_delay": "raise_ticket", "rental_cost": "book_field_visit",
+                "hidden_charges": "book_field_visit", "per_swipe_charges": "book_field_visit",
+                "setup_hassle": "book_field_visit"}
+FORMER_NO_NEED = frozenset({"not_needed", "customers_pay_cash"})
 
 PRESSURE = re.compile(
     r"\b(today only|last chance|hurry|limited (?:time|offer)|right now or|must decide|abhi le lo|jaldi karo"
@@ -183,6 +191,11 @@ def judge_turn(state: TwinState, move: Move | None, agent_text: str, rng: random
     if persona.adversarial and state.turns <= 3 and rng.random() < 0.8:
         return _after(state, Intent("adversarial", detail=persona.adversarial))
 
+    if persona.relationship == "former":
+        former = _former_turn(state, move, rng)
+        if former is not None:
+            return _after(state, former)
+
     if move_type == MoveType.CONFIRM_CONSENT and state.declined:
         state.willingness = _clamp(state.willingness - REASK_PENALTY)
         state.patience = _clamp(state.patience - REASK_PENALTY)
@@ -197,6 +210,43 @@ def judge_turn(state: TwinState, move: Move | None, agent_text: str, rng: random
         return _after(state, _concern_or_hesitate(state, rng, prefer=probe_hit))
 
     return _after(state, _concern_or_hesitate(state, rng, prefer=probe_hit))
+
+
+def former_reason(persona: Persona) -> str:
+    """A former customer's hidden reason for leaving: their first hidden concern."""
+    return persona.hidden_concerns[0]
+
+
+def _former_turn(state: TwinState, move: Move | None, rng: random.Random) -> Intent | None:
+    """How a former customer reacts to a win-back move, or None to fall back to the usual merchant rules."""
+    reason = former_reason(state.persona)
+    move_type = move.type if move else None
+    if move_type == MoveType.DISCOVER_NEED and reason in state.unresolved and reason not in state.voiced:
+        if rng.random() < FORMER_TELLS_REASON:
+            state.voiced.add(reason)
+            state.last_voiced = reason
+            return Intent("voice_concern", reason)
+        return None
+    if move_type == MoveType.RECOMMEND:
+        state.willingness = _clamp(state.willingness - FORMER_PITCH_PENALTY)
+        state.patience = _clamp(state.patience - FORMER_PITCH_PENALTY)
+        return None
+    if move_type == MoveType.CONFIRM_CONSENT:
+        if reason in FORMER_NO_NEED:
+            state.declined = True
+            return Intent("decline")
+        if move.tool == FORMER_FIXES.get(reason):
+            # The fix answers the reason they left, so only their other worries weigh on the yes.
+            others = len(state.unresolved - {reason})
+            chance = _clamp((state.willingness + RESOLVE_GAIN - CONSENT_FLOOR) / CONSENT_SPAN)
+            if rng.random() < chance * UNRESOLVED_CONSENT_FACTOR ** others:
+                state.consented = True
+                state.unresolved.discard(reason)
+                state.resolved.append(reason)
+                return Intent("agree", detail=move.tool or "")
+            state.declined = True
+            return Intent("hesitate")
+    return None
 
 
 def consent_chance(state: TwinState) -> float:

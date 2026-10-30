@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from chanakya.brain.contracts.llm import default_llm
 from chanakya.brain.mission_call import MissionCall
-from chanakya.brain.scenarios import SCENARIOS, open_mission, run_scenario
+from chanakya.brain.scenarios import SCENARIOS, WINBACK_SCENARIOS, open_mission, run_scenario
 from chanakya.core import schemas as core
 from chanakya.core.config import Settings
 from chanakya.missions.runtime import get_runtime
@@ -38,14 +38,20 @@ def _llm():
 
 @router.get("/scenarios")
 async def scenarios() -> list[dict]:
-    """The demo scenarios the dashboard can run."""
-    return [{"name": s.name, "title": s.title, "merchant_id": s.merchant_id} for s in SCENARIOS.values()]
+    """The demo scenarios the dashboard can run (win-back ones only with WINBACK_ENABLED)."""
+    return [{"name": s.name, "title": s.title, "merchant_id": s.merchant_id} for s in SCENARIOS.values()
+            if s.name in _available()]
+
+
+def _available() -> set[str]:
+    names = set(SCENARIOS)
+    return names if get_runtime().settings.winback_enabled else names - WINBACK_SCENARIOS
 
 
 @router.post("/scenarios/{name}")
 async def start_scenario(name: str) -> dict:
     """Open the scenario's mission and play it in the background; returns the mission to watch."""
-    if name not in SCENARIOS:
+    if name not in _available():
         raise HTTPException(status_code=404, detail="unknown scenario")
     runtime = get_runtime()
     mission = await open_mission(runtime, SCENARIOS[name])

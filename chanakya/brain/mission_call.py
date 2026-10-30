@@ -14,6 +14,7 @@ import asyncio
 from datetime import timedelta
 
 from agent.brain_agent import BrainAgent
+from chanakya.actions.gate import merchant_from_db
 from chanakya.brain import moves as lib
 from chanakya.brain.contracts import events as brain_events
 from chanakya.brain.contracts import schemas as brain
@@ -48,14 +49,29 @@ def agreed_product(state: brain.DialogueState) -> str:
     return product if product in LINK_PRODUCTS else (state.card.context or "soundbox")
 
 
-def tool_args(tool: str, card: brain.MissionCard, slot: str, product: str | None = None) -> dict:
-    """Arguments for a write tool, filled from the mission card (``product`` overrides the card's)."""
+# Fixed ticket text for a win-back fix: the merchant's reason, never free text from a model.
+TICKET_TEXT = {
+    "device": "Win-back call: the merchant stopped using the {product} because the device was not working properly.",
+    "settlement": "Win-back call: the merchant stopped using the {product} after a delayed settlement.",
+}
+
+
+def tool_args(tool: str, card: brain.MissionCard, slot: str, product: str | None = None,
+              reason: str | None = None) -> dict:
+    """Arguments for a write tool, filled from the mission card (``product`` overrides the card's).
+
+    ``reason`` is a win-back merchant's reason for leaving: it picks the ticket category or the visit's purpose.
+    """
     merchant = {"merchant_id": card.merchant.merchant_id}
     product = product or card.context or "soundbox"
     if tool == "send_onboarding_link":
         return merchant | {"product": product, "channel": "whatsapp", "language": card.merchant.language}
     if tool == "book_field_visit":
-        return merchant | {"purpose": "technician", "slot": slot}
+        return merchant | {"purpose": "sales" if reason in lib.VISIT_REASONS else "technician", "slot": slot}
+    if tool == "raise_ticket":
+        category = lib.TICKET_CATEGORIES.get(reason, "device")
+        return merchant | {"category": category,
+                           "description": TICKET_TEXT[category].format(product=product.replace("_", " "))}
     if tool == "send_summary":
         return merchant | {"channel": "whatsapp", "text": SUMMARY.get(card.merchant.language, SUMMARY["default"])}
     return merchant
@@ -88,15 +104,17 @@ class LedgerGate:
 
     async def check(self, call: brain.ToolCall, state: brain.DialogueState) -> brain.ActionDecision:
         runtime, mission_id = self.call.runtime, self.call.mission_id
+        write = call.tool in lib.WRITE_TOOLS  # a read (settlement status) changes nothing, so the mission stays put
         await self.call.sync(state)
         mission = runtime.ledger.store.get(mission_id)
-        if mission.state == S.IN_CONVERSATION:
+        if write and mission.state == S.IN_CONVERSATION:
             await runtime.ledger.advance(mission_id, S.ACTION_PENDING, reason=f"merchant agreed to {call.tool}")
         slot = (runtime.clock() + timedelta(days=1)).replace(hour=5, minute=30, second=0, microsecond=0).isoformat()
-        decision = await runtime.submit(core.ToolCall(mission_id=mission_id, tool=call.tool,
-                                                      args=tool_args(call.tool, state.card, slot, agreed_product(state))))
+        reason = lib.winback_reason(state) if lib.is_winback(state) else None
+        args = tool_args(call.tool, state.card, slot, agreed_product(state), reason)
+        decision = await runtime.submit(core.ToolCall(mission_id=mission_id, tool=call.tool, args=args))
         mission = runtime.ledger.store.get(mission_id)
-        if mission.state == S.ACTION_PENDING:
+        if write and mission.state == S.ACTION_PENDING:
             if decision.verdict == core.Verdict.EXECUTED:
                 await runtime.ledger.advance(mission_id, S.AWAITING_CONFIRMATION,
                                              reason=f"{call.tool} done; waiting for the outcome")
@@ -121,6 +139,7 @@ class MissionCall:
         self.recorded_consents = 0
         self.disclosed = False
         self.declined = False  # the merchant's latest word on consent was a no
+        self.reason_recorded = False
         self._lock = asyncio.Lock()  # one turn at a time, even when the merchant talks over Chanakya
         self._turns: set[asyncio.Task] = set()
 
@@ -198,11 +217,32 @@ class MissionCall:
             self.disclosed = True
             await self.runtime.ledger.record(self.mission_id, core.EventKind.AI_DISCLOSED, {"text": text})
 
+    async def record_leaving_reason(self, state: brain.DialogueState) -> None:
+        """Write a win-back call's final top reason for leaving to the ledger, once.
+
+        This is the brain's own ledger record, not a CRM write: ``log_interaction`` would need the merchant's consent.
+        """
+        if self.reason_recorded or not lib.is_winback(state) or not state.belief.probabilities:
+            return
+        self.reason_recorded = True
+        top, p = state.belief.top(1)[0]
+        reason = lib.winback_reason(state) or top
+        merchant = merchant_from_db(self.runtime.registry, state.card.merchant.merchant_id)
+        await self.runtime.ledger.record(self.mission_id, core.EventKind.LEAVING_REASON_RECORDED, {
+            "reason": reason, "probability": round(state.belief.probabilities.get(reason, p), 3),
+            "clear": lib.winback_reason(state) is not None, "probes": lib.probes_used(state),
+            "merchant_id": state.card.merchant.merchant_id, "city": merchant.city if merchant else "unknown",
+            "product": self.mission.card.product or "unknown"})
+
     async def _after(self, move: brain.Move) -> None:
         """Close, hand off or reschedule the mission according to the move just made."""
         mission, ledger = self.mission, self.runtime.ledger
         if not mission.is_open:
             return
+        ends = move.type in lib.TERMINAL_MOVES or move.type == brain.MoveType.SCHEDULE_FOLLOWUP
+        fixed = move.type == brain.MoveType.TAKE_ACTION and move.tool in lib.WRITE_TOOLS
+        if ends or fixed:
+            await self.record_leaving_reason(self.state)
         if move.type == brain.MoveType.ESCALATE:
             await self.runtime.handoffs.escalate(self.mission_id, reason=move.args.get("reason", "needs a person"),
                                                  urgent=True)
@@ -216,6 +256,10 @@ class MissionCall:
                 outcome = "merchant declined"
             elif move.end_reason == brain.EndReason.SENSITIVE_REQUEST:
                 outcome = "call ended after a request for sensitive data was refused"
+            elif move.end_reason == brain.EndReason.NOT_NEEDED:
+                outcome = "no use for the product; thanked them, no follow-up"
+            elif move.end_reason == brain.EndReason.ACCEPTED_CHOICE:
+                outcome = "answered their reason once and accepted their choice"
             else:
                 outcome = "call ended without a yes"
             if mission.state == S.ACTION_PENDING:

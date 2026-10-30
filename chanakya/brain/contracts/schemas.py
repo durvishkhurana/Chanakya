@@ -74,6 +74,8 @@ class Persona(Contract):
     willingness_prior: float = Field(ge=0, le=1)
     adversarial: Literal["angry", "prompt_injection", "fake_staff_otp", "distressed"] | None = None
     split: Literal["planning", "evaluation"] = "planning"
+    # A former customer's first hidden concern is their hidden reason for leaving (win-back missions).
+    relationship: Literal["prospect", "former"] = "prospect"
     notes: str = ""
 
 
@@ -145,6 +147,8 @@ class EndReason(StrEnum):
     ACTION_TAKEN = "action_taken"
     FOLLOWUP_SCHEDULED = "followup_scheduled"
     NO_LEGAL_MOVE = "no_legal_move"
+    NOT_NEEDED = "not_needed"  # a win-back merchant who has no use for the product: thank them, no follow-up
+    ACCEPTED_CHOICE = "accepted_choice"  # a win-back merchant who chose something else after one answer
 
 
 class Move(Contract):

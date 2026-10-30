@@ -1120,6 +1120,317 @@
       "adversarial": "distressed",
       "split": "evaluation",
       "notes": "Upset about a failed payment and family pressure; needs a human, not a pitch."
+    },
+    {
+      "persona_id": "plan_former_01",
+      "business_type": "vegetable vendor",
+      "city": "Amritsar",
+      "language": "pa-IN",
+      "patience": 0.32,
+      "busyness": 0.66,
+      "tech_comfort": 0.57,
+      "hidden_concerns": [
+        "device_issue",
+        "hidden_charges"
+      ],
+      "willingness_prior": 0.23,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_02",
+      "business_type": "vegetable vendor",
+      "city": "Lucknow",
+      "language": "hi-IN",
+      "patience": 0.39,
+      "busyness": 0.56,
+      "tech_comfort": 0.23,
+      "hidden_concerns": [
+        "settlement_delay",
+        "hidden_charges"
+      ],
+      "willingness_prior": 0.16,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_03",
+      "business_type": "hardware store",
+      "city": "Ludhiana",
+      "language": "pa-IN",
+      "patience": 0.62,
+      "busyness": 0.75,
+      "tech_comfort": 0.17,
+      "hidden_concerns": [
+        "rental_cost"
+      ],
+      "willingness_prior": 0.17,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_04",
+      "business_type": "hardware store",
+      "city": "Lucknow",
+      "language": "hi-IN",
+      "patience": 0.41,
+      "busyness": 0.53,
+      "tech_comfort": 0.34,
+      "hidden_concerns": [
+        "not_needed"
+      ],
+      "willingness_prior": 0.42,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_05",
+      "business_type": "pharmacy",
+      "city": "Delhi",
+      "language": "hi-IN",
+      "patience": 0.68,
+      "busyness": 0.1,
+      "tech_comfort": 0.83,
+      "hidden_concerns": [
+        "customers_pay_cash"
+      ],
+      "willingness_prior": 0.2,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_06",
+      "business_type": "salon",
+      "city": "Lucknow",
+      "language": "hi-IN",
+      "patience": 0.74,
+      "busyness": 0.5,
+      "tech_comfort": 0.17,
+      "hidden_concerns": [
+        "competitor_qr"
+      ],
+      "willingness_prior": 0.4,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_07",
+      "business_type": "vegetable vendor",
+      "city": "Ludhiana",
+      "language": "pa-IN",
+      "patience": 0.6,
+      "busyness": 0.13,
+      "tech_comfort": 0.22,
+      "hidden_concerns": [
+        "just_busy",
+        "setup_hassle"
+      ],
+      "willingness_prior": 0.18,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "plan_former_08",
+      "business_type": "sweet shop",
+      "city": "Delhi",
+      "language": "hi-IN",
+      "patience": 0.34,
+      "busyness": 0.8,
+      "tech_comfort": 0.18,
+      "hidden_concerns": [
+        "hidden_charges"
+      ],
+      "willingness_prior": 0.28,
+      "adversarial": null,
+      "split": "planning",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_01",
+      "business_type": "electronics",
+      "city": "Kanpur",
+      "language": "hi-IN",
+      "patience": 0.36,
+      "busyness": 0.29,
+      "tech_comfort": 0.9,
+      "hidden_concerns": [
+        "device_issue"
+      ],
+      "willingness_prior": 0.42,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_02",
+      "business_type": "stationery",
+      "city": "Kanpur",
+      "language": "hi-IN",
+      "patience": 0.51,
+      "busyness": 0.56,
+      "tech_comfort": 0.21,
+      "hidden_concerns": [
+        "device_issue",
+        "trust_in_caller"
+      ],
+      "willingness_prior": 0.34,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_03",
+      "business_type": "tuition centre",
+      "city": "Patna",
+      "language": "hi-IN",
+      "patience": 0.8,
+      "busyness": 0.43,
+      "tech_comfort": 0.22,
+      "hidden_concerns": [
+        "settlement_delay"
+      ],
+      "willingness_prior": 0.4,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_04",
+      "business_type": "stationery",
+      "city": "Patna",
+      "language": "hi-IN",
+      "patience": 0.72,
+      "busyness": 0.35,
+      "tech_comfort": 0.74,
+      "hidden_concerns": [
+        "rental_cost"
+      ],
+      "willingness_prior": 0.44,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_05",
+      "business_type": "clothing store",
+      "city": "Ahmedabad",
+      "language": "gu-IN",
+      "patience": 0.72,
+      "busyness": 0.36,
+      "tech_comfort": 0.25,
+      "hidden_concerns": [
+        "per_swipe_charges"
+      ],
+      "willingness_prior": 0.17,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_06",
+      "business_type": "stationery",
+      "city": "Pune",
+      "language": "mr-IN",
+      "patience": 0.55,
+      "busyness": 0.63,
+      "tech_comfort": 0.81,
+      "hidden_concerns": [
+        "not_needed"
+      ],
+      "willingness_prior": 0.26,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_07",
+      "business_type": "stationery",
+      "city": "Bhopal",
+      "language": "hi-IN",
+      "patience": 0.84,
+      "busyness": 0.65,
+      "tech_comfort": 0.86,
+      "hidden_concerns": [
+        "not_needed"
+      ],
+      "willingness_prior": 0.23,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_08",
+      "business_type": "florist",
+      "city": "Chandigarh",
+      "language": "pa-IN",
+      "patience": 0.49,
+      "busyness": 0.8,
+      "tech_comfort": 0.87,
+      "hidden_concerns": [
+        "customers_pay_cash",
+        "trust_in_caller"
+      ],
+      "willingness_prior": 0.43,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_09",
+      "business_type": "electronics",
+      "city": "Chandigarh",
+      "language": "pa-IN",
+      "patience": 0.39,
+      "busyness": 0.22,
+      "tech_comfort": 0.14,
+      "hidden_concerns": [
+        "competitor_qr"
+      ],
+      "willingness_prior": 0.16,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
+    },
+    {
+      "persona_id": "eval_former_10",
+      "business_type": "restaurant",
+      "city": "Ahmedabad",
+      "language": "gu-IN",
+      "patience": 0.45,
+      "busyness": 0.19,
+      "tech_comfort": 0.18,
+      "hidden_concerns": [
+        "just_busy"
+      ],
+      "willingness_prior": 0.18,
+      "adversarial": null,
+      "split": "evaluation",
+      "relationship": "former",
+      "notes": "Fictional former customer for win-back missions."
     }
   ]
 }
