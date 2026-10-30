@@ -80,6 +80,8 @@ class Settings:
     llm_provider: str = "openrouter"
     groq_api_key: str = field(default="", repr=False)
     worry_scorer: str = "lexical"
+    approval_tools: tuple[str, ...] = ()  # write tools that wait for a person's approval (B10); empty means none
+    approval_timeout_minutes: int = 30
     planner_memory: str = "forest"
 
     @property
@@ -114,5 +116,7 @@ class Settings:
             llm_provider=provider,
             groq_api_key=os.getenv("GROQ_API_KEY", ""),
             worry_scorer=_worry_scorer(),
+            approval_tools=tuple(t.strip() for t in os.getenv("APPROVAL_TOOLS", "").split(",") if t.strip()),
+            approval_timeout_minutes=int(os.getenv("APPROVAL_TIMEOUT_MINUTES", "30")),
             planner_memory=_planner_memory(),
         )

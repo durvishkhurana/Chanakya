@@ -192,6 +192,8 @@ class EventKind(StrEnum):
     HANDOFF_RESOLVED = "handoff_resolved"
     LEAVING_REASON_RECORDED = "leaving_reason_recorded"  # a win-back call's top reason for leaving
     HOLDOUT_ASSIGNED = "holdout_assigned"  # an eligible former merchant kept out of win-back calls for comparison
+    APPROVAL_REQUESTED = "approval_requested"  # a high-risk action waits for a person (B10)
+    APPROVAL_DECIDED = "approval_decided"  # approved, rejected or expired
     NOTE = "note"
 
 
@@ -356,6 +358,7 @@ class Verdict(StrEnum):
     BLOCKED = "blocked"
     FAILED = "failed"
     REJECTED = "rejected"  # unknown tool or invalid arguments
+    PENDING = "pending"  # passed every check, waiting for a person's approval (B10)
 
 
 class ActionDecision(Model):
