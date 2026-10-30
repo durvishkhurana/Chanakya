@@ -49,7 +49,7 @@ Do the following, in order:
    PR body: what changed, why, how it was tested, "Closes task <TASK_ID>".
 
 Hard rules (also in CLAUDE.md):
-- Never mention Claude, Anthropic or AI assistance in commits, branch names, PRs, comments or docs.
+- Never mention the coding assistant, its maker or AI assistance in commits, branch names, PRs, comments or docs.
   No Co-Authored-By trailers or "Generated with" lines. Use the machine's existing git identity.
 - Never push to main, never force-push shared branches, never add collaborators or change repo settings.
 - Edit only the directories your task owns. Contract changes go in a separate small "core:" PR.
