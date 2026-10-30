@@ -107,6 +107,7 @@ Before writing code:
 ./init.sh                # Python unit tests, pytest, Ruff, frontend lint and tests
 FULL=1 ./init.sh         # also runs the frontend production build
 SKIP_INSTALL=1 ./init.sh # skip dependency installation
+NEURAL=1 ./init.sh       # also the neural brain with the real encoder (installs requirements-neural.txt)
 ```
 
 

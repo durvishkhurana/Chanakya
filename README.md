@@ -161,6 +161,7 @@ The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [
 ./init.sh                # Python unit tests, pytest, Ruff, frontend tests and lint
 FULL=1 ./init.sh         # also the frontend production build
 SKIP_INSTALL=1 ./init.sh # skip dependency installation
+NEURAL=1 ./init.sh       # also the neural brain with the real encoder (installs requirements-neural.txt)
 ```
 
 ## Repository layout

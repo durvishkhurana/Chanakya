@@ -412,6 +412,7 @@ Chanakya/
 | 20 | τ-bench: Tool-Agent-User Interaction (ICLR 2025) — https://arxiv.org/abs/2406.12045 | Tool-agent-user evaluation design |
 | 21 | AlphaGo (Silver et al., Nature 2016) | Search guided by learned priors |
 | 22 | Wilson score interval (Wilson, JASA 1927) | Confidence-adjusted move values |
+| 23 | Multilingual E5 Text Embeddings: A Technical Report (Wang et al., 2024) — https://arxiv.org/abs/2402.05672 | The shared multilingual sentence encoder of the neural brain (N1-N3) |
 
 ### Industry context
 
