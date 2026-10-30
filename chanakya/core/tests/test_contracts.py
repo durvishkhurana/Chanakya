@@ -274,3 +274,13 @@ def test_worry_scorer_defaults_to_lexical_and_rejects_unknown_values(monkeypatch
     monkeypatch.setenv("WORRY_SCORER", "neural")
     with pytest.raises(ValueError, match="WORRY_SCORER"):
         Settings.from_env()
+
+
+def test_planner_memory_defaults_to_the_forest_and_rejects_unknown_values(monkeypatch):
+    monkeypatch.delenv("PLANNER_MEMORY", raising=False)
+    assert Settings.from_env().planner_memory == "forest" and Settings().planner_memory == "forest"
+    monkeypatch.setenv("PLANNER_MEMORY", " Neural ")
+    assert Settings.from_env().planner_memory == "neural"
+    monkeypatch.setenv("PLANNER_MEMORY", "trigram")
+    with pytest.raises(ValueError, match="PLANNER_MEMORY"):
+        Settings.from_env()

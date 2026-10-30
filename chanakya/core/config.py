@@ -26,6 +26,7 @@ GROQ_MODELS = {
 }
 # Which evidence scorer the belief tracker uses (task N1): keywords, an LLM call per turn, or the e5 embedding head.
 WORRY_SCORERS = ("lexical", "llm", "embedding")
+PLANNER_MEMORIES = ("forest", "neural")
 PROVIDER_URLS = {
     "openrouter": "https://openrouter.ai/api/v1",
     "groq": "https://api.groq.com/openai/v1",
@@ -34,6 +35,14 @@ PROVIDER_URLS = {
 
 def _flag(name: str) -> bool:
     return os.getenv(name, "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _planner_memory() -> str:
+    """``PLANNER_MEMORY`` if set, else ``forest`` (the Strategy Forest's trigram clusters)."""
+    chosen = os.getenv("PLANNER_MEMORY", "").strip().lower() or "forest"
+    if chosen not in PLANNER_MEMORIES:
+        raise ValueError(f"PLANNER_MEMORY must be one of {', '.join(PLANNER_MEMORIES)}")
+    return chosen
 
 
 def _worry_scorer() -> str:
@@ -71,6 +80,7 @@ class Settings:
     llm_provider: str = "openrouter"
     groq_api_key: str = field(default="", repr=False)
     worry_scorer: str = "lexical"
+    planner_memory: str = "forest"
 
     @property
     def llm_base_url(self) -> str:
@@ -104,4 +114,5 @@ class Settings:
             llm_provider=provider,
             groq_api_key=os.getenv("GROQ_API_KEY", ""),
             worry_scorer=_worry_scorer(),
+            planner_memory=_planner_memory(),
         )
