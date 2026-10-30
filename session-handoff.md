@@ -2,49 +2,58 @@
 
 ## Current Objective
 
-- Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: Tracks A and B, I1, I2 and I4 are on `main`. Phase 5 (neural brain, Gurnoor) has started: N0 is done on `feat/N0-neural-baseline`
-- Branch / commit: `feat/N0-neural-baseline`, cut from `main` at `b8f591e`
+- Goal: Phase 6 (Durvish): the review fixes from PR #19, win-back missions, and the permission-first opening for lead-list calls
+- Current status: all six tasks (D1, F1, W0, W1, W2, P1) are coded, tested and committed locally, one branch per task, stacked in merge order. **Nothing is pushed and no PR is open yet.**
+- Branches, each cut from the one before it (the first from `main` at `3350e09`):
+  1. `docs/winback-permission-specs` (D1): specs in `docs/TASKS.md` and `feature_list.json`
+  2. `fix/I1-review-fixes` (F1): the eight review points on #19
+  3. `core/winback-contracts` (W0): `core:` contracts and both flags
+  4. `feat/W1-winback-missions` (W1): churn detection, holdout, the win-back DONE check, Mission Control cards
+  5. `feat/W2-winback-brain` (W2): the win-back conversation, twins, scenarios, measured results
+  6. `feat/P1-permission-first` (P1): ask for two minutes before any pitch on lead-list calls
 
-## Completed This Session
+## Before pushing
 
-- [x] N0: labelled merchant lines (`chanakya/neural/paraphrase.py`, `data/neural/worry_lines.jsonl`), baselines (`chanakya/neural/baseline.py`), encoder choice (`intfloat/multilingual-e5-small`), tasks N0-N4 in `docs/TASKS.md` and `feature_list.json`
+- **Commit author:** the machine's git identity is not the repository owner's. Fix the author of the local commits before anything is pushed.
+- Push each branch and open its PR against `main` in the order above, each saying "Depends on #N" for the one before. Rebase each onto `origin/main` once its predecessor merges.
+- PRs that touch Track B directories need Gurnoor's review: F1 (verifier, mock tools, Live Call View, e2e script), W0 (the `core:` PR, plus intake, mock DB, gate, dashboard labels), W1 (seed, churn detector, verifier, missions API, Mission Control). W2 adds one three-line branch to `agent/brain_agent.py`, a file N1 also edits.
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| Everything | `SKIP_INSTALL=1 ./init.sh` | passed | agent 104 OK, backend 98 OK, pytest 291, Ruff clean, frontend 22 |
-| Neural tests | `python -m pytest chanakya/neural` | 3 passed | fake LLM, no network |
-| Labelled lines | `python -m chanakya.neural.paraphrase --seed 7` | 2,123 lines | 1,455 train (DeepSeek), 668 test (GPT-6 Luna) |
-| Worry scorers | `python -m chanakya.neural.baseline --seed 7 --llm-sample 112` | lexical 0.388, e5-small 0.437, LLM 0.777 | 14 labels on held-out lines |
-| Planner | `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7/13 --variants chanakya,chanakya_forest` | 0.96 / 0.98 | forest makes no difference |
-
-## Files Changed
-
-- `chanakya/neural/` (new package and tests), `data/neural/`, `docs/results/neural-baseline/`, `requirements-neural.txt`
-- `README.md`, `docs/results/README.md`, `docs/TASKS.md`, `feature_list.json`, `progress.md`, this file, `.gitignore`
+| Clean main | `./init.sh` on `3350e09` | passed | agent 104, backend 98, pytest 291, Ruff, frontend 22 |
+| Everything, last branch | `SKIP_INSTALL=1 FULL=1 ./init.sh` on `feat/P1-permission-first` | passed | agent 104, backend 98, pytest 396, Ruff clean, frontend 24, lint, build |
+| Demo scenarios | `python scripts/demo/scenarios.py` | 6/6 passed | includes `winback_device_fix` and `winback_not_needed` |
+| Win-back evaluation | `python -m chanakya.eval.winback --seed 7/13 --repeats 5` (both splits) | see `docs/results/winback/README.md` | evaluation reason accuracy 0.94 / 0.88, fix rate 0.90 / 0.83 |
+| Safety suite | `python -m chanakya.eval.safety --mode offline` | 15 scenarios, 0 violations | three new permission-first cases |
+| Sales evaluation unchanged | `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7 --variants chanakya,actions_only` | 0.96 / 0.99 | same before and after |
+| Live check | backend with `MISSIONS_ENABLED=true WINBACK_ENABLED=true`, demo feed, `winback_device_fix` from the API | DONE by the ticketing system | Mission Control showed the holdout and reasons cards |
+| e2e script | `scripts/demo/e2e_track_b.py` | not re-run | updated for the reminder tool (one new check) |
 
 ## Decisions Made
 
-- Test lines come from a different model family than train lines (Twin-B vs Twin-A models), and nothing close to a Concern Bank phrasing is kept, so no scorer is graded on sentences it was built from
-- `multilingual-e5-small` is the shared encoder: best of the two on held-out lines (0.437) and on Punjabi (0.52), about 5 ms per line
-- The neural libraries are optional (`requirements-neural.txt`); tests use fakes and never download a model, so CI stays light
-- Gurnoor owns all of phase 5, including the small wiring edits in Durvish's `chanakya/brain/`
+- A yes to the onboarding link covers the link and the new fixed-text `send_onboarding_reminder` only; `send_summary` always needs its own yes
+- Demo scenarios run their own mission's verification jobs early (`OnboardingVerifier.run_mission_now`) instead of moving the shared clock
+- Holdout merchants get no mission: a `HOLDOUT_ASSIGNED` event under `holdout_<merchant_id>`, listed in Mission Control, so mission counts stay honest
+- Charges, rental and setup reasons are answered from the sourced pages, then a sales visit is offered with explicit consent; DONE needs a device active again or a payment within 14 days
+- Win-back never offers a product: `RECOMMEND` is illegal on win-back missions, and any LLM line mentioning an offer, discount or waiver falls back to a template
+- The win-back reason must come from a real answer after "why did you stop?" and is kept as evidence on the next move, because the lexical belief swings on fillers
+- Permission-first is a field on the brain's mission card (`permission_first`), set from `PERMISSION_FIRST_ENABLED` at the adapter, so planners never read the environment
 
 ## Blockers / Risks
 
-- The offline harness's template twins speak Concern Bank phrasings, so a better worry scorer cannot show up there; N1 needs a twin voice that speaks the held-out lines
-- Closing the laptop lid pauses long background runs (it stalled the first baseline run)
-- The review points on #19 are still open on main (see `progress.md`)
+- The win-back rule for keeping evidence was written after reading evaluation seed 7 traces, so those numbers are not cleanly held out (stated in the results)
+- Live calls do not pass answer pauses into the brain's turns, so the long-pause "haan" rule only works where a pause is known
+- The win-back evaluation is offline only (template twins); no online run
 
 ## Next Session Startup
 
-1. Read `CLAUDE.md`.
-2. Read `feature_list.json` and `progress.md`.
-3. Review this handoff.
-4. Run `./init.sh` before editing; `pip install -r requirements-neural.txt` for the neural parts.
+1. Read `CLAUDE.md`, `progress.md` and this file.
+2. `git branch` should list the six branches above; `git log --oneline main..feat/P1-permission-first` shows six commits.
+3. Run `./init.sh` on the branch you work on.
 
 ## Recommended Next Step
 
-- N1: train a calibrated 13-worry head on e5-small embeddings of the train lines, expose it as `EmbeddingScorer` selected by `WORRY_SCORER` (see the revised N1 in `docs/TASKS.md`: ONNX runtime, sigmoid outputs, hand-written test set first), and measure it on the test lines against 0.388 (lexical) and 0.777 (LLM)
+- Fix the commit author, push the six branches and open the PRs in order; request Gurnoor's review on F1, W0 and W1
+- Then: re-measure win-back with N1's scorer once it lands, add fresh former-customer personas for a clean held-out check, and let B12 reuse `leaving_reasons()` from `chanakya/missions/churn.py`

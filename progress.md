@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-10-30
-**Active Feature:** N0 neural baselines on `feat/N0-neural-baseline` (done); next N1 neural worry scorer. I1 (#19), A6 seed stability (#20), I3 fallbacks (#21) and I4 README (#22) are merged.
+**Active Feature:** Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 done on six stacked local branches, not pushed yet (see `session-handoff.md`). N1 neural worry scorer is next on Gurnoor's side.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
