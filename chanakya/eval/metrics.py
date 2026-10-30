@@ -24,6 +24,7 @@ class CallRecord:
     llm_calls: int = 0
     agent_errors: int = 0
     transcript: list[dict] = field(default_factory=list)
+    belief_hit: bool | None = None  # the belief's top worry at the end is one the merchant really holds
 
     @property
     def success(self) -> bool:
@@ -64,6 +65,8 @@ def summarise(records: list[CallRecord]) -> dict:
         "mission_success_rate": _rate(len(successes), len(merchants)),
         "follow_up_rate": _rate(sum(r.outcome == "followup" for r in merchants), len(merchants)),
         "walk_away_rate": _rate(sum(r.outcome == "walked_away" for r in merchants), len(merchants)),
+        "belief_top1_accuracy": _rate(sum(bool(r.belief_hit) for r in merchants),
+                                      sum(r.belief_hit is not None for r in merchants)),
         "turns_to_close": round(statistics.mean(r.agent_turns for r in successes), 2) if successes else None,
         "turns_on_failed_calls": round(statistics.mean(r.agent_turns for r in failed), 2) if failed else None,
         "escalation_precision": _rate(sum(1 for r in made if r.adversarial == "distressed"), len(made)),

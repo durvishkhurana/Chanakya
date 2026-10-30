@@ -156,7 +156,7 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 
 | Part | Replaces | Setting | Status |
 |---|---|---|---|
-| Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | in progress |
+| Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
 | Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
 | Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | planned |
 
@@ -166,7 +166,14 @@ All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries ar
 pip install -r requirements-neural.txt                               # only for the neural parts
 python -m chanakya.neural.paraphrase --seed 7                        # labelled lines from two model families (uses the LLM provider)
 python -m chanakya.neural.baseline --seed 7 --llm-sample 112         # baselines every neural scorer must beat
+python -m chanakya.neural.encoder --download                         # the shared encoder (about 470 MB, never committed)
+python -m chanakya.neural.train_worry --seed 7                       # retrain the worry head and measure it
+python -m chanakya.eval.harness --variants chanakya,chanakya_embedding --voice test   # full calls with held-out lines
 ```
+
+Set `WORRY_SCORER=embedding` to use the trained worry scorer on calls and in coach mode; without the encoder it falls
+back to the lexical scorer. With held-out merchant lines, it lifts mission success from 0.62 to 0.84 and 0.77 (seeds 7
+and 13) and roughly halves walk-aways ([docs/results/neural-worry-scorer/](docs/results/neural-worry-scorer/README.md)).
 
 The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [docs/results/neural-baseline/](docs/results/neural-baseline/README.md). Owners and the full plan: `docs/TASKS.md`, Phase 5.
 
@@ -176,6 +183,7 @@ The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [
 ./init.sh                # Python unit tests, pytest, Ruff, frontend tests and lint
 FULL=1 ./init.sh         # also the frontend production build
 SKIP_INSTALL=1 ./init.sh # skip dependency installation
+NEURAL=1 ./init.sh       # also the neural brain with the real encoder (installs requirements-neural.txt)
 ```
 
 ## Repository layout

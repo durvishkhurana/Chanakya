@@ -52,14 +52,14 @@ def card_for(persona: Persona, seed: int) -> MissionCard:
 
 
 async def run_call(variant_name: str, persona: Persona, seed: int, *, llm=None, llm_agent=None, twin_llm=None,
-                   labeler=None, max_turns: int = 12) -> CallRecord:
+                   labeler=None, max_turns: int = 12, voice=None) -> CallRecord:
     """One text-mode call between a fresh variant and a Twin-B merchant."""
     counted = CountingLLM(llm) if llm is not None else None
     variant = make_variant(variant_name, llm=counted, llm_agent=llm_agent)
     labeler = labeler or DeclaredLabeler()
     card = card_for(persona, seed)
     await variant.open(card)
-    twin = twin_b(persona, llm=twin_llm, seed=seed)
+    twin = twin_b(persona, llm=twin_llm, seed=seed, voice=voice)
     merchant_text = twin.opening()
     record = CallRecord(variant=variant_name, persona_id=persona.persona_id, adversarial=persona.adversarial,
                         seed=seed, trigger=card.trigger.value, outcome="undecided", agent_turns=0)
@@ -99,6 +99,9 @@ async def run_call(variant_name: str, persona: Persona, seed: int, *, llm=None, 
         record.outcome = "declined"
     elif state.ended:
         record.outcome = "ended_by_agent"
+    belief = variant.state.belief.probabilities
+    if belief:
+        record.belief_hit = max(belief, key=belief.get) in persona.hidden_concerns
     record.llm_calls = counted.calls if counted else 0
     record.agent_errors = getattr(variant, "errors", 0)
     return record
@@ -114,9 +117,18 @@ def merchant_set(count: int, adversarial_repeats: int) -> list[tuple[Persona, in
 
 
 async def evaluate(variants=VARIANTS, merchants: int = 100, seed: int = 7, adversarial_repeats: int = 3,
-                   mode: str = "offline", concurrency: int = 8, max_turns: int = 12) -> dict:
-    """Run every variant on the same calls and return the summary plus per-call records."""
+                   mode: str = "offline", concurrency: int = 8, max_turns: int = 12, voice: str = "template") -> dict:
+    """Run every variant on the same calls and return the summary plus per-call records.
+
+    ``voice`` is ``template`` (Concern Bank phrasings) or a split of the labelled lines (``test`` for evaluation).
+    """
     llm = llm_agent = twin_llm = None
+    lines_voice = None
+    if voice != "template":
+        from chanakya.neural.paraphrase import load
+        from chanakya.sim.voice import LinesVoice
+
+        lines_voice = LinesVoice(default_bank(), load(voice))
     labeler = DeclaredLabeler()
     if mode == "online":
         from agent.graph import Agent
@@ -132,7 +144,7 @@ async def evaluate(variants=VARIANTS, merchants: int = 100, seed: int = 7, adver
     async def one(name, persona, call_seed):
         async with gate:
             return await run_call(name, persona, call_seed, llm=llm, llm_agent=llm_agent, twin_llm=twin_llm,
-                                  labeler=labeler, max_turns=max_turns)
+                                  labeler=labeler, max_turns=max_turns, voice=lines_voice)
 
     started = time.perf_counter()
     records = {name: await asyncio.gather(*[one(name, p, s) for p, s in calls]) for name in variants}
@@ -141,7 +153,7 @@ async def evaluate(variants=VARIANTS, merchants: int = 100, seed: int = 7, adver
         await llm_agent.aclose()
     return {
         "config": {"mode": mode, "seed": seed, "merchants": merchants, "adversarial_repeats": adversarial_repeats,
-                   "variants": list(variants), "max_turns": max_turns,
+                   "variants": list(variants), "max_turns": max_turns, "voice": voice,
                    "elapsed_s": round(time.perf_counter() - started, 1)},
         "summary": {name: summarise(list(recs)) for name, recs in records.items()},
         "calls": {name: [to_json(r) for r in recs] for name, recs in records.items()},
@@ -157,6 +169,8 @@ def main(argv=None) -> None:
     parser.add_argument("--variants", default=",".join(VARIANTS))
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--max-turns", type=int, default=12)
+    parser.add_argument("--voice", choices=["template", "test", "train"], default="template",
+                        help="Twin-B speech: Concern Bank templates, or labelled lines from one split (offline only)")
     parser.add_argument("--out", type=Path, default=None, help="Output folder (default .state/eval/<mode>-<seed>)")
     args = parser.parse_args(argv)
     if args.mode == "online":
@@ -164,7 +178,7 @@ def main(argv=None) -> None:
 
         load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     results = asyncio.run(evaluate(tuple(args.variants.split(",")), args.merchants, args.seed,
-                                   args.adversarial_repeats, args.mode, args.concurrency, args.max_turns))
+                                   args.adversarial_repeats, args.mode, args.concurrency, args.max_turns, args.voice))
     out = args.out or Path(".state") / "eval" / f"{args.mode}-{args.seed}"
     command = "python -m chanakya.eval.harness " + " ".join(argv if argv is not None else __import__("sys").argv[1:])
     paths = write_report(results, out, command)

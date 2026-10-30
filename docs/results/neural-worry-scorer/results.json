@@ -1,0 +1,51 @@
+{
+  "command": "python -m chanakya.neural.train_worry --seed 7 --hidden 128",
+  "encoder": "intfloat/multilingual-e5-small",
+  "data_sha256": "b22f4de5a5fe1ec6",
+  "seed": 7,
+  "heads": {
+    "logistic": 0.1838,
+    "network (128 hidden)": 0.1613
+  },
+  "chosen": "network (128 hidden)",
+  "calibration": {
+    "temperature": 1.047,
+    "ece_before": 0.0061,
+    "ece_after": 0.0052,
+    "bce_before": 0.1613,
+    "bce_after": 0.1609
+  },
+  "test_split": {
+    "lexical (today)": {
+      "threshold": 0.041,
+      "lines": 668,
+      "accuracy": 0.388,
+      "worry_accuracy": 0.415,
+      "no_worry_accuracy": 0.022,
+      "by_language": {
+        "english": 0.387,
+        "hindi": 0.388,
+        "hinglish": 0.449,
+        "punjabi": 0.327
+      },
+      "latency_ms_p50": 0.07,
+      "latency_ms_p90": 0.08
+    },
+    "embedding (N1)": {
+      "threshold": 0.12,
+      "lines": 668,
+      "accuracy": 0.648,
+      "worry_accuracy": 0.666,
+      "no_worry_accuracy": 0.413,
+      "by_language": {
+        "english": 0.685,
+        "hindi": 0.679,
+        "hinglish": 0.611,
+        "punjabi": 0.619
+      },
+      "latency_ms_p50": 2.73,
+      "latency_ms_p90": 3.38
+    }
+  },
+  "human_set": null
+}

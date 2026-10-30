@@ -52,6 +52,15 @@ def llm_timeout_s() -> float | None:
     return ms / 1000 if ms > 0 else None
 
 
+def _default_scorer(bank, llm, timeout_s):
+    """``WORRY_SCORER`` when set; otherwise the LLM scorer with an LLM, else lexical (unchanged since before N1)."""
+    try:
+        from chanakya.neural.scorer import configured_worry_scorer, select_scorer
+    except ImportError:  # numpy missing: the neural package cannot load, so keep the original choice
+        return LLMScorer(llm, bank, timeout_s=timeout_s) if llm is not None else LexicalScorer(bank)
+    return select_scorer(configured_worry_scorer(), bank, llm, timeout_s)
+
+
 class BrainAgent:
     """Plans every reply as a typed move. Writes go through ``gate`` only with consent; without a gate they are blocked."""
 
@@ -64,8 +73,7 @@ class BrainAgent:
         bound = llm_timeout_s()
         self.realizer = realizer or (LLMRealizer(llm, self.bank, timeout_s=bound) if llm is not None
                                      else TemplateRealizer(self.bank))
-        self.scorer = scorer or (LLMScorer(llm, self.bank, timeout_s=bound) if llm is not None
-                                 else LexicalScorer(self.bank))
+        self.scorer = scorer or _default_scorer(self.bank, llm, bound)
         self.bus = bus
         self.gate = gate
         self.actions_enabled = actions_enabled
