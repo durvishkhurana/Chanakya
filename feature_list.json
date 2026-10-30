@@ -476,14 +476,16 @@
       "branch": "feat/B12-insights",
       "owns": [
         "chanakya/insights/",
-        "frontend/src/app/insights/"
+        "frontend/src/app/insights/",
+        "frontend/src/lib/insightsView.mjs",
+        "frontend/src/components/missions/LeavingReasons.js"
       ],
       "dependencies": [
         "B3"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "Charts render from a seeded ledger.",
-      "evidence": "",
+      "evidence": "2026-10-31: python -m chanakya.insights.seed --rounds 2 plays 88 held-out personas (prospects and former customers) through the real intake, MissionCall, gate, verifier and hand-off queue; GET /api/insights computes worries by product, language and day, the funnel overall and per type (88 opened, 55 clear yes, 35 verified done), consent when a worry was addressed vs not, hand-off reasons and reasons for leaving (reusing churn.leaving_reasons). /insights renders every chart from that seeded ledger at 1440 and 375 px with no console errors. Tests: chanakya/insights/tests (5), frontend/src/lib/insightsView.test.mjs (4).",
       "notes": "Roadmap candidate."
     },
     {

@@ -1,0 +1,32 @@
+/* Manager insights. Panels, KPIs, tabs and tables come from styles/app.css; one data hue (--accent). */
+.cx .insights-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.cx .panel > header .tabs.small { margin: 0; border-bottom: 0; gap: 16px; }
+.cx .panel > header .tabs.small button { padding: 2px 0 6px; font-size: 13px; }
+
+.cx .funnel { list-style: none; display: grid; gap: 10px; }
+.cx .funnel li { display: grid; grid-template-columns: minmax(120px, 34%) minmax(0, 1fr) 40px 40px; gap: 12px; align-items: center; font-size: 14px; }
+.cx .funnel .track { height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
+.cx .funnel .fill { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width var(--t-ui) var(--ease-out); }
+.cx .funnel .value { text-align: right; font-weight: 500; }
+.cx .funnel .drop { text-align: right; }
+
+.cx .breakdowns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+.cx .breakdown { list-style: none; display: grid; }
+.cx .breakdown li { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--rule); }
+.cx .breakdown li:first-child { border-top: 0; padding-top: 0; }
+.cx .breakdown .group { display: flex; justify-content: space-between; gap: 8px; font-weight: 500; }
+.cx .moves tbody th { height: auto; padding: 12px 10px 12px 0; border-top: 1px solid var(--rule); color: var(--text); font-size: var(--fs-body); font-weight: 500; white-space: normal; }
+.cx .chip { display: inline-flex; gap: 6px; align-items: baseline; margin: 2px 8px 2px 0; padding: 2px 8px; border-radius: 999px; background: var(--raised); font-size: 13px; line-height: 20px; white-space: nowrap; }
+.cx .chip b { font-weight: 500; }
+
+.cx .moves th.num, .cx .moves td.num { text-align: right; }
+.cx .moves td.up { color: var(--positive); font-weight: 500; }
+.cx .moves td.down { color: var(--negative); font-weight: 500; }
+
+@media (max-width: 1180px) {
+  .cx .insights-grid, .cx .breakdowns { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .cx .funnel li { grid-template-columns: minmax(0, 1fr) 40px 40px; }
+  .cx .funnel .track { grid-column: 1 / -1; grid-row: 2; }
+}

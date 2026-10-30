@@ -27,6 +27,7 @@ GROQ_MODELS = {
 # Which evidence scorer the belief tracker uses (task N1): keywords, an LLM call per turn, or the e5 embedding head.
 WORRY_SCORERS = ("lexical", "llm", "embedding")
 PLANNER_VALUES = ("formula", "network")
+PLANNER_MEMORIES = ("forest", "neural")
 PROVIDER_URLS = {
     "openrouter": "https://openrouter.ai/api/v1",
     "groq": "https://api.groq.com/openai/v1",
@@ -42,6 +43,11 @@ def _planner_value() -> str:
     chosen = os.getenv("PLANNER_VALUE", "").strip().lower() or "formula"
     if chosen not in PLANNER_VALUES:
         raise ValueError(f"PLANNER_VALUE must be one of {', '.join(PLANNER_VALUES)}")
+def _planner_memory() -> str:
+    """``PLANNER_MEMORY`` if set, else ``forest`` (the Strategy Forest's trigram clusters)."""
+    chosen = os.getenv("PLANNER_MEMORY", "").strip().lower() or "forest"
+    if chosen not in PLANNER_MEMORIES:
+        raise ValueError(f"PLANNER_MEMORY must be one of {', '.join(PLANNER_MEMORIES)}")
     return chosen
 
 
@@ -81,6 +87,9 @@ class Settings:
     groq_api_key: str = field(default="", repr=False)
     worry_scorer: str = "lexical"
     planner_value: str = "formula"
+    approval_tools: tuple[str, ...] = ()  # write tools that wait for a person's approval (B10); empty means none
+    approval_timeout_minutes: int = 30
+    planner_memory: str = "forest"
 
     @property
     def llm_base_url(self) -> str:
@@ -115,4 +124,7 @@ class Settings:
             groq_api_key=os.getenv("GROQ_API_KEY", ""),
             worry_scorer=_worry_scorer(),
             planner_value=_planner_value(),
+            approval_tools=tuple(t.strip() for t in os.getenv("APPROVAL_TOOLS", "").split(",") if t.strip()),
+            approval_timeout_minutes=int(os.getenv("APPROVAL_TIMEOUT_MINUTES", "30")),
+            planner_memory=_planner_memory(),
         )
