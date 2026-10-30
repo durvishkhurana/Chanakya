@@ -3,8 +3,8 @@
 ## Current Objective
 
 - Goal: Phase 6 (Durvish): the review fixes from PR #19, win-back missions, and the permission-first opening for lead-list calls
-- Current status: all six tasks (D1, F1, W0, W1, W2, P1) are coded, tested and committed locally, one branch per task, stacked in merge order. **Nothing is pushed and no PR is open yet.**
-- Branches, each cut from the one before it (the first from `main` at `3350e09`):
+- Current status: all six tasks (D1, F1, W0, W1, W2, P1) are coded, tested and committed locally, one branch per task, stacked in merge order, rebased onto `main` at `8de04f8` (#26, the `WORRY_SCORER` setting) and pushed to `origin`. **No PR is open yet.**
+- Branches, each cut from the one before it (the first from `main` at `8de04f8`):
   1. `docs/winback-permission-specs` (D1): specs in `docs/TASKS.md` and `feature_list.json`
   2. `fix/I1-review-fixes` (F1): the eight review points on #19
   3. `core/winback-contracts` (W0): `core:` contracts and both flags
@@ -12,18 +12,19 @@
   5. `feat/W2-winback-brain` (W2): the win-back conversation, twins, scenarios, measured results
   6. `feat/P1-permission-first` (P1): ask for two minutes before any pitch on lead-list calls
 
-## Before pushing
+## Opening the PRs
 
-- **Commit author:** the machine's git identity is not the repository owner's. Fix the author of the local commits before anything is pushed.
-- Push each branch and open its PR against `main` in the order above, each saying "Depends on #N" for the one before. Rebase each onto `origin/main` once its predecessor merges.
+- Open each PR against `main` in the order above, each saying "Depends on #N" for the one before. Rebase each onto `origin/main` once its predecessor merges.
 - PRs that touch Track B directories need Gurnoor's review: F1 (verifier, mock tools, Live Call View, e2e script), W0 (the `core:` PR, plus intake, mock DB, gate, dashboard labels), W1 (seed, churn detector, verifier, missions API, Mission Control). W2 adds one three-line branch to `agent/brain_agent.py`, a file N1 also edits.
+- PR #23 (`docs/I4-close`) is still open and edits the same tracking files (`docs/TASKS.md`, `feature_list.json`, `progress.md`); whichever merges second needs a small rebase.
 
 ## Verification Evidence
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
 | Clean main | `./init.sh` on `3350e09` | passed | agent 104, backend 98, pytest 291, Ruff, frontend 22 |
-| Everything, last branch | `SKIP_INSTALL=1 FULL=1 ./init.sh` on `feat/P1-permission-first` | passed | agent 104, backend 98, pytest 396, Ruff clean, frontend 24, lint, build |
+| Everything, last branch | `SKIP_INSTALL=1 FULL=1 ./init.sh` on `feat/P1-permission-first` after the rebase onto `8de04f8` | passed | agent 104, backend 98, pytest 397, Ruff clean, frontend 24, lint, build |
+| Each branch after the rebase | `python -m pytest`, `ruff check .` | passed | D1 292, F1 308, W0 320, W1 335, W2 371 |
 | Demo scenarios | `python scripts/demo/scenarios.py` | 6/6 passed | includes `winback_device_fix` and `winback_not_needed` |
 | Win-back evaluation | `python -m chanakya.eval.winback --seed 7/13 --repeats 5` (both splits) | see `docs/results/winback/README.md` | evaluation reason accuracy 0.94 / 0.88, fix rate 0.90 / 0.83 |
 | Safety suite | `python -m chanakya.eval.safety --mode offline` | 15 scenarios, 0 violations | three new permission-first cases |
@@ -55,5 +56,5 @@
 
 ## Recommended Next Step
 
-- Fix the commit author, push the six branches and open the PRs in order; request Gurnoor's review on F1, W0 and W1
+- Open the six PRs in order and request Gurnoor's review on F1, W0 and W1
 - Then: re-measure win-back with N1's scorer once it lands, add fresh former-customer personas for a clean held-out check, and let B12 reuse `leaving_reasons()` from `chanakya/missions/churn.py`

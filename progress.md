@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-10-30
-**Active Feature:** Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 done on six stacked local branches, not pushed yet (see `session-handoff.md`). N1 neural worry scorer is next on Gurnoor's side.
+**Active Feature:** Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 done on six stacked branches, rebased onto main at `8de04f8` and pushed; PRs not opened yet (see `session-handoff.md`). N1 neural worry scorer is next on Gurnoor's side.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
