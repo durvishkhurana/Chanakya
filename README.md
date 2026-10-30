@@ -100,6 +100,7 @@ Then, with the backend and frontend running:
 | `/demo/soundbox` | Mock product page: "Request a callback" opens a mission |
 | `/missions` | Mission Control: queue, mission cards, concern meter, ledger, handoffs, demo clock |
 | `/call/demo` | A scripted recorded call, played back event by event |
+| `/insights` | Manager insights: worries, funnel, which answers work, hand-offs, reasons for leaving |
 | `/coach` | Coach mode: Chanakya follows a human telecaller's call (a fictional recording, or lines you type) and suggests each next move |
 | `/call/<mission id>` | The live call view of a real mission |
 | `/demo/onboard/<session>` | Mock onboarding page behind the SMS link |
@@ -133,6 +134,21 @@ On the call, Chanakya says it is AI, says it is calling because they used the pr
 .venv/bin/python -m chanakya.eval.winback --seed 7 --repeats 5 --out docs/results/winback/evaluation-seed7
 .venv/bin/python scripts/demo/scenarios.py winback_device_fix winback_not_needed
 ```
+
+### Manager insights
+
+`/insights` shows what merchants worry about (by product, language and day), the mission funnel, whether answering a
+worry raised the clear-yes rate, why calls went to a person, and why former merchants left. Everything is counted from
+the mission ledger (`GET /api/insights`, with the mission APIs). To see it full of data, seed a simulated ledger and
+point the backend at it:
+
+```bash
+python -m chanakya.insights.seed --dir .state/insights-demo --rounds 2   # 88 simulated calls through the real mission system
+CHANAKYA_DB_PATH=.state/insights-demo/ledger.db MISSIONS_ENABLED=true .venv/bin/python -m uvicorn backend.main:app --port 8000
+```
+
+The seed uses the trained worry scorer when it is installed (`--worry-scorer lexical` otherwise). Every merchant in it is
+fictional and labelled simulated.
 
 ### Feature flags
 
