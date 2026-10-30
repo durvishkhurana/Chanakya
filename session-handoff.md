@@ -3,8 +3,8 @@
 ## Current Objective
 
 - Goal: Phase 6 (Durvish): the review fixes from PR #19, win-back missions, and the permission-first opening for lead-list calls
-- Current status: all six tasks (D1, F1, W0, W1, W2, P1) are coded, tested and committed locally, one branch per task, stacked in merge order, rebased onto `main` at `8de04f8` (#26, the `WORRY_SCORER` setting) and pushed to `origin`. **No PR is open yet.**
-- Branches, each cut from the one before it (the first from `main` at `8de04f8`):
+- Current status: all six tasks (D1, F1, W0, W1, W2, P1) are coded, tested and committed locally, one branch per task, stacked in merge order, each with its own PR. `main` (up to #29) was merged into the top branch, and its PR brought the whole stack into `main`.
+- Branches, each cut from the one before it (the first from `main` at `8de04f8`), in PR order:
   1. `docs/winback-permission-specs` (D1): specs in `docs/TASKS.md` and `feature_list.json`
   2. `fix/I1-review-fixes` (F1): the eight review points on #19
   3. `core/winback-contracts` (W0): `core:` contracts and both flags
@@ -12,11 +12,10 @@
   5. `feat/W2-winback-brain` (W2): the win-back conversation, twins, scenarios, measured results
   6. `feat/P1-permission-first` (P1): ask for two minutes before any pitch on lead-list calls
 
-## Opening the PRs
+## Reviews still owed
 
-- Open each PR against `main` in the order above, each saying "Depends on #N" for the one before. Rebase each onto `origin/main` once its predecessor merges.
-- PRs that touch Track B directories need Gurnoor's review: F1 (verifier, mock tools, Live Call View, e2e script), W0 (the `core:` PR, plus intake, mock DB, gate, dashboard labels), W1 (seed, churn detector, verifier, missions API, Mission Control). W2 adds one three-line branch to `agent/brain_agent.py`, a file N1 also edits.
-- PR #23 (`docs/I4-close`) is still open and edits the same tracking files (`docs/TASKS.md`, `feature_list.json`, `progress.md`); whichever merges second needs a small rebase.
+- Merged at the owner's request without Gurnoor's review. He should still review, after the fact: F1 (verifier, mock tools, Live Call View, e2e script), W0 (the `core:` contracts, intake, mock DB, gate, dashboard labels) and W1 (seed, churn detector, verifier, missions API, Mission Control).
+- W2 added a three-line read branch to `agent/brain_agent.py`; N1's wiring there should keep it.
 
 ## Verification Evidence
 
@@ -56,5 +55,5 @@
 
 ## Recommended Next Step
 
-- Open the six PRs in order and request Gurnoor's review on F1, W0 and W1
+- Ask Gurnoor for the after-the-fact review of F1, W0 and W1
 - Then: re-measure win-back with N1's scorer once it lands, add fresh former-customer personas for a clean held-out check, and let B12 reuse `leaving_reasons()` from `chanakya/missions/churn.py`
