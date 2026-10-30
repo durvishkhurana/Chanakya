@@ -444,9 +444,9 @@
         "B2",
         "B8"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A high-risk action waits, is approved, then executes, all in the ledger.",
-      "evidence": "",
+      "evidence": "2026-10-31: approval queue (chanakya/humans/approvals.py, by Gurnoor on feat/B10-approvals) merged with the Mission Control Approvals tab (approve or reject as Sunita, the gate's result after approval). 8 tests in chanakya/humans/tests/test_approvals.py, including 'a high-risk action waits, is approved, then executes, all in the ledger'. Checked in the browser against a live backend (APPROVAL_TOOLS=book_field_visit, soundbox_service scenario): the visit waited, was approved and executed. ./init.sh passed.",
       "notes": "Roadmap candidate."
     },
     {
@@ -501,9 +501,9 @@
       "dependencies": [
         "B1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A mission continues correctly after a simulated WhatsApp reply.",
-      "evidence": "",
+      "evidence": "2026-10-31: chanakya/actions/systems/messaging_channels.py: link and reminder templates per channel (WhatsApp, SMS) and language (hi, pa, en), no prices or offers; a simulated inbox (POST /api/messages/reply) that records the reply as a merchant turn and moves the mission: STOP declines every message and the mission closes after one passive check, 'call me' reschedules with a callback due now, 'ho gaya' asks the onboarding system and reaches DONE only when it confirms, distress goes to a person. 13 tests in chanakya/actions/tests/test_messaging_channels.py ('a mission continues after a WhatsApp reply saying done'). Mission detail shows the thread and a reply box; checked in the browser. ./init.sh passed.",
       "notes": "Roadmap candidate."
     },
     {

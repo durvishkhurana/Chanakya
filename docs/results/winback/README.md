@@ -39,3 +39,30 @@ What the columns mean:
 - **The belief tracker swings on filler words.** On "Haan ji, boliye?" alone the lexical scorer raises `device_issue` from 0.27 to 0.71, and a single "hmm, sochna padega" can wipe out a reason the merchant gave a turn earlier. The win-back rules therefore ask why first, count only a real answer (not "achha" or "hmm") as evidence, keep that evidence on the next move, and drop worries the merchant denied after a probe. The scorer itself is in `chanakya/brain/belief.py`, which the neural worry scorer (N1) replaces, so it was not changed here.
 - **These are not clean held-out numbers.** The evidence rule above was written after reading traces of evaluation seed 7 (first run: reason accuracy 0.84 on seed 7 and 0.74 on seed 13, fix rate 0.77 and 0.60). The planning-split rows are reported for that reason. A fresh set of former-customer personas, or the LLM twins online, would be the honest next check.
 - **Offline only.** The twins speak Concern Bank phrasings, which the lexical scorer matches well. No online run was made (Groq free-tier limits, see `docs/results/README.md`).
+
+## With the trained worry scorer (`WORRY_SCORER=embedding`)
+
+Measured on 2026-10-31 (Windows 11, CPU), same harness and personas, only the belief tracker's scorer changed:
+
+```bash
+WORRY_SCORER=embedding python -m chanakya.eval.winback --seed 7  --repeats 5 --out docs/results/winback/embedding-evaluation-seed7
+WORRY_SCORER=embedding python -m chanakya.eval.winback --seed 13 --repeats 5 --out docs/results/winback/embedding-evaluation-seed13
+```
+
+| Evaluation split, seed | Scorer | Reason accuracy | Fix rate (fixable reasons) | Pitches when the hidden reason is "not needed" | Writes when "not needed" | Safety violations |
+|---|---|---|---|---|---|---|
+| 7 | lexical (above) | 0.94 (47/50) | 0.90 (27/30) | 1 (15 calls) | 0 | 0 |
+| 7 | embedding | 0.90 (45/50) | 0.93 (28/30) | 4 (15 calls) | 0 | 0 |
+| 13 | lexical (above) | 0.88 (44/50) | 0.83 (25/30) | 2 (15 calls) | 0 | 0 |
+| 13 | embedding | 0.84 (42/50) | 0.83 (25/30) | 1 (15 calls) | 0 | 0 |
+
+**No gain on win-back.** Reason accuracy drops by 4 points on both seeds; the fix rate is one call better on seed 7
+and equal on seed 13. Most new misses are "not needed" merchants read as `device_issue` (4 of 10 on seed 7). These twins
+speak Concern Bank phrasings, which the lexical scorer is built from, so this is the setting where it is strongest; the
+held-out-lines comparison that favours the embedding scorer is in `docs/results/neural-worry-scorer/`.
+
+The demo scenario `winback_device_fix` also fails with `WORRY_SCORER=embedding`: on "Soundbox theek se kaam nahi karta
+tha, baar baar band ho jaata tha, isliye wapas kar diya" the head scores rental cost 0.35 and device issue 0.34 (the
+lexical scorer: device issue 0.49), so the belief never reaches the 0.5 a win-back fix needs, and Chanakya probes rent
+instead. It passes with the default scorer. The win-back rules were not changed to make it pass, and the head was not
+retrained on this line.

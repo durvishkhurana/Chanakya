@@ -255,7 +255,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ### Track B
 
-#### [ ] B10 Approval queue
+#### [x] B10 Approval queue
 - **Branch:** `feat/B10-approvals`
 - **Owns:** `chanakya/humans/approvals.py`, frontend approval components
 - **Depends on:** B2, B8
@@ -276,7 +276,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** objection breakdown by product, language and time; mission funnels; best moves per concern; escalation reasons.
 - **Done when:** charts render from a seeded ledger.
 
-#### [ ] B13 Multi-channel messaging
+#### [x] B13 Multi-channel messaging
 - **Branch:** `feat/B13-messaging`
 - **Owns:** `chanakya/actions/systems/messaging_channels.py`, frontend message preview
 - **Depends on:** B1
