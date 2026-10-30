@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 
 import AppShell from "../../components/missions/AppShell";
 import ConcernMeter from "../../components/missions/ConcernMeter";
+import LeavingReasons from "../../components/missions/LeavingReasons";
 import { api, useMissionStream } from "../../lib/chanakyaApi";
 import {
   countRows, deriveCallView, doorLabel, eventSummary, groupMissions, languageLabel, missionCounts, percent, stateLabel, time, topWorries, worryLabel,
@@ -258,7 +259,6 @@ function Winback({ version }) {
   useEffect(() => { api("/api/missions/winback").then(setData).catch(() => setData(null)); }, [version]);
   if (!data?.enabled) return null;
   const { holdouts, reasons } = data;
-  const groups = [["Reason", reasons.by_reason, worryLabel], ["City", reasons.by_city], ["Product", reasons.by_product, (p) => p.replaceAll("_", " ")]];
   return <section aria-label="Win-back" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24, marginTop: 24 }}>
     <div className="panel">
       <header><h2>Win-back holdout</h2><span className="meta">Mock merchants</span></header>
@@ -269,11 +269,7 @@ function Winback({ version }) {
     </div>
     <div className="panel">
       <header><h2>Reasons for leaving</h2><span className="meta num">{reasons.total} recorded</span></header>
-      {reasons.total === 0 ? <p className="meta">No win-back call has recorded a reason yet.</p>
-        : groups.map(([title, counts, label]) => <div key={title} style={{ marginBottom: 12 }}>
-          <h3 className="subhead">{title}</h3>
-          <dl className="facts">{countRows(counts, label).map((r) => <div key={r.key} className="fact"><dt className="num">{r.count} · {percent(r.share)}</dt><dd>{r.label}</dd></div>)}</dl>
-        </div>)}
+      <LeavingReasons reasons={reasons} />
     </div>
   </section>;
 }

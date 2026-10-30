@@ -105,17 +105,21 @@ class SQLiteMissionStore:
 class MissionLedger:
     """Mission API: every change is checked by the state machine and written to the ledger as an event."""
 
-    def __init__(self, store: SQLiteMissionStore, bus: EventBus | None = None):
+    def __init__(self, store: SQLiteMissionStore, bus: EventBus | None = None, clock=None):
         self.store = store
         self.bus = bus or InProcessEventBus(store)
+        # Timestamps follow the runtime's clock, so a demo fast-forward or a simulated ledger keeps consistent times.
+        self.clock = clock or utcnow
 
     async def record(self, mission_id: str, kind: EventKind, data: BaseModel | dict | None = None) -> MissionEvent:
         """Append any event to a mission's ledger and broadcast it."""
-        return await self.bus.publish(MissionEvent.of(mission_id, kind, data))
+        event = MissionEvent.of(mission_id, kind, data).model_copy(update={"at": self.clock()})
+        return await self.bus.publish(event)
 
     async def create(self, card: MissionCard) -> Mission:
         """Open a mission from a card."""
-        mission = self.store.create(Mission(card=card))
+        now = self.clock()
+        mission = self.store.create(Mission(card=card, created_at=now, updated_at=now))
         await self.record(mission.id, EventKind.MISSION_CREATED, {"card": card.model_dump(mode="json")})
         return mission
 

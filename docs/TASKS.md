@@ -269,7 +269,7 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 - **Build:** telecaller view with live suggestion card, concern meter and hand-off card.
 - **Done when:** works with the recorded human call fixture.
 
-#### [ ] B12 Manager insights
+#### [x] B12 Manager insights
 - **Branch:** `feat/B12-insights`
 - **Owns:** `chanakya/insights/`, `frontend/src/app/insights/`
 - **Depends on:** B3

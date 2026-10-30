@@ -46,7 +46,7 @@ class Runtime:
         db = MockDB(settings.db_path.with_name("mock_systems.db"))
         seed(db)
         registry = MockToolRegistry(db)
-        ledger = MissionLedger(SQLiteMissionStore(settings.db_path))
+        ledger = MissionLedger(SQLiteMissionStore(settings.db_path), clock=clock)
         gate = ActionGate(registry, ledger, settings=settings, clock=clock)
         scheduler = Scheduler(ledger, clock)
         return cls(
