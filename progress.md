@@ -11,6 +11,7 @@
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
 | N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs | F1 #19 review fixes, W0 contracts, W1 win-back missions, W2 win-back brain, P1 permission-first |
 
 ## Status
 
@@ -39,6 +40,10 @@
 - [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
+
+### Phase 6: review fixes, win-back and permission-first (Durvish)
+
+Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_list.json`. Order: F1 (the #19 review points), W0 (`core:` contracts and both flags), W1 (churn detection, holdout, DONE check), W2 (the win-back conversation), P1 (permission-first opening for lead-list missions). W1 and F1 edit Track B directories and need Gurnoor's review. This work stays out of the N1-N4 files (`belief.py`, `sim/voice.py`, `eval/variants.py`, `agent/brain_agent.py`, `coach_engine.py`).
 
 ### What's In Progress
 

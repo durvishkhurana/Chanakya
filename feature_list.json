@@ -722,6 +722,152 @@
       "status": "not-started",
       "done_when": "./init.sh, NEURAL=1 ./init.sh, the demo scenarios and the end-to-end script pass with every neural flag on.",
       "evidence": ""
+    },
+    {
+      "id": "F1",
+      "name": "Review fixes from PR #19",
+      "description": "Full spec: docs/TASKS.md, task F1",
+      "track": "W",
+      "owner": "Durvish Khurana",
+      "branch": "fix/I1-review-fixes",
+      "owns": [
+        "chanakya/brain/calls_api.py",
+        "chanakya/brain/mission_call.py",
+        "chanakya/brain/scenarios.py",
+        "chanakya/brain/core_adapters.py",
+        "chanakya/brain/realizer.py",
+        "chanakya/brain/planner_rules.py",
+        "chanakya/brain/contracts/schemas.py",
+        "chanakya/brain/tests/",
+        "chanakya/missions/verifier.py",
+        "chanakya/missions/tests/",
+        "chanakya/actions/systems/tools.py",
+        "chanakya/actions/tests/",
+        "frontend/src/app/call/",
+        "scripts/demo/e2e_track_b.py"
+      ],
+      "dependencies": [
+        "I1"
+      ],
+      "status": "not-started",
+      "done_when": "a second call during a running scenario is rejected and the ledger has exactly one ai_disclosed event; a link consent never lets send_summary through; after the callback scenario the clock offset is unchanged and other missions' reminders did not fire; a cancelled turn still writes its escalation or close; \"no, yes, no\" ends CLOSED_NOT_INTERESTED from AWAITING_CONFIRMATION; the link carries the recommended product; ./init.sh and FULL=1 ./init.sh pass.",
+      "evidence": ""
+    },
+    {
+      "id": "W0",
+      "name": "Shared contracts for win-back and permission-first",
+      "description": "Full spec: docs/TASKS.md, task W0",
+      "track": "W",
+      "owner": "Durvish Khurana",
+      "branch": "core/winback-contracts",
+      "owns": [
+        "chanakya/core/",
+        "chanakya/brain/contracts/schemas.py",
+        "chanakya/brain/core_adapters.py",
+        "chanakya/brain/planner_rules.py",
+        "chanakya/brain/forest/generate.py",
+        "chanakya/brain/tests/",
+        "data/concerns/priors.json",
+        "chanakya/missions/intake.py",
+        "chanakya/missions/tests/",
+        "chanakya/actions/gate.py",
+        "chanakya/actions/systems/db.py",
+        "frontend/src/lib/missionView.mjs",
+        ".env.example",
+        "README.md"
+      ],
+      "dependencies": [
+        "F0.2",
+        "A1",
+        "B6"
+      ],
+      "status": "not-started",
+      "done_when": "both merchant models round-trip through the adapters with the new fields; concern_bank.validate() passes; intake builds a win-back card for MERCHANT_CHURNED; both flags default off; ./init.sh passes.",
+      "evidence": ""
+    },
+    {
+      "id": "W1",
+      "name": "Churn detection, holdout and the win-back DONE check",
+      "description": "Full spec: docs/TASKS.md, task W1",
+      "track": "W",
+      "owner": "Durvish Khurana",
+      "branch": "feat/W1-winback-missions",
+      "owns": [
+        "chanakya/actions/systems/seed.py",
+        "chanakya/actions/systems/tools.py",
+        "chanakya/missions/churn.py",
+        "chanakya/missions/verifier.py",
+        "chanakya/missions/runtime.py",
+        "chanakya/missions/api.py",
+        "chanakya/missions/demo_api.py",
+        "chanakya/missions/tests/",
+        "frontend/src/app/missions/",
+        "frontend/src/lib/"
+      ],
+      "dependencies": [
+        "W0",
+        "F1"
+      ],
+      "status": "not-started",
+      "done_when": "tests cover the eligibility edges, a deterministic holdout for a given seed, each DONE path and no DONE without system confirmation, do-not-call and open-ticket routing; FULL=1 ./init.sh passes.",
+      "evidence": ""
+    },
+    {
+      "id": "W2",
+      "name": "The win-back conversation",
+      "description": "Full spec: docs/TASKS.md, task W2",
+      "track": "W",
+      "owner": "Durvish Khurana",
+      "branch": "feat/W2-winback-brain",
+      "owns": [
+        "chanakya/brain/moves.py",
+        "chanakya/brain/planner_rules.py",
+        "chanakya/brain/planner_nrpa.py",
+        "chanakya/brain/realizer.py",
+        "chanakya/brain/mission_call.py",
+        "chanakya/brain/scenarios.py",
+        "chanakya/brain/contracts/schemas.py",
+        "chanakya/brain/tests/",
+        "chanakya/sim/judge.py",
+        "chanakya/sim/tests/",
+        "chanakya/eval/winback.py",
+        "chanakya/eval/tests/",
+        "data/personas/",
+        "docs/results/winback/",
+        "README.md"
+      ],
+      "dependencies": [
+        "W1"
+      ],
+      "status": "not-started",
+      "done_when": "on evaluation personas with seeds 7 and 13 the offline harness reports how often the belief's top reason matches the twin's hidden reason, the fix rate for fixable reasons, zero pitches and zero writes when the reason is not_needed, and zero safety violations, all in docs/results/winback/ with the commands; both scenarios pass; ./init.sh passes.",
+      "evidence": ""
+    },
+    {
+      "id": "P1",
+      "name": "Permission-first opening for the lead-list door",
+      "description": "Full spec: docs/TASKS.md, task P1",
+      "track": "W",
+      "owner": "Durvish Khurana",
+      "branch": "feat/P1-permission-first",
+      "owns": [
+        "chanakya/brain/moves.py",
+        "chanakya/brain/planner_rules.py",
+        "chanakya/brain/planner_nrpa.py",
+        "chanakya/brain/realizer.py",
+        "chanakya/brain/mission_call.py",
+        "chanakya/brain/core_adapters.py",
+        "chanakya/brain/contracts/schemas.py",
+        "chanakya/brain/tests/",
+        "chanakya/eval/safety/",
+        "README.md"
+      ],
+      "dependencies": [
+        "W0"
+      ],
+      "status": "not-started",
+      "done_when": "tests in chanakya/brain/tests/ show no pitch, consent question or action before a clear yes, a no closes the call as declined, busy schedules a callback and a deflected \"haan\" is not permission; the safety suite has pitch-before-permission bait, \"haan\" as deflection and a no, with zero violations offline; ./init.sh passes.",
+      "evidence": ""
     }
   ]
 }
