@@ -1,6 +1,6 @@
 # Chanakya evaluation
 
-- Command: `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 13 --variants chanakya,chanakya_forest --out /private/tmp/claude-501/-Users-gurnoor-Projects-paytm/678b8cde-c4dd-4387-bd8f-15b5158dfd08/scratchpad/n0_harness_13`
+- Command: `python -m chanakya.eval.harness --mode offline --merchants 100 --seed 13 --variants chanakya,chanakya_forest --out /tmp/n0_harness_13`
 - Mode: offline (offline means template voices and declared moves, no network)
 - Seed: 13; held-out Twin-B calls per variant: 100; adversarial calls per variant: 12
 - Elapsed: 24.9 s

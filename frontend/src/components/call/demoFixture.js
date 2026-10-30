@@ -68,7 +68,7 @@ export const demoEvents = [
   ], 760)),
   say("agent", "Main aapke number par SMS se onboarding link bhej doon? Aur zarurat ho to WhatsApp par ek reminder?", consent),
   say("merchant", "Haan, dono theek hai."),
-  ev("consent_given", { tools: ["send_onboarding_link", "send_summary"], utterance: "Haan, dono theek hai." }),
+  ev("consent_given", { tools: ["send_onboarding_link", "send_onboarding_reminder"], utterance: "Haan, dono theek hai." }),
   ev("state_changed", { from: "IN_CONVERSATION", to: "ACTION_PENDING", reason: "explicit consent", outcome: null }),
   ev("action_decision", { call: { id: "call_d2", mission_id: "demo", tool: "send_onboarding_link", args: { merchant_id: "mer_ramesh", product: "soundbox", channel: "sms" } }, verdict: "executed", reason: "ok", kind: "write", result: { call_id: "call_d2", tool: "send_onboarding_link", ok: true, data: { link: "/demo/onboard/onb_demo" } } }),
   ev("state_changed", { from: "ACTION_PENDING", to: "AWAITING_CONFIRMATION", reason: "onboarding link sent", outcome: null }),

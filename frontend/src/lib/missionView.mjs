@@ -78,6 +78,8 @@ export function eventSummary(event) {
     case "handoff_created": return `Handed to a human: ${p.reason}`;
     case "handoff_claimed": return `Hand-off claimed by ${p.agent}`;
     case "handoff_resolved": return `Hand-off resolved: ${p.resolution}`;
+    case "leaving_reason_recorded": return `Reason for leaving: ${worryLabel(p.reason)}`;
+    case "holdout_assigned": return "Holdout: not called, kept for comparison";
     default: return p.text || event.kind;
   }
 }
@@ -102,4 +104,12 @@ export function deriveCallView(events, card = null) {
     else if (event.kind === "action_decision") view.actions.push({ tool: p.call?.tool, verdict: p.verdict, reason: p.reason, data: p.result?.data || {} });
   }
   return view;
+}
+
+/** Rows for a counts card (reason, city or product -> count), largest first, each with its share of the total. */
+export function countRows(counts = {}, label = (key) => key) {
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  return Object.entries(counts)
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+    .map(([key, count]) => ({ key, label: label(key), count, share: total ? count / total : 0 }));
 }

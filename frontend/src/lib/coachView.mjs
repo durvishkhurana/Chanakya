@@ -9,6 +9,7 @@ export function coachMoveLabel(move) {
   if (!move) return "";
   const tool = (move.tool || "").replaceAll("_", " ");
   switch (move.type) {
+    case "ASK_PERMISSION": return "Say why you are calling and ask for two minutes";
     case "DISCOVER_NEED": return "Ask how their customers pay";
     case "PROBE_CONCERN": return `Gently ask about ${worryLabel(move.concern).toLowerCase()}`;
     case "RESOLVE_CONCERN": return `Answer the worry: ${worryLabel(move.concern)}`;

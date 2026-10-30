@@ -7,7 +7,7 @@ from chanakya.brain.concern_bank import default_bank
 from chanakya.brain.contracts.fakes import FakeLLM, sample_card, sample_state
 from chanakya.brain.contracts.interfaces import Realizer
 from chanakya.brain.contracts.llm import LLMError
-from chanakya.brain.contracts.schemas import Merchant, Move, MoveType
+from chanakya.brain.contracts.schemas import EndReason, Merchant, Move, MoveType
 from chanakya.brain.moves import PRODUCTS
 from chanakya.brain.realizer import LLMRealizer, TemplateRealizer, evidence_nodes, knowledge_texts
 from chanakya.sim.judge import safety_violations
@@ -18,7 +18,8 @@ BANK = default_bank()
 def every_move():
     moves = [Move(type=t) for t in (MoveType.DISCLOSE_AND_GREET, MoveType.DISCOVER_NEED, MoveType.SCHEDULE_FOLLOWUP,
                                     MoveType.ESCALATE, MoveType.END_CALL_POLITELY)]
-    moves.append(Move(type=MoveType.END_CALL_POLITELY, reason="refused sensitive data request"))
+    moves.append(Move(type=MoveType.END_CALL_POLITELY, reason="refused sensitive data request",
+                      end_reason=EndReason.SENSITIVE_REQUEST))
     for cid in BANK.ids:
         moves += [Move(type=MoveType.PROBE_CONCERN, concern=cid), Move(type=MoveType.RESOLVE_CONCERN, concern=cid)]
     moves += [Move(type=MoveType.RECOMMEND, product=p) for p in PRODUCTS]
@@ -46,7 +47,7 @@ def test_greeting_discloses_ai_and_refusal_names_the_rule():
     realizer = TemplateRealizer(BANK)
     greeting = asyncio.run(realizer.realize(Move(type=MoveType.DISCLOSE_AND_GREET), state_in("en-IN")))
     assert "AI assistant" in greeting and "independent" in greeting
-    refusal = asyncio.run(realizer.realize(Move(type=MoveType.END_CALL_POLITELY, reason="refused sensitive data"),
+    refusal = asyncio.run(realizer.realize(Move(type=MoveType.END_CALL_POLITELY, end_reason=EndReason.SENSITIVE_REQUEST),
                                            state_in("hi-IN")))
     assert "OTP" in refusal
 

@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-10-31
-**Active Feature:** N1 neural worry scorer (Gurnoor) on `feat/N1-worry-scorer`. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video.
+**Active Feature:** N1 neural worry scorer (Gurnoor) on `feat/N1-worry-scorer`. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video. Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 are merged (see `session-handoff.md`).
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
@@ -11,6 +11,7 @@
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
 | N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice | N1 worry scorer (in progress), N2 semantic memory, N3 value network, N4 demo |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
 
 ## Status
 
@@ -39,6 +40,10 @@
 - [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
+
+### Phase 6: review fixes, win-back and permission-first (Durvish)
+
+Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_list.json`. Win-back missions (W1): `chanakya/missions/churn.py` finds former merchants (CRM says former, a returned device, or no payment for 60 days), calls those who churned 14 to 180 days ago and had no win-back in 90 days, hands merchants with an open complaint to a person, and holds out 20% by a seeded hash (demo seed 2027 holds out Joginder). A win-back mission is DONE only on a resolved ticket, a device active again or a payment within 14 days of the call. **B12 (manager insights) should reuse `leaving_reasons()` in `chanakya/missions/churn.py` and the Mission Control reasons card, not rebuild them.** Order: F1 (the #19 review points), W0 (`core:` contracts and both flags), W1 (churn detection, holdout, DONE check), W2 (the win-back conversation), P1 (permission-first opening for lead-list missions). W1 and F1 edit Track B directories and need Gurnoor's review. This work stays out of the N1-N4 files (`belief.py`, `sim/voice.py`, `eval/variants.py`, `agent/brain_agent.py`, `coach_engine.py`), with one exception: W2 adds a three-line branch to `agent/brain_agent.py` (`_turn`) so a planned read tool such as `get_settlement_status` runs through the gate before the realizer speaks; Gurnoor's N1 wiring there should keep it. Win-back conversation (W2): listen first, act only on a clear reason, never an offer; measured offline in `docs/results/winback/` (reason accuracy 0.88-0.94 on held-out former customers, fix rate 0.83-0.90, with the caveats listed there). The lexical belief swings on filler words; N1's scorer should be re-measured on the win-back harness. Permission-first (P1): lead-list calls ask for two minutes before anything else. Live calls do not pass answer pauses into the brain's turns (only the core adapters carry `pause_ms`), so on a live call a bare "haan" counts as yes; the long-pause deflection rule applies where a pause is known.
 
 ### What's In Progress
 
@@ -69,7 +74,7 @@ Other:
 
 ## Blockers / Risks
 
-- [ ] Review points on #19 not yet fixed on main: scenario calls are not registered (a typed or spoken line starts a second brain), a yes to the link is recorded for every `send_summary`, the callback scenario moves the shared clock by at least 26 hours, voice barge-in can cut `say()` halfway, only the first decline is recorded
+- [x] Review points on #19 fixed on `fix/I1-review-fixes` (F1): one brain per mission while a scenario runs, a link yes covers only the link and the new fixed-text `send_onboarding_reminder`, the callback scenario no longer moves the clock, turns are locked and shielded, every decline is recorded and closes the mission
 - [ ] The neural parts need `requirements-neural.txt` and a one-time encoder download of about 470 MB; `./init.sh` and CI do not install them. From N1 the encoder runs on ONNX Runtime, so PyTorch is no longer needed; numpy joins `requirements.txt`
 - [ ] N1 accuracy is 0.536 on N0's test split (lexical 0.394, LLM 0.777); fine-tuning the encoder learned the training model's style (validation 0.72, test 0.55), so more model families in the training data come next
 - [ ] #23 dropped the N0-N4 entries from `feature_list.json` in a merge (restored in #29); check that file after resolving merge conflicts
@@ -79,7 +84,6 @@ Other:
 - [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
 - [ ] Browser voice calls on a mission are wired but not yet tried with a microphone; phone calls are not tied to missions; `/call/demo` stays a labelled scripted recording
 - [ ] A call left mid-way stays IN_CONVERSATION until someone speaks on it again
-- [ ] The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
@@ -98,7 +102,7 @@ Other:
 
 - **Pitch: AI merchant-success teammate that gets the job done.** The voice agent was built earlier; the Chanakya brain plus missions and actions are the new work
 - **Mission intake has three doors:** the merchant raises a hand, the data says so, a human hands it over. Each trigger seeds the belief tracker's starting worries
-- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write. Chanakya's link question also asks about a reminder, so a yes to it is recorded for `send_onboarding_link` and `send_summary`; every other consent covers only its own tool
+- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write. Chanakya's link question also asks about a reminder, so a yes to it is recorded for `send_onboarding_link` and `send_onboarding_reminder` (fixed template, no free text); `send_summary` always needs its own yes; every other consent covers only its own tool (F1)
 - **A mission is DONE only on system confirmation.** Two reminders at most, inside calling hours; "stop" ends with one passive check; then back to the queue as SCHEDULED with a callback time
 - **Missions API is behind `MISSIONS_ENABLED`** and mounted with appended lines in `backend/main.py`; the frontend reaches it through a same-origin `/api` proxy, so the backend's CORS policy is unchanged
 - **Design:** app screens use the framed-sheet style (IBM Plex Sans, green-grey frame); the landing page uses the well-kept board (League Spartan and Figtree, greys and mint). Styles are scoped (`.cx`, `.lp`) so they cannot collide

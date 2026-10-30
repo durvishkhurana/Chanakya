@@ -74,6 +74,12 @@ RULES: dict[SignalKind, TriggerRule] = {
         Door.HUMAN, MissionType.FOLLOW_UP, "Continue {agent}'s call about {product}",
         "{agent}'s call dropped; continue where it left off",
         {"just_busy": 0.4, "trust_in_caller": 0.3, "hidden_charges": 0.3}, 0.5, 0.9, "soundbox", boost=1.2),
+    # Win-back (behind WINBACK_ENABLED): listen for why they left, fix it if a system can; never an offer.
+    SignalKind.MERCHANT_CHURNED: TriggerRule(
+        Door.DATA, MissionType.WIN_BACK, "Find out why they stopped using {product}, fix it if we can",
+        "Stopped using {product} {days} days ago",
+        {"device_issue": 0.3, "settlement_delay": 0.2, "rental_cost": 0.2, "not_needed": 0.15,
+         "customers_pay_cash": 0.1, "competitor_qr": 0.05}, 0.3, 0.8, "soundbox"),
 }
 
 PRODUCT_NAMES = {"soundbox": "Soundbox", "card_machine": "card machine", "qr": "QR", "payment_gateway": "Payment Gateway",

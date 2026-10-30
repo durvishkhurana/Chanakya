@@ -56,6 +56,8 @@ class Merchant(Contract):
     contact_window: ContactWindow | None = None
     do_not_call: bool = False
     devices: list[str] = Field(default_factory=list)
+    relationship: Literal["customer", "prospect", "former"] = "customer"
+    churned_at: datetime | None = None
 
 
 class Persona(Contract):
@@ -72,6 +74,8 @@ class Persona(Contract):
     willingness_prior: float = Field(ge=0, le=1)
     adversarial: Literal["angry", "prompt_injection", "fake_staff_otp", "distressed"] | None = None
     split: Literal["planning", "evaluation"] = "planning"
+    # A former customer's first hidden concern is their hidden reason for leaving (win-back missions).
+    relationship: Literal["prospect", "former"] = "prospect"
     notes: str = ""
 
 
@@ -123,6 +127,7 @@ class MoveType(StrEnum):
     """The typed move library from docs/IDEA.md 3.4."""
 
     DISCLOSE_AND_GREET = "DISCLOSE_AND_GREET"
+    ASK_PERMISSION = "ASK_PERMISSION"
     DISCOVER_NEED = "DISCOVER_NEED"
     PROBE_CONCERN = "PROBE_CONCERN"
     RESOLVE_CONCERN = "RESOLVE_CONCERN"
@@ -132,6 +137,18 @@ class MoveType(StrEnum):
     SCHEDULE_FOLLOWUP = "SCHEDULE_FOLLOWUP"
     ESCALATE = "ESCALATE"
     END_CALL_POLITELY = "END_CALL_POLITELY"
+
+
+class EndReason(StrEnum):
+    """Why Chanakya ends a call; the mission's close outcome and the closing line are read from it."""
+
+    DECLINED = "declined"
+    SENSITIVE_REQUEST = "sensitive_request"
+    ACTION_TAKEN = "action_taken"
+    FOLLOWUP_SCHEDULED = "followup_scheduled"
+    NO_LEGAL_MOVE = "no_legal_move"
+    NOT_NEEDED = "not_needed"  # a win-back merchant who has no use for the product: thank them, no follow-up
+    ACCEPTED_CHOICE = "accepted_choice"  # a win-back merchant who chose something else after one answer
 
 
 class Move(Contract):
@@ -145,6 +162,7 @@ class Move(Contract):
     tool: str | None = None
     args: dict[str, Any] = Field(default_factory=dict)
     reason: str = ""
+    end_reason: EndReason | None = None
 
     def key(self) -> str:
         """Return a compact identity such as ``RESOLVE_CONCERN(hidden_charges)``."""
@@ -241,6 +259,7 @@ class TriggerType(StrEnum):
     LEAD_LIST = "lead_list"
     FIELD_NOTE = "field_note"
     DROPPED_CALL = "dropped_call"
+    MERCHANT_CHURNED = "merchant_churned"
 
 
 TRIGGER_DOORS: dict[TriggerType, Door] = {
@@ -255,6 +274,7 @@ TRIGGER_DOORS: dict[TriggerType, Door] = {
     TriggerType.LEAD_LIST: Door.HUMAN,
     TriggerType.FIELD_NOTE: Door.HUMAN,
     TriggerType.DROPPED_CALL: Door.HUMAN,
+    TriggerType.MERCHANT_CHURNED: Door.DATA,
 }
 
 
@@ -264,6 +284,7 @@ class MissionKind(StrEnum):
     SALES = "sales"
     RETENTION = "retention"
     FOLLOW_UP = "follow_up"
+    WIN_BACK = "win_back"
 
 
 class MissionState(StrEnum):
@@ -317,6 +338,8 @@ class MissionCard(Contract):
     chance: float = Field(default=0.5, ge=0, le=1)
     value: float = Field(default=1.0, ge=0)
     context: str = ""
+    # The merchant did not ask to be called (lead list, PERMISSION_FIRST_ENABLED): ask for two minutes before anything.
+    permission_first: bool = False
 
     @field_validator("starting_worries")
     @classmethod

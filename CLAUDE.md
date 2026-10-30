@@ -11,7 +11,7 @@ These rules apply to every coding session and every contributor.
 
 ## 1. Git and attribution
 
-- Never mention Claude, Anthropic, AI assistants or code generation anywhere in the repository history or content. This includes commit messages, branch names, PR titles and descriptions, code comments, docs and changelogs.
+- Never mention the coding assistant or its maker, AI assistants or code generation anywhere in the repository history or content. This includes commit messages, branch names, PR titles and descriptions, code comments, docs and changelogs.
 - Never add `Co-Authored-By` trailers, "Generated with" lines, bot signatures or emojis that imply tool authorship.
 - Commit with the git identity already configured on the machine (`git config user.name` / `user.email`). Never change it.
 - Never add collaborators, change repository settings, branch protection, secrets or webhooks.

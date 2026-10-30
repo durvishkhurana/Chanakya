@@ -11,9 +11,8 @@ verification and the hand-off queue are the real ones, so the ledger shows exact
 import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from datetime import timedelta
 
-from chanakya.actions.systems.tools import complete_onboarding
+from chanakya.actions.systems.tools import complete_onboarding, resolve_ticket
 from chanakya.brain.contracts.schemas import MoveType
 from chanakya.brain.mission_call import MissionCall
 from chanakya.core import schemas as core
@@ -36,6 +35,11 @@ class Scenario:
     filler: str
     expect: frozenset[core.MissionState]
     max_turns: int = 12
+    leaving_reason: str | None = None  # win-back: the reason the ledger should record
+
+    @property
+    def winback(self) -> bool:
+        return self.kind == core.SignalKind.MERCHANT_CHURNED
 
 
 SCENARIOS = {
@@ -60,8 +64,20 @@ SCENARIOS = {
             "mer_sharma", core.SignalKind.UPI_RISING_NO_SOUNDBOX, core.Door.DATA, {"growth_pct": 64}, "hi-IN",
             "Haan, boliye.", ("Mera payment fail ho gaya hai, ghar pe sab bahut pareshan hain, kisi insaan se baat karao.",),
             None, "Haan.", frozenset({S.ESCALATED})),
+        # Win-back (shown on the dashboard only with WINBACK_ENABLED). No offer is ever made: the fix is the pitch.
+        Scenario(
+            "winback_device_fix", "Win-back, device problem: listen, raise a ticket with consent, DONE when it is fixed",
+            "mer_harish", core.SignalKind.MERCHANT_CHURNED, core.Door.DATA, {"days": 35, "product": "soundbox"}, "hi-IN",
+            "Haan ji, boliye?", ("Soundbox theek se kaam nahi karta tha, baar baar band ho jaata tha, isliye wapas kar diya.",),
+            "Haan ji, ticket bana dijiye.", "Achha.", frozenset({S.DONE}), leaving_reason="device_issue"),
+        Scenario(
+            "winback_not_needed", "Win-back, not needed: hear the reason, thank them, no pitch and no follow-up",
+            "mer_meena", core.SignalKind.MERCHANT_CHURNED, core.Door.DATA, {"days": 70, "product": "soundbox"}, "hi-IN",
+            "Haan ji, kaun?", ("Sach bataun toh mujhe iski zaroorat hi nahi thi, mera kaam iske bina chal jaata hai.",),
+            None, "Achha.", frozenset({S.CLOSED_NOT_INTERESTED}), leaving_reason="not_needed"),
     ]
 }
+WINBACK_SCENARIOS = frozenset(name for name, s in SCENARIOS.items() if s.winback)
 
 
 @dataclass
@@ -82,6 +98,8 @@ def merchant_reply(scenario: Scenario, last_move: MoveType | None, worries_left:
     """What the scripted merchant says next, given Chanakya's last move."""
     if last_move == MoveType.CONFIRM_CONSENT and scenario.consent:
         return scenario.consent
+    if scenario.winback and last_move == MoveType.DISCLOSE_AND_GREET:
+        return scenario.filler  # a former customer says why they left once asked, not before
     if worries_left:
         return worries_left.pop(0)
     return scenario.filler
@@ -96,17 +114,28 @@ async def open_mission(runtime, scenario: Scenario) -> core.Mission:
 
 
 async def finish_onboarding(runtime, mission_id: str, after_reminder: bool) -> None:
-    """The merchant completes the mock onboarding page, straight away or only after a reminder."""
+    """The merchant completes the mock onboarding page, straight away or only after a reminder.
+
+    Only this mission's own verification jobs run, early; the shared clock never moves, so on a live backend
+    calling hours stay right and other missions' reminders and callbacks are left alone.
+    """
     sessions = runtime.db.all("SELECT id FROM onboarding_sessions WHERE mission_id = ? ORDER BY created_at DESC",
                               mission_id)
     if not sessions:
         return
     if after_reminder:
-        await runtime.fast_forward(timedelta(hours=2))  # first check: not done yet, a reminder is scheduled
-        await runtime.fast_forward(timedelta(days=1))  # the WhatsApp reminder goes out
+        await runtime.verifier.run_mission_now(mission_id)  # first check: not done yet, a reminder is scheduled
+        await runtime.verifier.run_mission_now(mission_id)  # the WhatsApp reminder goes out
     complete_onboarding(runtime.db, sessions[0]["id"])
     if not await runtime.verifier.check_now(sessions[0]["id"]):
-        await runtime.fast_forward(timedelta(hours=2))
+        await runtime.verifier.run_mission_now(mission_id)
+
+
+async def fix_ticket(runtime, mission_id: str) -> None:
+    """The mock ticketing team fixes the issue behind the call's ticket; the win-back check then runs at once."""
+    for ticket in runtime.db.all("SELECT id FROM tickets WHERE mission_id = ?", mission_id):
+        resolve_ticket(runtime.db, ticket["id"])
+        await runtime.verifier.check_winback_now(ticket["id"])
 
 
 async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission: core.Mission | None = None,
@@ -140,6 +169,8 @@ async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission
 
     if name in {"card_machine_sale", "callback_followup"}:
         await finish_onboarding(runtime, mission.id, after_reminder=name == "callback_followup")
+    if name == "winback_device_fix":
+        await fix_ticket(runtime, mission.id)
 
     final = runtime.ledger.store.get(mission.id)
     result.state, result.outcome = final.state.value, final.outcome
@@ -154,7 +185,7 @@ async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission
          {core.EventKind.TURN_COMPLETED, core.EventKind.BELIEF_UPDATED, core.EventKind.PLAN_COMPUTED} <= set(kinds)),
     ]
     if scenario.consent:
-        tool = {"soundbox_service": "book_field_visit"}.get(name, "send_onboarding_link")
+        tool = {"soundbox_service": "book_field_visit", "winback_device_fix": "raise_ticket"}.get(name, "send_onboarding_link")
         consent_seq = next((e.seq for e in events if e.kind == core.EventKind.CONSENT_GIVEN), None)
         action_seq = next((e.seq for e in events if e.kind == core.EventKind.ACTION_DECISION
                            and e.payload["call"]["tool"] == tool and e.payload["verdict"] == "executed"), None)
@@ -162,8 +193,24 @@ async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission
                               consent_seq is not None and action_seq is not None and consent_seq < action_seq))
     if name == "callback_followup":
         reminders = [e for e in events if e.kind == core.EventKind.ACTION_DECISION
-                     and e.payload["call"]["tool"] == "send_summary" and e.payload["verdict"] == "executed"]
+                     and e.payload["call"]["tool"] == "send_onboarding_reminder" and e.payload["verdict"] == "executed"]
         result.checks.append(("a WhatsApp reminder went out before DONE", bool(reminders)))
+    if scenario.winback:
+        reasons = [e.payload["reason"] for e in events if e.kind == core.EventKind.LEAVING_REASON_RECORDED]
+        result.checks.append((f"the reason for leaving is recorded as {scenario.leaving_reason}",
+                              reasons == [scenario.leaving_reason]))
+        said = " ".join(text for speaker, text in result.lines if speaker == "chanakya").lower()
+        result.checks.append(("no offer, discount or waiver was mentioned",
+                              not any(w in said for w in ("offer", "discount", "waiver", "chhoot", "free"))))
+    if name == "winback_device_fix":
+        result.checks.append(("DONE was confirmed by the ticketing system", "ticketing system" in (final.outcome or "")))
+    if name == "winback_not_needed":
+        moves = [e.payload["move"]["type"] for e in events if e.kind == core.EventKind.TURN_COMPLETED
+                 and e.payload["speaker"] == "agent" and e.payload.get("move")]
+        result.checks.append(("no pitch, no consent question and no action",
+                              not {"RECOMMEND", "CONFIRM_CONSENT", "TAKE_ACTION"} & set(moves) and not executed))
+        result.checks.append(("no follow-up was scheduled",
+                              core.EventKind.FOLLOWUP_SCHEDULED not in kinds and not runtime.scheduler.pending(mission.id)))
     if name == "distressed_handoff":
         cards = [c for c in runtime.handoffs.list() if c.mission_id == mission.id]
         result.checks.append(("a person got an urgent hand-off card", bool(cards) and cards[0].urgent))

@@ -14,6 +14,7 @@
     "rental_missed": {"source": "design_default", "worries": {"rental_cost": 0.5, "customers_pay_cash": 0.25, "device_issue": 0.25}},
     "lead_list": {"source": "design_default", "worries": {"not_needed": 0.35, "competitor_qr": 0.35, "just_busy": 0.3}},
     "field_note": {"source": "design_default", "worries": {"just_busy": 0.5, "setup_hassle": 0.25, "hidden_charges": 0.25}},
-    "dropped_call": {"source": "design_default", "worries": {"just_busy": 0.4, "trust_in_caller": 0.3, "hidden_charges": 0.3}}
+    "dropped_call": {"source": "design_default", "worries": {"just_busy": 0.4, "trust_in_caller": 0.3, "hidden_charges": 0.3}},
+    "merchant_churned": {"source": "design_default", "worries": {"device_issue": 0.3, "settlement_delay": 0.2, "rental_cost": 0.2, "not_needed": 0.15, "customers_pay_cash": 0.1, "competitor_qr": 0.05}}
   }
 }

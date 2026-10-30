@@ -176,3 +176,18 @@ def test_every_attempt_lands_in_the_audit_trail():
     trail = audit_trail(rig.ledger.store, rig.mission.id)
     assert [d.verdict for d in trail] == [Verdict.EXECUTED, Verdict.BLOCKED, Verdict.REJECTED]
     assert [d.call.tool for d in trail] == ["get_device_status", "send_onboarding_link", "give_free_rental"]
+
+
+def test_the_onboarding_reminder_is_a_contact_write_with_its_own_consent():
+    rig = Rig(merchant_id="mer_imran")
+    rig.disclose()
+    reminder = {"session_id": "onb_imran_stalled"}
+    assert rig.submit("send_onboarding_reminder", **reminder).reason == "no explicit consent for this action"
+    rig.consent("send_summary")
+    assert rig.submit("send_onboarding_reminder", **reminder).reason == "no explicit consent for this action"
+    rig.consent("send_onboarding_reminder")
+    assert rig.submit("send_onboarding_reminder", **reminder).verdict == Verdict.EXECUTED
+    night = Rig(merchant_id="mer_imran", clock=NIGHT_IST)
+    night.disclose()
+    night.consent("send_onboarding_reminder")
+    assert "outside calling hours" in night.submit("send_onboarding_reminder", **reminder).reason

@@ -1,0 +1,873 @@
+{
+ "config": {
+  "seed": 13,
+  "repeats": 5,
+  "split": "planning",
+  "personas": [
+   "plan_former_01",
+   "plan_former_02",
+   "plan_former_03",
+   "plan_former_04",
+   "plan_former_05",
+   "plan_former_06",
+   "plan_former_07",
+   "plan_former_08"
+  ]
+ },
+ "summary": {
+  "calls": 40,
+  "reason_accuracy": 0.925,
+  "reason_matched": 37,
+  "fixable_calls": 25,
+  "fix_rate": 0.68,
+  "fixed": 17,
+  "not_needed_calls": 10,
+  "not_needed_pitches": 2,
+  "not_needed_writes": 0,
+  "identified_not_needed_calls": 10,
+  "identified_not_needed_pitches_or_writes": 0,
+  "safety_violations": 0,
+  "outcomes": {
+   "ended:accepted_choice": 11,
+   "fixed": 17,
+   "walked_away": 1,
+   "ended:not_needed": 10,
+   "ended:declined": 1
+  },
+  "by_reason": {
+   "competitor_qr": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 0,
+    "acted_on": {
+     "competitor_qr": 5
+    }
+   },
+   "customers_pay_cash": {
+    "calls": 5,
+    "reason_matched": 4,
+    "fixed": 0,
+    "acted_on": {
+     "customers_pay_cash": 4,
+     "hidden_charges": 1
+    }
+   },
+   "device_issue": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 2,
+    "acted_on": {
+     "device_issue": 5
+    }
+   },
+   "hidden_charges": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "hidden_charges": 5
+    }
+   },
+   "just_busy": {
+    "calls": 5,
+    "reason_matched": 4,
+    "fixed": 4,
+    "acted_on": {
+     "customers_pay_cash": 1,
+     "just_busy": 4
+    }
+   },
+   "not_needed": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 0,
+    "acted_on": {
+     "not_needed": 5
+    }
+   },
+   "rental_cost": {
+    "calls": 5,
+    "reason_matched": 5,
+    "fixed": 5,
+    "acted_on": {
+     "rental_cost": 5
+    }
+   },
+   "settlement_delay": {
+    "calls": 5,
+    "reason_matched": 4,
+    "fixed": 1,
+    "acted_on": {
+     "settlement_delay": 4,
+     "hidden_charges": 1
+    }
+   }
+  }
+ },
+ "calls": [
+  {
+   "persona_id": "plan_former_01",
+   "seed": 130000,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "trust_in_caller",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_01",
+   "seed": 130001,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_01",
+   "seed": 130002,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_01",
+   "seed": 130003,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "trust_in_caller",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_01",
+   "seed": 130004,
+   "hidden_reason": "device_issue",
+   "acted_reason": "device_issue",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_02",
+   "seed": 130100,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "settlement_delay",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "TAKE_ACTION(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status",
+    "raise_ticket"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_02",
+   "seed": 130101,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)"
+   ],
+   "executed": [
+    "get_settlement_status"
+   ],
+   "violations": [],
+   "outcome": "walked_away",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_02",
+   "seed": 130102,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [
+    "get_settlement_status"
+   ],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_02",
+   "seed": 130103,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "settlement_delay",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "TAKE_ACTION(get_settlement_status)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "CONFIRM_CONSENT(raise_ticket)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [
+    "get_settlement_status"
+   ],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_02",
+   "seed": 130104,
+   "hidden_reason": "settlement_delay",
+   "acted_reason": "hidden_charges",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_03",
+   "seed": 130200,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_03",
+   "seed": 130201,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_03",
+   "seed": 130202,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_03",
+   "seed": 130203,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_03",
+   "seed": 130204,
+   "hidden_reason": "rental_cost",
+   "acted_reason": "rental_cost",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(rental_cost)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_04",
+   "seed": 130300,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_04",
+   "seed": 130301,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_04",
+   "seed": 130302,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_04",
+   "seed": 130303,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_04",
+   "seed": 130304,
+   "hidden_reason": "not_needed",
+   "acted_reason": "not_needed",
+   "final_top": "not_needed",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_05",
+   "seed": 130400,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_05",
+   "seed": 130401,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_05",
+   "seed": 130402,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "hidden_charges",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "PROBE_CONCERN(rental_cost)",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:declined",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_05",
+   "seed": 130403,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "rental_cost",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_05",
+   "seed": 130404,
+   "hidden_reason": "customers_pay_cash",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_06",
+   "seed": 130500,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_06",
+   "seed": 130501,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_06",
+   "seed": 130502,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_06",
+   "seed": 130503,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "competitor_qr",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_06",
+   "seed": 130504,
+   "hidden_reason": "competitor_qr",
+   "acted_reason": "competitor_qr",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(competitor_qr)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:accepted_choice",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_07",
+   "seed": 130600,
+   "hidden_reason": "just_busy",
+   "acted_reason": "customers_pay_cash",
+   "final_top": "customers_pay_cash",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "PROBE_CONCERN(settlement_delay)",
+    "PROBE_CONCERN(trust_in_caller)",
+    "END_CALL_POLITELY"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "ended:not_needed",
+   "followup_agreed": false,
+   "fixed": false
+  },
+  {
+   "persona_id": "plan_former_07",
+   "seed": 130601,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_07",
+   "seed": 130602,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_07",
+   "seed": 130603,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_07",
+   "seed": 130604,
+   "hidden_reason": "just_busy",
+   "acted_reason": "just_busy",
+   "final_top": "just_busy",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "SCHEDULE_FOLLOWUP"
+   ],
+   "executed": [],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": true,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_08",
+   "seed": 130700,
+   "hidden_reason": "hidden_charges",
+   "acted_reason": "hidden_charges",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_08",
+   "seed": 130701,
+   "hidden_reason": "hidden_charges",
+   "acted_reason": "hidden_charges",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_08",
+   "seed": 130702,
+   "hidden_reason": "hidden_charges",
+   "acted_reason": "hidden_charges",
+   "final_top": "device_issue",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_08",
+   "seed": 130703,
+   "hidden_reason": "hidden_charges",
+   "acted_reason": "hidden_charges",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  },
+  {
+   "persona_id": "plan_former_08",
+   "seed": 130704,
+   "hidden_reason": "hidden_charges",
+   "acted_reason": "hidden_charges",
+   "final_top": "hidden_charges",
+   "moves": [
+    "DISCLOSE_AND_GREET",
+    "DISCOVER_NEED",
+    "RESOLVE_CONCERN(hidden_charges)",
+    "CONFIRM_CONSENT(book_field_visit)",
+    "TAKE_ACTION(book_field_visit)"
+   ],
+   "executed": [
+    "book_field_visit"
+   ],
+   "violations": [],
+   "outcome": "fixed",
+   "followup_agreed": false,
+   "fixed": true
+  }
+ ]
+}
