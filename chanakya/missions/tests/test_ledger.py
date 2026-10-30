@@ -8,6 +8,7 @@ from chanakya.core.schemas import (
     ActionDecision,
     Door,
     EventKind,
+    Mission,
     MissionCard,
     MissionState,
     MissionType,
@@ -150,3 +151,27 @@ def test_missions_and_events_take_their_time_from_the_runtime_clock():
     created, moved = ledger.store.events(mission.id)
     assert mission.created_at == created.at == datetime(2026, 10, 1, 4, 0, tzinfo=UTC)
     assert moved.at == datetime(2026, 10, 3, 4, 0, tzinfo=UTC)
+
+
+def test_the_store_survives_threads_reading_while_others_write(tmp_path):
+    import threading
+
+    store = SQLiteMissionStore(tmp_path / "ledger.db")
+    missions = [store.create(Mission(card=card())) for _ in range(4)]
+    errors = []
+
+    def churn(mission):
+        try:
+            for _ in range(300):
+                store.save(mission)
+                assert store.get(mission.id).id == mission.id
+                store.list()
+        except Exception as error:  # noqa: BLE001 - any failure in a thread fails the test
+            errors.append(error)
+
+    threads = [threading.Thread(target=churn, args=(m,)) for m in missions]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert errors == []

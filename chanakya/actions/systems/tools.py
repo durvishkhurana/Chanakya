@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chanakya.actions.systems.db import MockDB, now_iso
 from chanakya.core.schemas import ToolCall, ToolKind, new_id
@@ -59,14 +59,30 @@ class OnboardingStatusArgs(MerchantArgs):
     session_id: str | None = None
 
 
+def _iso_datetime(value: str) -> str:
+    """A slot or due time must be a real ISO date-time, never free text like "tomorrow"."""
+    datetime.fromisoformat(value)  # raises ValueError, which Pydantic reports as invalid arguments
+    return value
+
+
 class FieldVisitArgs(MerchantArgs):
     purpose: Literal["sales", "technician"]
     slot: str = Field(description="ISO date-time of the visit slot")
+
+    @field_validator("slot")
+    @classmethod
+    def slot_is_iso(cls, value: str) -> str:
+        return _iso_datetime(value)
 
 
 class CallbackArgs(MerchantArgs):
     due_at: str = Field(description="ISO date-time to call back")
     note: str = Field("", max_length=300)
+
+    @field_validator("due_at")
+    @classmethod
+    def due_at_is_iso(cls, value: str) -> str:
+        return _iso_datetime(value)
 
 
 class TicketArgs(MerchantArgs):
@@ -74,7 +90,7 @@ class TicketArgs(MerchantArgs):
     description: str = Field(min_length=1, max_length=1000)
 
 
-class TicketStatusArgs(Args):
+class TicketStatusArgs(MerchantArgs):
     ticket_id: str
 
 
@@ -242,8 +258,10 @@ def get_device_usage(db: MockDB, a: MerchantArgs, call: ToolCall) -> dict:
     _merchant(db, a.merchant_id)
     usage = []
     for device in db.all("SELECT id, kind, last_payment_at FROM devices WHERE merchant_id = ?", a.merchant_id):
-        last = device["last_payment_at"]
-        idle = (datetime.now(UTC) - datetime.fromisoformat(last)).days if last else None
+        last = datetime.fromisoformat(device["last_payment_at"]) if device["last_payment_at"] else None
+        if last is not None and last.tzinfo is None:
+            last = last.replace(tzinfo=UTC)  # older rows were stored without a zone; they are UTC
+        idle = (datetime.now(UTC) - last).days if last else None
         usage.append({**device, "days_since_last_payment": idle})
     return {"devices": usage}
 
@@ -264,7 +282,8 @@ def raise_ticket(db: MockDB, a: TicketArgs, call: ToolCall) -> dict:
 
 
 def get_ticket_status(db: MockDB, a: TicketStatusArgs, call: ToolCall) -> dict:
-    row = db.one("SELECT * FROM tickets WHERE id = ?", a.ticket_id)
+    # Scoped to the merchant, so the gate's same-merchant rule also covers ticket reads.
+    row = db.one("SELECT * FROM tickets WHERE id = ? AND merchant_id = ?", a.ticket_id, a.merchant_id)
     if row is None:
         raise LookupError(f"unknown ticket {a.ticket_id}")
     return {"ticket": row}

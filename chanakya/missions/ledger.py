@@ -44,35 +44,39 @@ class SQLiteMissionStore:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(str(path), check_same_thread=False)
         self.conn.executescript(SCHEMA)
-        self._lock = threading.Lock()
+        # One connection shared by threads (scheduler, hand-offs, scenario threads): every use holds this lock,
+        # because sqlite3 shares cached statements per connection and unlocked reads can see another thread's rows.
+        self.lock = threading.RLock()
 
     def create(self, mission: Mission) -> Mission:
         """Persist a new mission."""
-        with self._lock, self.conn:
+        with self.lock, self.conn:
             self.conn.execute("INSERT INTO missions VALUES (?, ?, ?, ?, ?)", self._row(mission))
         return mission
 
     def get(self, mission_id: str) -> Mission | None:
         """Current state of one mission."""
-        row = self.conn.execute("SELECT data FROM missions WHERE id = ?", (mission_id,)).fetchone()
+        with self.lock:
+            row = self.conn.execute("SELECT data FROM missions WHERE id = ?", (mission_id,)).fetchone()
         return Mission.model_validate_json(row[0]) if row else None
 
     def list(self, states: set[MissionState] | None = None) -> list[Mission]:
         """Missions, newest update first, optionally filtered by state."""
-        rows = self.conn.execute("SELECT data FROM missions ORDER BY updated_at DESC").fetchall()
+        with self.lock:
+            rows = self.conn.execute("SELECT data FROM missions ORDER BY updated_at DESC").fetchall()
         missions = [Mission.model_validate_json(row[0]) for row in rows]
         return [m for m in missions if states is None or m.state in states]
 
     def save(self, mission: Mission) -> Mission:
         """Overwrite a mission's card, state or outcome."""
         mission = mission.model_copy(update={"updated_at": utcnow()})
-        with self._lock, self.conn:
+        with self.lock, self.conn:
             self.conn.execute("REPLACE INTO missions VALUES (?, ?, ?, ?, ?)", self._row(mission))
         return mission
 
     def append(self, event: MissionEvent) -> MissionEvent:
         """Insert an event with the next sequence number for its mission."""
-        with self._lock, self.conn:
+        with self.lock, self.conn:
             seq = self.conn.execute(
                 "SELECT COALESCE(MAX(seq), 0) + 1 FROM mission_events WHERE mission_id = ?", (event.mission_id,)
             ).fetchone()[0]
@@ -85,12 +89,13 @@ class SQLiteMissionStore:
 
     def events(self, mission_id: str | None = None, after_seq: int = 0) -> list[MissionEvent]:
         """Events in order, for one mission (after ``after_seq``) or all missions."""
-        if mission_id is None:
-            rows = self.conn.execute("SELECT * FROM mission_events ORDER BY at, rowid").fetchall()
-        else:
-            rows = self.conn.execute(
-                "SELECT * FROM mission_events WHERE mission_id = ? AND seq > ? ORDER BY seq", (mission_id, after_seq)
-            ).fetchall()
+        with self.lock:
+            if mission_id is None:
+                rows = self.conn.execute("SELECT * FROM mission_events ORDER BY at, rowid").fetchall()
+            else:
+                rows = self.conn.execute(
+                    "SELECT * FROM mission_events WHERE mission_id = ? AND seq > ? ORDER BY seq", (mission_id, after_seq)
+                ).fetchall()
         return [
             MissionEvent(id=r[0], mission_id=r[1], seq=r[2], kind=r[3], payload=json.loads(r[4]), at=r[5])
             for r in rows

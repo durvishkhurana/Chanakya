@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 import sqlite3
+import threading
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -90,6 +91,7 @@ class MockDB:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(str(path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
+        self.lock = threading.RLock()  # the connection is shared across threads; see SQLiteMissionStore.lock
         self.conn.executescript(SCHEMA)
         self._migrate()
         self.failures = failures or {}
@@ -115,14 +117,16 @@ class MockDB:
 
     def one(self, sql: str, *args) -> dict | None:
         """First row as a dict, or None."""
-        row = self.conn.execute(sql, args).fetchone()
+        with self.lock:
+            row = self.conn.execute(sql, args).fetchone()
         return dict(row) if row else None
 
     def all(self, sql: str, *args) -> list[dict]:
         """All rows as dicts."""
-        return [dict(row) for row in self.conn.execute(sql, args).fetchall()]
+        with self.lock:
+            return [dict(row) for row in self.conn.execute(sql, args).fetchall()]
 
     def write(self, sql: str, *args) -> None:
         """Execute and commit one statement."""
-        with self.conn:
+        with self.lock, self.conn:
             self.conn.execute(sql, args)
