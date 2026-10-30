@@ -646,7 +646,7 @@
       "name": "Neural worry scorer",
       "description": "Full spec: docs/TASKS.md, task N1",
       "track": "N",
-      "owner": "Gurnoor Singh Pannu",
+      "owner": "Gurnoor Singh Pannu (part A), Durvish Khurana (part B)",
       "branch": "feat/N1-worry-scorer",
       "owns": [
         "chanakya/neural/",
@@ -688,14 +688,16 @@
       "name": "Value network for the planner",
       "description": "Full spec: docs/TASKS.md, task N3",
       "track": "N",
-      "owner": "Gurnoor Singh Pannu",
+      "owner": "Durvish Khurana",
       "branch": "feat/N3-value-network",
       "owns": [
-        "chanakya/neural/",
+        "chanakya/brain/value/",
+        "data/neural/value_net.npz",
+        "docs/results/neural-value-network/",
         "chanakya/brain/planner_nrpa.py"
       ],
       "dependencies": [
-        "N1"
+        "N0"
       ],
       "status": "not-started",
       "done_when": "Win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.",

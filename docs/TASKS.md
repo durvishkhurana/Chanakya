@@ -306,9 +306,13 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ---
 
-## Phase 5: Neural brain (Gurnoor)
+## Phase 5: Neural brain (Gurnoor and Durvish)
 
-Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. Gurnoor owns this phase, including the small wiring edits in `chanakya/brain/`; Durvish reviews those.
+Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. Split (2026-10-31):
+- **Gurnoor:** N1 part A (the worry model in `chanakya/neural/`), N2 semantic memory, N4 demo.
+- **Durvish:** N1 part B (belief tracker, wiring, held-out twin voice, full-call measurement) and N3 value network.
+- **Both, by hand:** about 150 hand-written test lines each.
+Each side reviews the other's edits in its directories.
 
 #### [x] N0 Baselines and labelled data
 - **Branch:** `feat/N0-neural-baseline`
@@ -316,7 +320,7 @@ Learned parts that replace the brain's hand-written guesses. Each one sits behin
 - **Build:** labelled merchant lines in four languages from two model families (train from the Twin-A model, test from the Twin-B model, nothing close to a Concern Bank phrasing); baselines for today's lexical scorer, the LLM scorer and two candidate encoders; the encoder choice.
 - **Done when:** baselines and the encoder choice are in `docs/results/neural-baseline/` with the command that produced them.
 
-#### [ ] N1 Neural worry scorer
+#### [ ] N1 Neural worry scorer (part A Gurnoor: the model; part B Durvish: wiring and full-call measurement)
 - **Branch:** `feat/N1-worry-scorer`, after a small `core:` PR on `core/worry-scorer-setting`
 - **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-worry-scorer/`; wiring in `chanakya/brain/belief.py`, `agent/brain_agent.py`, `chanakya/humans/coach_engine.py`, `chanakya/eval/variants.py`, `chanakya/sim/voice.py`
 - **Depends on:** N0, and the hand-written test set below being committed before any training
@@ -358,10 +362,10 @@ Learned parts that replace the brain's hand-written guesses. Each one sits behin
 - **Build:** the Strategy Forest's hashed trigram vectors replaced by sentence embeddings plus the belief, with nearest-moment lookup; behind `NEURAL_MEMORY_ENABLED`.
 - **Done when:** win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.
 
-#### [ ] N3 Value network for the planner
+#### [ ] N3 Value network for the planner (Durvish)
 - **Branch:** `feat/N3-value-network`
-- **Owns:** `chanakya/neural/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
-- **Depends on:** N1
+- **Owns:** `chanakya/brain/value/`, `data/neural/value_net.npz`, `docs/results/neural-value-network/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
+- **Depends on:** nothing to start (belief and move features); N1 only if the merchant line's embedding is added as a feature
 - **Build:** a value network trained on self-play twin calls replaces the planner's fixed horizon guess (`0.8 × consent_chance`); optional policy prior for candidate order; behind `NEURAL_PLANNER_ENABLED`.
 - **Done when:** win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.
 
