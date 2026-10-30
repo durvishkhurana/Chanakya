@@ -121,7 +121,7 @@ On a running backend, "Run scenario" in Mission Control plays one live and opens
 
 ### Feature flags
 
-New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`. With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
 
 ### Evaluation
 
@@ -134,6 +134,18 @@ python -m chanakya.brain.forest.generate --seed 11                         # reg
 ```
 
 Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out` is given. Measured results, with their commands and seeds, are in [docs/results/](docs/results/README.md).
+
+### Neural brain (in progress, tasks N0-N4)
+
+Learned parts that replace the brain's hand-written guesses: a multilingual worry scorer, semantic memory and a value network for the planner. Their extra libraries are optional and never needed by `./init.sh`:
+
+```bash
+pip install -r requirements-neural.txt                               # encoder and numpy, only for the neural parts
+python -m chanakya.neural.paraphrase --seed 7                        # labelled lines from two model families (uses the LLM provider)
+python -m chanakya.neural.baseline --seed 7 --llm-sample 112         # baselines every neural scorer must beat
+```
+
+The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [docs/results/neural-baseline/](docs/results/neural-baseline/README.md).
 
 ## Verify
 

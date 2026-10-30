@@ -35,6 +35,7 @@
   - `chanakya/brain/mission_call.py`: `MissionCall` runs the brain on a real mission; every turn, belief and plan goes to the ledger in the core shapes, AI disclosure and explicit consent are recorded where the gate checks them, writes go through Track B's `ActionGate` and mock systems, distress opens an urgent hand-off, a clear no closes the mission
   - `chanakya/brain/scenarios.py` and `scripts/demo/scenarios.py`: the four IDEA section 8 scenarios from one command, 4/4 passing
   - `chanakya/brain/calls_api.py` (`/api/calls`, behind `MISSIONS_ENABLED`): run a scenario or speak as the merchant; Mission Control has a "Run scenario" control and the Live Call View a "Speak as the merchant" box; `/api/calls/<id>/voice` runs a spoken browser call on the mission ("Talk by voice instead")
+- [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
 
@@ -52,6 +53,9 @@
 5. Track B: optional B10, B12, B13. Together: I3 backup video (docs/PHONE_DEMO.md, path A)
 
 ## Blockers / Risks
+
+- [ ] Review points on #19 not yet fixed on main: scenario calls are not registered (a typed or spoken line starts a second brain), a yes to the link is recorded for every `send_summary`, the callback scenario moves the shared clock by at least 26 hours, voice barge-in can cut `say()` halfway, only the first decline is recorded
+- [ ] The neural parts need `requirements-neural.txt` (PyTorch through sentence-transformers) and a one-time model download of about 470 MB; `./init.sh` and CI do not install them
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
