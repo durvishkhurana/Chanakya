@@ -170,6 +170,10 @@ def make_variant(name: str, llm=None, llm_agent=None):
 
         # Never falls back to the forest: a missing encoder or memory must not pass as a neural-memory result.
         return BrainVariant(name, llm=llm, planner=NRPAPlanner(forest=default_memory()))
+    if name == "chanakya_value":
+        from chanakya.brain.value.network import default_network
+
+        return BrainVariant(name, llm=llm, planner=NRPAPlanner(leaf_value=default_network().leaf_value))
     if name == "chanakya_forest":
         from chanakya.brain.forest.forest import default_forest
 

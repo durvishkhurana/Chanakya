@@ -135,3 +135,18 @@ def test_subscribers_see_ledger_events_live():
 
     mission, event = run(scenario())
     assert event.mission_id == mission.id and event.kind == EventKind.MISSION_CREATED and event.seq == 1
+
+
+def test_missions_and_events_take_their_time_from_the_runtime_clock():
+    from datetime import UTC, datetime, timedelta
+
+    from chanakya.missions.scheduler import SimClock
+
+    clock = SimClock(datetime(2026, 10, 1, 4, 0, tzinfo=UTC))
+    ledger = MissionLedger(SQLiteMissionStore(), clock=clock)
+    mission = run(ledger.create(card()))
+    clock.advance(timedelta(days=2))
+    run(ledger.advance(mission.id, MissionState.CONTACTING))
+    created, moved = ledger.store.events(mission.id)
+    assert mission.created_at == created.at == datetime(2026, 10, 1, 4, 0, tzinfo=UTC)
+    assert moved.at == datetime(2026, 10, 3, 4, 0, tzinfo=UTC)

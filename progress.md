@@ -7,10 +7,11 @@
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B12, B14, B15 | B10, B13 (optional) |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
 | N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results; N2 semantic memory (measured, no gain) | N1 hand-written test set, N4 demo |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results; N3 value network (measured, no gain) | N1 hand-written test set, N2 semantic memory, N4 demo |
 | W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
 
 ## Status
@@ -44,6 +45,7 @@
   - **Lines voice:** `LinesVoice` for twins (`--voice test|train`), plus a belief top-1 metric.
   - **Full calls with held-out lines:** success 0.84/0.77 vs 0.62/0.62, walk-away 0.12/0.22 vs 0.34/0.36 (seeds 7/13). With template sentences: 0.91/0.96 vs 0.96/0.98.
   - **Also:** `NEURAL=1 ./init.sh`, and the e5 report cited in IDEA.md
+- [x] B12 manager insights (Gurnoor): `/insights` and `GET /api/insights` count worries found (by product, language, day), the funnel overall and per mission type, consent when a worry was addressed or not, hand-off reasons, and reasons for leaving (reusing `churn.leaving_reasons`). `python -m chanakya.insights.seed` plays every held-out persona through the real mission system for a simulated ledger (2 days: 88 missions, 55 clear yes, 35 verified done). The ledger now stamps missions and events with the runtime clock
 - [x] N0 neural baselines (Gurnoor): 2,123 labelled merchant lines from two model families (`data/neural/worry_lines.jsonl`); on 668 held-out lines the lexical scorer gets 0.388 of 14 labels, `multilingual-e5-small` with no training 0.437 at about 5 ms, the LLM scorer 0.777 at about 2 s; e5-small chosen as the shared encoder (`docs/results/neural-baseline/`)
 - [x] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh`; green on main for #16, #17 and #18 (runs 23, 25, 28)
 - [x] Groq works end to end (core LLM client, voice agent, twins, judge) while OpenRouter credits are arranged
@@ -65,6 +67,8 @@ Phase 5, neural brain (one owner per network, full plan in `docs/TASKS.md`):
 2. N3, Durvish: the `PLANNER_VALUE` core PR, self-play data, the value network, the `leaf_value` hook and held-out measurement
 3. N2, Durvish: done. Neural memory (3,245 moments from 540 train-split conversations, lookup p50 7.8 ms) gives no measurable gain with the test-split voice: success 0.63/0.61 vs no memory 0.62/0.62 and forest 0.62/0.61 (seeds 7/13). `PLANNER_MEMORY` stays `forest`; not yet measured together with `WORRY_SCORER=embedding` (`docs/results/neural-memory/`)
    - Flaky test seen once (2026-10-31, Windows): `chanakya/brain/tests/test_scenarios.py::test_the_dashboard_can_list_and_run_a_scenario` failed when `SQLiteMissionStore.get` read a row whose JSON was still None while the scenario wrote it; it passed on the rerun and 3/3 alone. Track B (`chanakya/missions/ledger.py`), not changed here
+2. N3, Durvish: done. The value network (2,100 self-play calls) gives no gain on held-out evaluation personas: success 0.94/0.92 vs formula 0.96/0.98 (seeds 7/13), look-ahead consent 0.927 vs 0.953, planner p50 181 vs 113 ms, seed stability 5/42 vs 21/42; it beats the formula only on the planning personas it trained on (0.963 vs 0.920). `PLANNER_VALUE` stays `formula` by default (`docs/results/neural-value-network/`)
+3. N2, Durvish: the `PLANNER_MEMORY` core PR, e5 + belief nearest-moment memory built from train-split lines, measured with the test-split voice
 4. N4, Gurnoor, after N1-N3: show the neural scorer and value estimate in the Live Call View and coach mode
 
 Other:
@@ -72,7 +76,7 @@ Other:
 5. Durvish: merge the first three #19 review fixes (`fix/I1-review-fixes`)
 6. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3, backup video in `docs/PHONE_DEMO.md`, path A)
 7. A9: richer transcripts before claiming a gain (N2 may answer this)
-8. Track B: optional B10, B12, B13
+8. Track B: optional B10 approval queue, B13 multi-channel messaging
 
 ## Blockers / Risks
 
@@ -93,6 +97,8 @@ Other:
 - [ ] Coach sessions live in backend memory (at most 50) and are lost on restart; the hand-off card is copied as text, not sent to the hand-off queue, because a coached call has no mission in the ledger
 
 ## Decisions Made
+
+- **Insights count, never estimate (B12):** every number on `/insights` comes from ledger events; a consent difference between "answered the worry" and "did not" is shown only with 3 or more calls on each side, and it is a correlation in simulated calls, not proof of cause. The seeded ledger shows one worth a look: for "already has a QR", calls that answered it reached a yes less often (0.60 of 15) than calls that did not (0.86 of 14)
 
 - **One owner per neural network (2026-10-31):** Gurnoor owns N1 and N4, Durvish owns N2 and N3. Each owner does the data, model, wiring and measurement; the other reviews. Each part is chosen by a setting in `chanakya/core/config.py` (`WORRY_SCORER`, `PLANNER_MEMORY`, `PLANNER_VALUE`) whose default keeps today's behaviour
 - **Encoder on ONNX Runtime:** `multilingual-e5-small` through ONNX gives the same vectors as PyTorch at about 2.5 ms per line, so no PyTorch at runtime or for embedding training lines

@@ -100,6 +100,7 @@ Then, with the backend and frontend running:
 | `/demo/soundbox` | Mock product page: "Request a callback" opens a mission |
 | `/missions` | Mission Control: queue, mission cards, concern meter, ledger, handoffs, demo clock |
 | `/call/demo` | A scripted recorded call, played back event by event |
+| `/insights` | Manager insights: worries, funnel, which answers work, hand-offs, reasons for leaving |
 | `/coach` | Coach mode: Chanakya follows a human telecaller's call (a fictional recording, or lines you type) and suggests each next move |
 | `/call/<mission id>` | The live call view of a real mission |
 | `/demo/onboard/<session>` | Mock onboarding page behind the SMS link |
@@ -134,9 +135,25 @@ On the call, Chanakya says it is AI, says it is calling because they used the pr
 .venv/bin/python scripts/demo/scenarios.py winback_device_fix winback_not_needed
 ```
 
+### Manager insights
+
+`/insights` shows what merchants worry about (by product, language and day), the mission funnel, whether answering a
+worry raised the clear-yes rate, why calls went to a person, and why former merchants left. Everything is counted from
+the mission ledger (`GET /api/insights`, with the mission APIs). To see it full of data, seed a simulated ledger and
+point the backend at it:
+
+```bash
+python -m chanakya.insights.seed --dir .state/insights-demo --rounds 2   # 88 simulated calls through the real mission system
+CHANAKYA_DB_PATH=.state/insights-demo/ledger.db MISSIONS_ENABLED=true .venv/bin/python -m uvicorn backend.main:app --port 8000
+```
+
+The seed uses the trained worry scorer when it is installed (`--worry-scorer lexical` otherwise). Every merchant in it is
+fictional and labelled simulated.
+
 ### Feature flags
 
-New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNER_MEMORY` picks where the look-ahead planner finds moves that worked in similar moments: `forest` (default, the Strategy Forest's trigram clusters) or `neural` (e5 plus belief nearest-moment memory, task N2). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNER_VALUE` picks how the look-ahead planner values the end of a simulated call: `formula` (default, `0.8 x consent_chance`) or `network` (the N3 value network). `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
+New Chanakya features are wired in behind flags in `.env`, all `false` by default: `PLANNER_ENABLED`, `ACTIONS_ENABLED`, `MISSIONS_ENABLED`, `COACH_ENABLED`, `WINBACK_ENABLED` (win-back missions for merchants who stopped using a product: churn detection, a holdout group and a system-confirmed DONE), `PERMISSION_FIRST_ENABLED` (lead-list calls ask for two minutes before any pitch). With `PLANNER_ENABLED=true` the voice call runs the planning brain (`agent/brain_agent.py`: belief tracker, look-ahead planner, realizer); with it off, the original retrieval agent answers. Writes stay blocked unless `ACTIONS_ENABLED=true` and a safety gate is wired in. `WORRY_SCORER` picks the belief tracker's evidence scorer: `lexical` (default, keywords and phrasing similarity), `llm` (one LLM call per merchant turn) or `embedding` (the trained e5 worry head, task N1). `PLANNER_MEMORY` picks where the look-ahead planner finds moves that worked in similar moments: `forest` (default, the Strategy Forest's trigram clusters) or `neural` (e5 plus belief nearest-moment memory, task N2). `APPROVAL_TOOLS` lists write tools that wait for a person's approval before they run (empty by default), and `APPROVAL_TIMEOUT_MINUTES` (30) is how long a request waits before it goes to a person. `PLANNING_WHILE_LISTENING=true` also prepares the planner's next turn from partial transcripts; measure with `python -m chanakya.brain.speculative` (add `--live` for the configured provider). Shared contracts live in `chanakya/core/`; Track A's own brain, simulation and evaluation types are in `chanakya/brain/contracts/`.
 
 ### Evaluation
 
@@ -158,6 +175,9 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 |---|---|---|---|
 | Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
 | Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | measured, no gain: success 0.63/0.61 vs 0.62/0.62 with no memory ([results](docs/results/neural-memory/README.md)); default stays forest |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
+| Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | measured, no gain on held-out personas: success 0.94/0.92 vs formula 0.96/0.98 ([results](docs/results/neural-value-network/README.md)); default stays formula |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` (setting added) | in progress |
 | Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | planned |
 
 All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries are optional and never needed by `./init.sh`:

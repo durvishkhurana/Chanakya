@@ -276,6 +276,14 @@ def test_worry_scorer_defaults_to_lexical_and_rejects_unknown_values(monkeypatch
         Settings.from_env()
 
 
+def test_planner_value_defaults_to_the_formula_and_rejects_unknown_values(monkeypatch):
+    monkeypatch.delenv("PLANNER_VALUE", raising=False)
+    assert Settings.from_env().planner_value == "formula" and Settings().planner_value == "formula"
+    monkeypatch.setenv("PLANNER_VALUE", " Network ")
+    assert Settings.from_env().planner_value == "network"
+    monkeypatch.setenv("PLANNER_VALUE", "learned")
+    with pytest.raises(ValueError, match="PLANNER_VALUE"):
+        Settings.from_env()
 def test_planner_memory_defaults_to_the_forest_and_rejects_unknown_values(monkeypatch):
     monkeypatch.delenv("PLANNER_MEMORY", raising=False)
     assert Settings.from_env().planner_memory == "forest" and Settings().planner_memory == "forest"
@@ -284,3 +292,14 @@ def test_planner_memory_defaults_to_the_forest_and_rejects_unknown_values(monkey
     monkeypatch.setenv("PLANNER_MEMORY", "trigram")
     with pytest.raises(ValueError, match="PLANNER_MEMORY"):
         Settings.from_env()
+
+
+def test_approval_settings_default_to_none_and_parse_a_tool_list(monkeypatch):
+    monkeypatch.delenv("APPROVAL_TOOLS", raising=False)
+    monkeypatch.delenv("APPROVAL_TIMEOUT_MINUTES", raising=False)
+    settings = Settings.from_env()
+    assert settings.approval_tools == () and settings.approval_timeout_minutes == 30
+    monkeypatch.setenv("APPROVAL_TOOLS", " book_field_visit, raise_ticket ,")
+    monkeypatch.setenv("APPROVAL_TIMEOUT_MINUTES", "5")
+    settings = Settings.from_env()
+    assert settings.approval_tools == ("book_field_visit", "raise_ticket") and settings.approval_timeout_minutes == 5

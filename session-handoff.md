@@ -63,5 +63,7 @@
 
 ## Recommended Next Step
 
+- B12 is merged: `/insights` with `python -m chanakya.insights.seed` for a simulated ledger. Optional next on Track B: B10 approval queue, B13 multi-channel messaging
+
 - N1: Gurnoor writes the hand-written test set by hand, then `python -m chanakya.neural.train_worry --seed 7` adds its per-slice results; mark N1 done with that evidence
 - Durvish: N3 value network (needs nothing), then N2 semantic memory, which can use `LinesVoice` with the train split (`chanakya/sim/voice.py`) to build memory and `--voice test` to evaluate; re-measure win-back with the embedding scorer (`python -m chanakya.eval.winback`)

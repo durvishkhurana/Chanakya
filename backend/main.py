@@ -45,8 +45,11 @@ def create_voice_agent():
         from chanakya.brain.contracts.llm import default_llm
         from chanakya.brain.memory.memory import configured_memory
         from chanakya.brain.planner_nrpa import NRPAPlanner
+        from chanakya.brain.value.network import configured_leaf_value
 
         return BrainAgent(llm=default_llm(settings), planner=NRPAPlanner(forest=configured_memory(settings.planner_memory)),
+        planner = NRPAPlanner(forest=default_forest(), leaf_value=configured_leaf_value(settings.planner_value))
+        return BrainAgent(llm=default_llm(settings), planner=planner,
                           actions_enabled=settings.actions_enabled)
     return Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
 
@@ -129,6 +132,9 @@ if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes"
     from chanakya.brain.calls_api import router as calls_router
 
     app.include_router(calls_router)
+    from chanakya.insights.api import router as insights_router
+
+    app.include_router(insights_router)
 
 # Chanakya coach mode API (task B11); mounted only when COACH_ENABLED is true.
 if os.getenv("COACH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}:
