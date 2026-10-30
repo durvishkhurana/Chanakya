@@ -244,3 +244,13 @@ def test_groq_client_uses_its_endpoint_json_mode_seed_and_retries_rate_limits():
     assert body["response_format"] == {"type": "json_object"} and body["seed"] == 4
     assert body["reasoning_effort"] == "low" and "reasoning" not in body
     assert any("json" in m["content"].lower() for m in body["messages"])
+
+
+def test_worry_scorer_defaults_to_lexical_and_rejects_unknown_values(monkeypatch):
+    monkeypatch.delenv("WORRY_SCORER", raising=False)
+    assert Settings.from_env().worry_scorer == "lexical"
+    monkeypatch.setenv("WORRY_SCORER", " Embedding ")
+    assert Settings.from_env().worry_scorer == "embedding"
+    monkeypatch.setenv("WORRY_SCORER", "neural")
+    with pytest.raises(ValueError, match="WORRY_SCORER"):
+        Settings.from_env()
