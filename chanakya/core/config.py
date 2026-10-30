@@ -24,6 +24,8 @@ GROQ_MODELS = {
     "twin_b": "qwen/qwen3.8-27b",
     "judge": "openai/gpt-oss-120b",
 }
+# Which evidence scorer the belief tracker uses (task N1): keywords, an LLM call per turn, or the e5 embedding head.
+WORRY_SCORERS = ("lexical", "llm", "embedding")
 PROVIDER_URLS = {
     "openrouter": "https://openrouter.ai/api/v1",
     "groq": "https://api.groq.com/openai/v1",
@@ -32,6 +34,14 @@ PROVIDER_URLS = {
 
 def _flag(name: str) -> bool:
     return os.getenv(name, "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _worry_scorer() -> str:
+    """``WORRY_SCORER`` if set, else ``lexical``."""
+    chosen = os.getenv("WORRY_SCORER", "").strip().lower() or "lexical"
+    if chosen not in WORRY_SCORERS:
+        raise ValueError(f"WORRY_SCORER must be one of {', '.join(WORRY_SCORERS)}")
+    return chosen
 
 
 def _provider() -> str:
@@ -58,6 +68,7 @@ class Settings:
     openrouter_api_key: str = field(default="", repr=False)
     llm_provider: str = "openrouter"
     groq_api_key: str = field(default="", repr=False)
+    worry_scorer: str = "lexical"
 
     @property
     def llm_base_url(self) -> str:
@@ -88,4 +99,5 @@ class Settings:
             openrouter_api_key=os.getenv("OPENROUTER_API_KEY", ""),
             llm_provider=provider,
             groq_api_key=os.getenv("GROQ_API_KEY", ""),
+            worry_scorer=_worry_scorer(),
         )
