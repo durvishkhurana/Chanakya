@@ -185,12 +185,13 @@ function MissionDetail({ id, version, busy, act }) {
 
   useEffect(() => {
     let live = true;
-    Promise.all([api(`/api/missions/${id}`), api(`/api/actions/outbox?mission_id=${id}`)])
+    api(`/api/missions/${id}`)
+      .then(async (detail) => [detail, await api(`/api/messages/${detail.mission.card.merchant_id}`)])
       .then(([detail, messages]) => {
         if (!live) return;
         firstSeen.current ??= new Set(detail.events.map((e) => e.id));
         setData(detail);
-        setOutbox(messages);
+        setOutbox(messages.filter((m) => m.mission_id === id));
         setError("");
       })
       .catch((e) => live && setError(e.message));
@@ -229,13 +230,38 @@ function MissionDetail({ id, version, busy, act }) {
         </li>)}</ol>
     </section>
     {outbox.length > 0 && <section className="panel">
-      <header><h2>Messages sent</h2><span className="meta">Mock SMS and WhatsApp</span></header>
-      {outbox.map((m) => <div key={m.id} className="message">
-        <span className="meta">{m.channel === "sms" ? "SMS" : "WhatsApp"} · {time(m.at)}</span>
-        {m.link ? <>{m.body.replace(m.link, "")}<Link href={m.link}>{m.link}</Link></> : m.body}
+      <header><h2>Messages</h2><span className="meta">Mock SMS and WhatsApp</span></header>
+      {outbox.map((m) => <div key={m.id} className={`message${m.direction === "in" ? " in" : ""}`}>
+        <span className="meta">{m.direction === "in" ? `${mission.card.merchant_name} replied` : "Sent"} on {m.channel === "sms" ? "SMS" : "WhatsApp"} · {time(m.at)}</span>
+        <span style={{ whiteSpace: "pre-line" }}>{m.link ? <>{m.body.replace(m.link, "")}<Link href={m.link}>{m.link}</Link></> : m.body}</span>
       </div>)}
+      {!["DONE", "CLOSED_NOT_INTERESTED", "CLOSED_UNREACHABLE", "FAILED"].includes(mission.state) && <MerchantReply mission={mission} busy={busy} act={act} />}
     </section>}
   </>;
+}
+
+/** Simulated inbox (B13): type what the merchant answers on WhatsApp or SMS; it goes back into this mission. */
+function MerchantReply({ mission, busy, act }) {
+  const [body, setBody] = useState("");
+  const [channel, setChannel] = useState("whatsapp");
+  const [result, setResult] = useState(null);
+  const send = (event) => {
+    event.preventDefault();
+    if (!body.trim()) return;
+    act("reply", async () => {
+      setResult(await api("/api/messages/reply", { method: "POST", body: { merchant_id: mission.card.merchant_id, channel, body } }));
+      setBody("");
+    });
+  };
+  return <form className="actions" style={{ justifyContent: "flex-start", marginTop: 12, flexWrap: "wrap" }} onSubmit={send}>
+    <label className="meta" htmlFor="reply-body">Reply as the merchant</label>
+    <select aria-label="Channel" value={channel} onChange={(e) => setChannel(e.target.value)}>
+      <option value="whatsapp">WhatsApp</option><option value="sms">SMS</option>
+    </select>
+    <input id="reply-body" value={body} maxLength={1000} placeholder="Ho gaya / STOP / call me" onChange={(e) => setBody(e.target.value)} />
+    <button className="btn small" disabled={!!busy || !body.trim()}>Send reply</button>
+    {result && <p className="meta" role="status">Read as “{result.intent}”: {result.outcome}</p>}
+  </form>;
 }
 
 function Handoffs({ cards, busy, act }) {
