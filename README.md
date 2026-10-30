@@ -152,15 +152,23 @@ Reports (JSON, Markdown, HTML) go to `.state/eval/<mode>-<seed>/` unless `--out`
 
 ### Neural brain (in progress, tasks N0-N4)
 
-Learned parts that replace the brain's hand-written guesses: a multilingual worry scorer, semantic memory and a value network for the planner. Their extra libraries are optional and never needed by `./init.sh`:
+Three learned parts are replacing the brain's hand-written guesses, each chosen by a setting whose default keeps today's behaviour:
+
+| Part | Replaces | Setting | Status |
+|---|---|---|---|
+| Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | in progress |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
+| Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | planned |
+
+All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries are optional and never needed by `./init.sh`:
 
 ```bash
-pip install -r requirements-neural.txt                               # encoder and numpy, only for the neural parts
+pip install -r requirements-neural.txt                               # only for the neural parts
 python -m chanakya.neural.paraphrase --seed 7                        # labelled lines from two model families (uses the LLM provider)
 python -m chanakya.neural.baseline --seed 7 --llm-sample 112         # baselines every neural scorer must beat
 ```
 
-The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [docs/results/neural-baseline/](docs/results/neural-baseline/README.md).
+The labelled lines are in `data/neural/worry_lines.jsonl` and the baselines in [docs/results/neural-baseline/](docs/results/neural-baseline/README.md). Owners and the full plan: `docs/TASKS.md`, Phase 5.
 
 ## Verify
 

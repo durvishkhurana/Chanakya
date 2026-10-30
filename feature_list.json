@@ -650,19 +650,20 @@
       "branch": "feat/N1-worry-scorer",
       "owns": [
         "chanakya/neural/",
-        "data/neural/",
+        "data/neural/worry_*",
         "docs/results/neural-worry-scorer/",
         "chanakya/brain/belief.py",
         "agent/brain_agent.py",
         "chanakya/humans/coach_api.py",
         "chanakya/eval/variants.py",
-        "chanakya/sim/voice.py"
+        "chanakya/sim/voice.py",
+        "chanakya/eval/harness.py"
       ],
       "dependencies": [
         "N0"
       ],
       "status": "in-progress",
-      "done_when": "On a hand-written test set (about 300 lines, committed before training, never LLM-written), per-line accuracy by slice (Hinglish, negation, no worry, Punjabi) for embedding vs lexical vs LLM, and the embedding scorer beats lexical overall; calibration error before and after temperature scaling; consent rate and belief top-1 accuracy in the offline harness with a held-out-lines twin voice, seeds 7 and 13; p50 and p90 ms per turn; WORRY_SCORER setting added in a core: PR first; tests use a fake embedder and CI is unchanged.",
+      "done_when": "Per-line accuracy (embedding vs lexical vs LLM) on the hand-written set by slice and on N0's test split, embedding beating lexical overall; calibration error before and after temperature scaling; consent rate and belief top-1 accuracy with the test-split lines voice, seeds 7 and 13; p50 and p90 ms per turn; CI unchanged apart from numpy.",
       "evidence": ""
     },
     {
@@ -682,7 +683,7 @@
         "N1"
       ],
       "status": "not-started",
-      "done_when": "Win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.",
+      "done_when": "Win rate for no memory, the trigram forest and neural memory with the test-split lines voice over seeds 7 and 13, plus lookup p50 and p90 ms, reported either way; PLANNER_MEMORY setting in a core: PR; tests use FakeEncoder.",
       "evidence": ""
     },
     {
@@ -702,7 +703,7 @@
         "N0"
       ],
       "status": "not-started",
-      "done_when": "Win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.",
+      "done_when": "On held-out evaluation personas over seeds 7 and 13: success, walk-away, turns and planner p50/p90 for formula vs network; planner_checks stability and lookahead with and without it; a test that forced safety rules decide first; PLANNER_VALUE setting in a core: PR.",
       "evidence": ""
     },
     {

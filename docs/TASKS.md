@@ -308,84 +308,100 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ## Phase 5: Neural brain (Gurnoor and Durvish)
 
-Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. One owner per neural network, each doing the whole of it (data, model, wiring, measurement); the other reviews.
+Three learned parts replace the brain's hand-written guesses.
+- **Settings:** each one is chosen by a setting in `chanakya/core/config.py`, added in its own small `core:` PR (the `WORRY_SCORER` pattern, #26). The default keeps today's behaviour.
+- **Measurement:** each is measured against what it replaces on data it never saw, and every number goes in `docs/results/` with its command and seed.
+- **Safety:** the safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned.
 
-| Task | Owner |
-|---|---|
-| N1 worry scorer (including the belief tracker change, the held-out twin voice and full-call results) | Gurnoor |
-| N2 semantic memory | Durvish |
-| N3 planner value network | Durvish |
-| N4 demo screens | Gurnoor |
+One owner per neural network does all of it (data, model, wiring, measurement); the other reviews.
 
-Shared code goes through the owner: the encoder (`chanakya/neural/encoder.py`) is Gurnoor's and N2 imports it; `chanakya/brain/forest/` and `chanakya/brain/planner_nrpa.py` are Durvish's. Settings follow the `WORRY_SCORER` pattern (#26) in small `core:` PRs.
+| Task | What it replaces | Setting | Owner |
+|---|---|---|---|
+| N1 worry scorer | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` (merged, #26) | Gurnoor |
+| N2 semantic memory | the Strategy Forest's trigram vectors and 24 clusters | `PLANNER_MEMORY=forest\|neural` | Durvish |
+| N3 planner value network | the planner's `0.8 × consent_chance` horizon guess | `PLANNER_VALUE=formula\|network` | Durvish |
+| N4 demo screens | | | Gurnoor |
+
+**Shared code goes through its owner:**
+- **Gurnoor's:** `chanakya/neural/` (encoder, worry head, scorer, data scripts), `data/neural/worry_*` and the lines voice in `chanakya/sim/voice.py`.
+- **Durvish's:** `chanakya/brain/forest/`, `chanakya/brain/memory/`, `chanakya/brain/value/` and `chanakya/brain/planner_nrpa.py`.
+
+**Shared rules for all three:**
+- **Encoder:** `intfloat/multilingual-e5-small` through ONNX Runtime with the `query: ` prefix, about 2.5 ms per line.
+- **Downloads and weights:** the encoder is downloaded once with `python -m chanakya.neural.encoder --download` and never committed. Trained heads (`.npz`, under 1 MB) are committed with seed, date and data hash.
+- **Dependencies:** `numpy` is in `requirements.txt`. The encoder libraries are optional, in `requirements-neural.txt`: `onnxruntime`, `tokenizers` and `huggingface_hub`, no PyTorch.
+- **Tests:** tests use `FakeEncoder` or stubs and never download a model. A test that needs the real model is skipped when it is missing.
+- **Simulated merchants:** training data and memory come only from the train split and planning personas. Evaluation uses the test split, evaluation personas and the hand-written set.
 
 #### [x] N0 Baselines and labelled data
-- **Branch:** `feat/N0-neural-baseline`
+- **Branch:** `feat/N0-neural-baseline` (merged, #24)
 - **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-baseline/`
 - **Build:** labelled merchant lines in four languages from two model families (train from the Twin-A model, test from the Twin-B model, nothing close to a Concern Bank phrasing); baselines for today's lexical scorer, the LLM scorer and two candidate encoders; the encoder choice.
 - **Done when:** baselines and the encoder choice are in `docs/results/neural-baseline/` with the command that produced them.
 
 #### [ ] N1 Neural worry scorer (Gurnoor)
-- **Branch:** `feat/N1-worry-scorer`, after a small `core:` PR on `core/worry-scorer-setting`
-- **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-worry-scorer/`; wiring in `chanakya/brain/belief.py`, `agent/brain_agent.py`, `chanakya/humans/coach_engine.py`, `chanakya/eval/variants.py`, `chanakya/sim/voice.py`
-- **Depends on:** N0, and the hand-written test set below being committed before any training
-- **Build** (revised after Durvish's review):
-  1. **Setting, in a separate `core:` PR first:** `WORRY_SCORER=lexical|llm|embedding` in `chanakya/core/config.py`, default `lexical`. It picks the scorer everywhere; there is no separate on/off flag.
-  2. **Hand-written test set, before training:** `data/neural/worry_lines_human.csv` with columns `text,concerns,language,slice,author`.
-     - `concerns`: Concern Bank ids separated by `;` (a line can hold two worries), or `none`.
-     - `language`: `hindi`, `hinglish`, `punjabi` or `english`.
-     - `slice`: `hinglish_roman`, `negation` (for example "koi problem nahi hai", which holds no worry), `no_worry`, `punjabi` or `other`.
-     - About 300 lines, roughly 150 each from Gurnoor and Durvish, written by hand and never generated by an LLM. Never used for training, tuning or calibration.
-  3. **Encoder:** `intfloat/multilingual-e5-small` through ONNX Runtime (`onnx/model.onnx` and its tokenizer from the model page), with the `query: ` prefix on every input.
-     - A download script fetches the model into a local cache; the weights are never committed.
-     - Neither live calls nor training-set embedding need PyTorch, so `requirements-neural.txt` shrinks to `numpy`, `onnxruntime` and `tokenizers`.
-  4. **Worry head:** 13 independent sigmoid outputs, not a softmax: one line can raise two worries, and a filler line should score near 0 for all 13.
-     - **Inputs and targets:** the 384-dimension embeddings; no-worry lines train with all-zero targets.
-     - **Training data:** N0's train split, minus a seeded 15% validation split.
-     - **Calibration:** temperature scaling is fitted on the validation split only.
-     - **Saved as** `data/neural/worry_head.npz`: 384 x 13 weights, biases and the temperature, plus metadata (encoder, seed, date, data hash).
-  5. **`EmbeddingScorer`:** returns 13 calibrated scores through the existing `score(text, history)` interface.
-     - Because the scores are already calibrated, the tracker uses them as likelihoods without the `SHARPNESS = 3` cube, which would re-sharpen them. The tracker skips the cube only for a scorer that says its scores are calibrated; the lexical and LLM paths stay unchanged.
-     - Falls back to the lexical scorer, with one log line, when the model files are missing.
-  6. **Wiring:** `WORRY_SCORER` picks the scorer in `agent/brain_agent.py` and `chanakya/humans/coach_engine.py`, and in a `chanakya_embedding` variant in `chanakya/eval/variants.py`.
-  7. **A twin voice that speaks the held-out lines:** template twins speak Concern Bank phrasings, which the lexical scorer matches almost perfectly, so the harness cannot show a better scorer without it.
-  8. **Citation:** add the e5 report (Wang et al., 2024, https://arxiv.org/abs/2402.05672) to `docs/IDEA.md` section 9 in the same PR, before citing it.
-- **Done when**, with every number in `docs/results/neural-worry-scorer/` alongside its command and seed:
-  - **Per-line accuracy** for the embedding scorer vs the lexical and LLM scorers:
-    - on the hand-written set, overall and per slice (Hinglish, negation, no worry, Punjabi);
-    - on N0's LLM-written test split.
-    - The embedding scorer beats the lexical scorer overall.
-  - **Calibration:** expected calibration error before and after temperature scaling, on the validation split.
-  - **Full calls:** consent rate and belief top-1 accuracy (the belief's top worry is one the twin holds) in the offline harness with the held-out-lines voice, for each scorer, seeds 7 and 13.
-  - **Speed:** p50 and p90 milliseconds per turn on a laptop CPU, with a target under 10 ms.
-  - **Tests:** use a fake embedder that returns fixed vectors; any test needing the real model is skipped when the model is absent; CI is unchanged.
+- **Branch:** `feat/N1-worry-scorer`
+- **Owns:** `chanakya/neural/`, `data/neural/worry_*`, `docs/results/neural-worry-scorer/`; wiring in `chanakya/brain/belief.py`, `agent/brain_agent.py`, `chanakya/humans/coach_api.py`, `chanakya/eval/variants.py`, `chanakya/sim/voice.py`, `chanakya/eval/harness.py`
+- **Depends on:** N0
+- **Built so far:**
+  - **Setting:** `WORRY_SCORER` (#26).
+  - **Encoder:** the ONNX encoder, which gives identical vectors to the PyTorch model.
+  - **Head:** a numpy network with 13 independent sigmoid outputs and one hidden layer, trained with Adam, stopped early and temperature-calibrated on a seeded 15% validation split.
+  - **Scorer:** `EmbeddingScorer`, which exposes `base_rates`, and `select_scorer`. With `WORRY_SCORER` unset it keeps today's default: the LLM scorer when an LLM is configured, else lexical.
+  - **Training script:** `python -m chanakya.neural.train_worry --seed 7`.
+  - **Hand-written set:** the file `data/neural/worry_lines_human.csv` (still empty), its guide in `data/neural/README.md`, and its checker.
+  - **First results** on N0's test split (14 labels): lexical 0.394, embedding 0.536, LLM 0.777. Validation calibration error is 0.0049 after temperature scaling.
+  - **Fine-tuning finding:** fine-tuning the whole encoder raised validation (0.72) but not test (0.55). It learned the training model's style, so the next lever is training data from more model families.
+- **To do:**
+  1. **More training lines** from at least two more model families (for example Mistral and one other), kept out of the test family (OpenAI), with N0's test split unchanged; then retrain.
+  2. **Belief tracker:** when the scorer has `base_rates`, likelihood = odds(p) / odds(base rate) x hesitation boost, without `EPSILON` or `SHARPNESS`. The lexical and LLM paths are unchanged.
+  3. **Wiring:** `select_scorer(configured_worry_scorer(), ...)` in `agent/brain_agent.py` and `chanakya/humans/coach_api.py`, plus a `chanakya_embedding` variant that never quietly falls back to lexical.
+  4. **A lines voice for twins** in `chanakya/sim/voice.py`: it speaks lines from a chosen split of `data/neural/worry_lines.jsonl` for each voiced worry, in the persona's language. N1 and N2 evaluate with the test split, and N2 builds its memory with the train split. The harness gets a `--voice` option.
+  5. **Belief top-1 accuracy** as a harness metric: the belief's top worry is one the twin holds.
+  6. **Hand-written test set,** written by hand by Gurnoor, never by an LLM. Never used for training, tuning or calibration. About 150 lines (about 40 per slice: romanized Hinglish, negations, no-worry lines, Punjabi) is the minimum, and 300 is better.
+  7. **Citation:** the e5 report (Wang et al., 2024, https://arxiv.org/abs/2402.05672) goes into `docs/IDEA.md` section 9.
+  8. **`NEURAL=1 ./init.sh`:** installs `requirements-neural.txt`, checks the encoder and the hand-written set, and runs the tests that need the real model.
+- **Done when**, with every number in `docs/results/neural-worry-scorer/`:
+  - **Per-line accuracy,** embedding vs lexical vs LLM, on the hand-written set (overall and per slice) and on N0's test split. The embedding scorer beats lexical overall.
+  - **Calibration error** before and after temperature scaling.
+  - **Full calls:** consent rate and belief top-1 accuracy with the test-split voice, per scorer, seeds 7 and 13.
+  - **Speed:** p50 and p90 ms per turn, with a target under 10 ms.
+  - **CI** is unchanged apart from numpy.
 
 #### [ ] N2 Semantic memory (Durvish)
 - **Branch:** `feat/N2-semantic-memory`
 - **Owns:** `chanakya/brain/forest/`, `chanakya/brain/memory/`, `data/neural/memory*`, `docs/results/neural-memory/`
-- **Depends on:** the N1 encoder (`chanakya/neural/encoder.py`, on `feat/N1-worry-scorer` until N1 merges)
+- **Depends on:** the N1 encoder and lines voice (on `feat/N1-worry-scorer` until N1 merges)
 - **Build:**
-  - **Representation:** the Strategy Forest's hashed trigram vectors are replaced by e5 sentence embeddings plus the belief vector, with nearest-moment lookup instead of 24 fixed clusters. The Wilson-scored move values stay.
-  - **Setting:** `PLANNER_MEMORY=forest|neural`, added in a small `core:` PR.
-  - **Data:** the memory is built from transcripts whose merchant lines are N0 train-split paraphrases, not the 82 template sentences. Evaluation uses the held-out twin voice, so no test line is in memory.
-- **Done when:** win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.
+  - **Setting:** `PLANNER_MEMORY=forest|neural` (a `core:` PR).
+  - **Representation:** each remembered moment is the e5 embedding of the merchant line plus the belief vector. The k nearest past moments are looked up instead of 24 fixed clusters. The Wilson-scored move values and the planner's `forest.moves_for(state)` hook stay.
+  - **Data:** the memory is built from transcripts regenerated with the lines voice on the train split, not the 82 template sentences.
+  - **Optional:** a small learned projection (contrastive or triplet loss, numpy) that pulls together moments where the same move succeeded, reported as its own row.
+- **Done when:**
+  - **Win rate** for no memory (`chanakya`), the trigram forest (`chanakya_forest`) and neural memory (`chanakya_memory`) is measured with the test-split voice over seeds 7 and 13, with lookup p50 and p90 ms, and reported either way.
+  - **Tests** use `FakeEncoder`.
 
 #### [ ] N3 Value network for the planner (Durvish)
 - **Branch:** `feat/N3-value-network`
 - **Owns:** `chanakya/brain/value/`, `data/neural/value_net.npz`, `docs/results/neural-value-network/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
-- **Depends on:** nothing to start
+- **Depends on:** nothing to start (numpy arrives with N1)
 - **Build:**
-  - **Model:** a value network trained on self-play twin calls (planning personas only) replaces the planner's fixed horizon guess (`0.8 × consent_chance`).
-  - **Optional:** a second self-play round with the network-guided planner, and a policy prior for candidate order.
-  - **Setting:** `PLANNER_VALUE=formula|network`, added in a small `core:` PR.
-- **Done when:** win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.
+  - **Setting:** `PLANNER_VALUE=formula|network` (a `core:` PR).
+  - **Self-play data:** the current planner against Twin-A on planning personas only, seeded, a few thousand calls. At every leaf where `outcome()` would apply the formula, record what is known there (the simulated twin state, the agent's consent asks and last move, the belief's top probabilities) and how the call actually ended when played to the end.
+  - **Network:** a small numpy network trained on that data. The weights are saved with seed, date and data hash.
+  - **Hook:** `NRPAPlanner` takes a `leaf_value` function, and there is a `chanakya_value` variant.
+  - **Optional:** a second self-play round with the network-guided planner (AlphaZero-lite), and a policy prior for candidate order.
+- **Done when:**
+  - **On held-out evaluation personas over seeds 7 and 13:** success, walk-away rate, turns to close and planner p50 and p90 ms, for formula vs network.
+  - **Planner checks:** `python -m chanakya.eval.planner_checks stability` and `lookahead` with and without the network.
+  - **Safety test:** the forced safety rules always decide before the network.
 
-#### [ ] N4 Show the neural brain
+#### [ ] N4 Show the neural brain (Gurnoor)
 - **Branch:** `feat/N4-neural-demo`
 - **Owns:** the Live Call View, coach mode, `docs/architecture.svg`, README
 - **Depends on:** N1, N2, N3
-- **Build:** the Live Call View and coach mode show the neural scorer's evidence and the value estimate; architecture diagram and README updated with measured numbers only.
-- **Done when:** `./init.sh`, `NEURAL=1 ./init.sh`, the demo scenarios and the end-to-end script pass with every neural flag on.
+- **Build:** the Live Call View and coach mode show the neural scorer's evidence and the value estimate; the architecture diagram and README are updated with measured numbers only.
+- **Done when:** `./init.sh`, `NEURAL=1 ./init.sh`, the demo scenarios and the end-to-end script pass with every neural setting on.
 
 ---
 
@@ -477,6 +493,10 @@ F0.2 ─┤
       │      ├─ B6         └─ B9
       │      └─ B12
       └─ Phase 4 after both tracks
+
+Phase 5: N0 ─┬─ N1 ─┬─ N2 ─┐
+             │      └──────┼─ N4
+             └─ N3 ────────┘
 
 Phase 6:  I1 ── F1 ──┐
           W0 ────────┴─ W1 ── W2

@@ -140,6 +140,8 @@ multidict==7.1.0
     # via
     #   aiohttp
     #   yarl
+numpy==2.5.4
+    # via -r requirements.txt
 openai==2.54.0
     # via
     #   langchain-openai
