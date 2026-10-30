@@ -174,6 +174,7 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 | Part | Replaces | Setting | Status |
 |---|---|---|---|
 | Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | measured, no gain: success 0.63/0.61 vs 0.62/0.62 with no memory ([results](docs/results/neural-memory/README.md)); default stays forest |
 | Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
 | Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | measured, no gain on held-out personas: success 0.94/0.92 vs formula 0.96/0.98 ([results](docs/results/neural-value-network/README.md)); default stays formula |
 | Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` (setting added) | in progress |
@@ -188,7 +189,17 @@ python -m chanakya.neural.baseline --seed 7 --llm-sample 112         # baselines
 python -m chanakya.neural.encoder --download                         # the shared encoder (about 470 MB, never committed)
 python -m chanakya.neural.train_worry --seed 7                       # retrain the worry head and measure it
 python -m chanakya.eval.harness --variants chanakya,chanakya_embedding --voice test   # full calls with held-out lines
+python -m chanakya.brain.memory.build --seed 11                      # semantic memory from train-split conversations (N2)
+python -m chanakya.eval.harness --variants chanakya,chanakya_forest,chanakya_memory --voice test   # N2 win rate
 ```
+
+The encoder is cached by Hugging Face, by default under your user folder (on Windows, the C: drive). To keep it on
+another drive, set `HF_HOME` first, for example `set HF_HOME=F:\hf-cache` in a Windows terminal or
+`export HF_HOME=/mnt/f/hf-cache` elsewhere, and keep the repository and its `.venv` on that drive too.
+
+Set `PLANNER_MEMORY=neural` to let the look-ahead planner draw candidate moves from the semantic memory
+(`data/neural/memory.npz`) instead of the Strategy Forest; without the encoder or the memory it falls back to the forest
+with one log line.
 
 Set `WORRY_SCORER=embedding` to use the trained worry scorer on calls and in coach mode; without the encoder it falls
 back to the lexical scorer. With held-out merchant lines, it lifts mission success from 0.62 to 0.84 and 0.77 (seeds 7

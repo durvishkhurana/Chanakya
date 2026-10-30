@@ -165,6 +165,11 @@ def make_variant(name: str, llm=None, llm_agent=None):
         return BrainVariant(name, llm=llm)
     if name == "chanakya_no_belief":
         return BrainVariant(name, llm=llm, belief=False)
+    if name == "chanakya_memory":
+        from chanakya.brain.memory.memory import default_memory
+
+        # Never falls back to the forest: a missing encoder or memory must not pass as a neural-memory result.
+        return BrainVariant(name, llm=llm, planner=NRPAPlanner(forest=default_memory()))
     if name == "chanakya_value":
         from chanakya.brain.value.network import default_network
 
