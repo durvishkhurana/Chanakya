@@ -11,7 +11,7 @@
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
 | N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
-| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes | W0 contracts, W1 win-back missions, W2 win-back brain, P1 permission-first |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes, W0 contracts | W1 win-back missions, W2 win-back brain, P1 permission-first |
 
 ## Status
 

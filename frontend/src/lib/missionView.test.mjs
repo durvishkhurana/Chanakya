@@ -63,3 +63,8 @@ test("headline counts add up from the rows", () => {
 test("without belief updates the meter shows the card's starting worries", () => {
   assert.deepEqual(deriveCallView([{ kind: "mission_created", payload: { card } }]).concerns, card.starting_worries);
 });
+
+test("win-back ledger events read as sentences", () => {
+  assert.equal(eventSummary({ kind: "leaving_reason_recorded", payload: { reason: "device_issue" } }), "Reason for leaving: Device reliability");
+  assert.equal(eventSummary({ kind: "holdout_assigned", payload: {} }), "Holdout: not called, kept for comparison");
+});

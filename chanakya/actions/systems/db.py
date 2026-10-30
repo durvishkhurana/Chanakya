@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS merchants (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, business_type TEXT NOT NULL, city TEXT NOT NULL,
     language TEXT NOT NULL, start_hour INTEGER NOT NULL, end_hour INTEGER NOT NULL,
     do_not_call INTEGER NOT NULL DEFAULT 0, has_soundbox INTEGER NOT NULL DEFAULT 0,
-    has_card_machine INTEGER NOT NULL DEFAULT 0, phone_last4 TEXT
+    has_card_machine INTEGER NOT NULL DEFAULT 0, phone_last4 TEXT,
+    relationship TEXT NOT NULL DEFAULT 'customer', churned_at TEXT
 );
 CREATE TABLE IF NOT EXISTS callback_requests (
     id TEXT PRIMARY KEY, merchant_id TEXT NOT NULL, product TEXT NOT NULL, note TEXT, created_at TEXT NOT NULL
@@ -57,6 +58,10 @@ CREATE TABLE IF NOT EXISTS settlements (
     expected_on TEXT NOT NULL, note TEXT
 );
 """
+# Columns added after the first release; databases created before them get them on open.
+MIGRATIONS = {
+    "merchants": {"relationship": "TEXT NOT NULL DEFAULT 'customer'", "churned_at": "TEXT"},
+}
 
 
 class MockSystemError(RuntimeError):
@@ -86,8 +91,17 @@ class MockDB:
         self.conn = sqlite3.connect(str(path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        self._migrate()
         self.failures = failures or {}
         self.random = random.Random(seed)
+
+    def _migrate(self) -> None:
+        with self.conn:
+            for table, columns in MIGRATIONS.items():
+                existing = {row[1] for row in self.conn.execute(f"PRAGMA table_info({table})")}  # names from a fixed map
+                for column, spec in columns.items():
+                    if column not in existing:
+                        self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {spec}")
 
     def maybe_fail(self, system: str) -> None:
         """Apply the system's delay, then raise MockSystemError with its configured probability."""

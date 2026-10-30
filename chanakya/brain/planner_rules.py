@@ -24,6 +24,7 @@ PRODUCT_BY_TRIGGER = {
     TriggerType.CARD_MACHINE_PRICE_QUESTION: "card_machine",
     TriggerType.SOUNDBOX_UNUSED: "soundbox",
     TriggerType.RENTAL_MISSED: "soundbox",
+    TriggerType.MERCHANT_CHURNED: "soundbox",
 }
 PRODUCT_WORDS = {"card": "card_machine", "pos": "card_machine", "soundbox": "soundbox", "qr": "qr",
                  "link": "payment_links", "gateway": "gateway", "website": "gateway"}

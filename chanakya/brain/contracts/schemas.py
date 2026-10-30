@@ -56,6 +56,8 @@ class Merchant(Contract):
     contact_window: ContactWindow | None = None
     do_not_call: bool = False
     devices: list[str] = Field(default_factory=list)
+    relationship: Literal["customer", "prospect", "former"] = "customer"
+    churned_at: datetime | None = None
 
 
 class Persona(Contract):
@@ -123,6 +125,7 @@ class MoveType(StrEnum):
     """The typed move library from docs/IDEA.md 3.4."""
 
     DISCLOSE_AND_GREET = "DISCLOSE_AND_GREET"
+    ASK_PERMISSION = "ASK_PERMISSION"
     DISCOVER_NEED = "DISCOVER_NEED"
     PROBE_CONCERN = "PROBE_CONCERN"
     RESOLVE_CONCERN = "RESOLVE_CONCERN"
@@ -252,6 +255,7 @@ class TriggerType(StrEnum):
     LEAD_LIST = "lead_list"
     FIELD_NOTE = "field_note"
     DROPPED_CALL = "dropped_call"
+    MERCHANT_CHURNED = "merchant_churned"
 
 
 TRIGGER_DOORS: dict[TriggerType, Door] = {
@@ -266,6 +270,7 @@ TRIGGER_DOORS: dict[TriggerType, Door] = {
     TriggerType.LEAD_LIST: Door.HUMAN,
     TriggerType.FIELD_NOTE: Door.HUMAN,
     TriggerType.DROPPED_CALL: Door.HUMAN,
+    TriggerType.MERCHANT_CHURNED: Door.DATA,
 }
 
 
@@ -275,6 +280,7 @@ class MissionKind(StrEnum):
     SALES = "sales"
     RETENTION = "retention"
     FOLLOW_UP = "follow_up"
+    WIN_BACK = "win_back"
 
 
 class MissionState(StrEnum):

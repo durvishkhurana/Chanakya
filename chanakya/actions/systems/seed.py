@@ -32,7 +32,9 @@ def seed(db: MockDB) -> None:
     with db.conn:
         for m in MERCHANTS:
             merchant_id, name, kind, city, language, (start, end), dnc, soundbox, pos, last4 = m
-            db.conn.execute("INSERT OR IGNORE INTO merchants VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            db.conn.execute("INSERT OR IGNORE INTO merchants (id, name, business_type, city, language, start_hour, "
+                            "end_hour, do_not_call, has_soundbox, has_card_machine, phone_last4) "
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                             (merchant_id, name, kind, city, language, start, end, dnc, soundbox, pos, last4))
         devices = [
             ("dev_gurpreet_sb", "mer_gurpreet", "soundbox", "online", _ago(8), "paid"),

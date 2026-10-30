@@ -160,3 +160,14 @@ def test_nothing_is_ready_at_night():
     queue = queue_at(17, 30)  # 23:00 in Asia/Kolkata
     assert queue.next_ready() is None
     assert {e.reason for e in queue.entries()} == {"outside calling hours"}
+
+
+def test_a_churn_signal_builds_a_win_back_card_with_no_offer_in_it():
+    signal = MerchantSignal(merchant_id="mer_ramesh", kind=SignalKind.MERCHANT_CHURNED, door=Door.DATA,
+                            source="churn detector", details={"days": 40})
+    card = build_card(signal, RAMESH)
+    assert card.mission_type == MissionType.WIN_BACK and card.door == Door.DATA
+    assert card.why_now == "Stopped using Soundbox 40 days ago" and card.priority > 0
+    assert max(card.starting_worries, key=card.starting_worries.get) == "device_issue"
+    text = f"{card.goal} {card.why_now}".lower()
+    assert not any(word in text for word in ("offer", "discount", "waiver", "free", "cashback"))

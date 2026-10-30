@@ -36,6 +36,7 @@ def merchant_from_db(registry: MockToolRegistry, merchant_id: str) -> Merchant |
         language=row["language"], contact_window={"start_hour": row["start_hour"], "end_hour": row["end_hour"]},
         do_not_call=bool(row["do_not_call"]), has_soundbox=bool(row["has_soundbox"]),
         has_card_machine=bool(row["has_card_machine"]), phone_last4=row["phone_last4"],
+        relationship=row["relationship"], churned_at=row["churned_at"],
     )
 
 

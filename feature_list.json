@@ -774,16 +774,21 @@
         "chanakya/actions/systems/db.py",
         "frontend/src/lib/missionView.mjs",
         ".env.example",
-        "README.md"
+        "README.md",
+        "chanakya/actions/systems/seed.py",
+        "chanakya/actions/tests/",
+        "chanakya/core/tests/",
+        "frontend/src/lib/coachView.mjs",
+        "frontend/src/components/call/CallView.js"
       ],
       "dependencies": [
         "F0.2",
         "A1",
         "B6"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "both merchant models round-trip through the adapters with the new fields; concern_bank.validate() passes; intake builds a win-back card for MERCHANT_CHURNED; both flags default off; ./init.sh passes.",
-      "evidence": ""
+      "evidence": "2026-10-30 on core/winback-contracts: SKIP_INSTALL=1 ./init.sh passed (agent 104 OK, backend 98 OK, pytest 319 passed, Ruff clean, frontend 23 passed, lint clean). Tests: chanakya/brain/tests/test_winback_contracts.py (every signal maps to a trigger, mission kinds and moves mirror by value, both merchant models round-trip through to_brain_merchant/to_core_merchant with relationship and churned_at, the bank validates with the merchant_churned prior, a win-back card becomes a brain card for a former customer); chanakya/core/tests/test_contracts.py (both flags default off, a former merchant round-trips); chanakya/missions/tests/test_intake.py (a churn signal builds a win-back card with no offer words); chanakya/actions/tests/test_systems.py (an older database gains the new columns on open); frontend/src/lib/missionView.test.mjs (win-back ledger events read as sentences)."
     },
     {
       "id": "W1",

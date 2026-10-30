@@ -142,3 +142,22 @@ def test_the_reminder_is_fixed_text_for_an_open_session_only():
     complete_onboarding(reg.db, "onb_imran_stalled")
     done = reg.execute(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled"))
     assert not done.ok and "already completed" in done.error
+
+
+def test_an_older_database_gains_the_win_back_columns_on_open(tmp_path):
+    import sqlite3
+
+    path = tmp_path / "old.db"
+    old = sqlite3.connect(path)
+    old.execute("CREATE TABLE merchants (id TEXT PRIMARY KEY, name TEXT NOT NULL, business_type TEXT NOT NULL, "
+                "city TEXT NOT NULL, language TEXT NOT NULL, start_hour INTEGER NOT NULL, end_hour INTEGER NOT NULL, "
+                "do_not_call INTEGER NOT NULL DEFAULT 0, has_soundbox INTEGER NOT NULL DEFAULT 0, "
+                "has_card_machine INTEGER NOT NULL DEFAULT 0, phone_last4 TEXT)")
+    old.execute("INSERT INTO merchants VALUES ('mer_old', 'Old', 'kirana', 'Patna', 'hi-IN', 9, 18, 0, 1, 0, NULL)")
+    old.commit()
+    old.close()
+    db = MockDB(path)
+    seed(db)
+    row = db.one("SELECT relationship, churned_at FROM merchants WHERE id = 'mer_old'")
+    assert row == {"relationship": "customer", "churned_at": None}
+    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + 1

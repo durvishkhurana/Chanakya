@@ -78,6 +78,8 @@ export function eventSummary(event) {
     case "handoff_created": return `Handed to a human: ${p.reason}`;
     case "handoff_claimed": return `Hand-off claimed by ${p.agent}`;
     case "handoff_resolved": return `Hand-off resolved: ${p.resolution}`;
+    case "leaving_reason_recorded": return `Reason for leaving: ${worryLabel(p.reason)}`;
+    case "holdout_assigned": return "Holdout: not called, kept for comparison";
     default: return p.text || event.kind;
   }
 }

@@ -394,10 +394,10 @@ Durvish owns every task in this phase. Some of them edit Track B directories (`c
   8. The inverse of `SPEAKERS` is a module-level constant.
 - **Done when:** a second call during a running scenario is rejected and the ledger has exactly one `ai_disclosed` event; a link consent never lets `send_summary` through; after the callback scenario the clock offset is unchanged and other missions' reminders did not fire; a cancelled turn still writes its escalation or close; "no, yes, no" ends `CLOSED_NOT_INTERESTED` from `AWAITING_CONFIRMATION`; the link carries the recommended product; `./init.sh` and `FULL=1 ./init.sh` pass.
 
-#### [ ] W0 Shared contracts for win-back and permission-first
+#### [x] W0 Shared contracts for win-back and permission-first
 - **Branch:** `core/winback-contracts` (PR titled `core: ...`)
 - **Owner:** Durvish Khurana (reviewed by Gurnoor before merge)
-- **Owns:** `chanakya/core/`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/forest/generate.py`, `chanakya/brain/tests/`, `data/concerns/priors.json`, `chanakya/missions/intake.py`, `chanakya/missions/tests/`, `chanakya/actions/gate.py`, `chanakya/actions/systems/db.py`, `frontend/src/lib/missionView.mjs`, `.env.example`, `README.md`
+- **Owns:** `chanakya/core/`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/forest/generate.py`, `chanakya/brain/tests/`, `data/concerns/priors.json`, `chanakya/missions/intake.py`, `chanakya/missions/tests/`, `chanakya/actions/gate.py`, `chanakya/actions/systems/db.py`, `chanakya/actions/systems/seed.py` (insert by column name), `chanakya/actions/tests/`, `chanakya/core/tests/`, `frontend/src/lib/missionView.mjs`, `frontend/src/lib/coachView.mjs`, `frontend/src/components/call/CallView.js`, `.env.example`, `README.md`
 - **Depends on:** F0.2, A1, B6
 - **Build:**
   - Core: `SignalKind.MERCHANT_CHURNED`, `MissionType.WIN_BACK`, `Merchant.relationship` (`customer`, `prospect` or `former`, default `customer`) and `Merchant.churned_at`, `EventKind.LEAVING_REASON_RECORDED` and `EventKind.HOLDOUT_ASSIGNED`, `MoveType.ASK_PERMISSION`; flags `WINBACK_ENABLED` and `PERMISSION_FIRST_ENABLED`, default off.
