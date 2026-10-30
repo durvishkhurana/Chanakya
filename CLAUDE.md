@@ -73,6 +73,15 @@ These rules apply to every coding session and every contributor.
 - Metrics in docs, README or slides come only from measured runs of the evaluation harness, with the command and seed that produced them.
 - Update `README.md` when you add a command, a config flag or a new service.
 
+### Neural brain (Phase 5)
+
+- One owner per neural network does all of it (data, model, wiring, measurement); see the table in `docs/TASKS.md`, Phase 5.
+- Every learned part is chosen by a setting in `chanakya/core/config.py` whose default keeps today's behaviour.
+- Never commit encoder weights; download them with `python -m chanakya.neural.encoder --download`. Small trained heads (`.npz`) are committed with seed, date and data hash.
+- Tests never download a model: use `FakeEncoder` or stubs, and skip a test that needs the real model when it is missing.
+- Train only on the train split and planning personas. Evaluate on the test split, evaluation personas and the hand-written set.
+- Never write or generate lines for `data/neural/worry_lines_human.csv` with an LLM, and never train, tune or calibrate on it.
+
 ## 8. Session workflow
 
 ### Startup Workflow
