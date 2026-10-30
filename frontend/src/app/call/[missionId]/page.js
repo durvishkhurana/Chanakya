@@ -54,11 +54,16 @@ function RecordedCall() {
 function LiveCall({ missionId }) {
   const [mission, setMission] = useState(null);
   const [error, setError] = useState("");
+  const [scenarioRunning, setScenarioRunning] = useState(false);
   const { events, connected } = useMissionStream({ missionId, replay: 500 });
 
   useEffect(() => {
     api(`/api/missions/${missionId}`).then((d) => setMission(d.mission)).catch((e) => setError(e.message));
+    // While a demo scenario plays on this mission, nobody else may speak on it (the server refuses with 409).
+    api(`/api/calls/${missionId}/status`).then((d) => setScenarioRunning(d.scenario_running)).catch(() => setScenarioRunning(false));
   }, [missionId, events.length]);
+
+  const canSpeak = mission && !FINISHED.has(mission.state) && !scenarioRunning;
 
   return <AppShell current="/call/live" connected={connected}>
     <div className="title-row">
@@ -70,8 +75,9 @@ function LiveCall({ missionId }) {
     </div>
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>{error}</span><Link className="text-action" href="/missions">Back to Mission control</Link></div>}
     {!error && <CallView events={events} mission={mission} newSince={Infinity} />}
-    {mission && !FINISHED.has(mission.state) && <SayAsMerchant missionId={missionId} />}
-    {mission && !FINISHED.has(mission.state) && <VoiceOnMission missionId={missionId} />}
+    {mission && scenarioRunning && <p className="note" style={{ marginTop: 24 }}>A demo scenario is playing on this mission. You can speak on it once the scenario has finished.</p>}
+    {canSpeak && <SayAsMerchant missionId={missionId} />}
+    {canSpeak && <VoiceOnMission missionId={missionId} />}
   </AppShell>;
 }
 

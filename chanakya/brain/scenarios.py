@@ -11,7 +11,6 @@ verification and the hand-off queue are the real ones, so the ledger shows exact
 import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from datetime import timedelta
 
 from chanakya.actions.systems.tools import complete_onboarding
 from chanakya.brain.contracts.schemas import MoveType
@@ -96,17 +95,21 @@ async def open_mission(runtime, scenario: Scenario) -> core.Mission:
 
 
 async def finish_onboarding(runtime, mission_id: str, after_reminder: bool) -> None:
-    """The merchant completes the mock onboarding page, straight away or only after a reminder."""
+    """The merchant completes the mock onboarding page, straight away or only after a reminder.
+
+    Only this mission's own verification jobs run, early; the shared clock never moves, so on a live backend
+    calling hours stay right and other missions' reminders and callbacks are left alone.
+    """
     sessions = runtime.db.all("SELECT id FROM onboarding_sessions WHERE mission_id = ? ORDER BY created_at DESC",
                               mission_id)
     if not sessions:
         return
     if after_reminder:
-        await runtime.fast_forward(timedelta(hours=2))  # first check: not done yet, a reminder is scheduled
-        await runtime.fast_forward(timedelta(days=1))  # the WhatsApp reminder goes out
+        await runtime.verifier.run_mission_now(mission_id)  # first check: not done yet, a reminder is scheduled
+        await runtime.verifier.run_mission_now(mission_id)  # the WhatsApp reminder goes out
     complete_onboarding(runtime.db, sessions[0]["id"])
     if not await runtime.verifier.check_now(sessions[0]["id"]):
-        await runtime.fast_forward(timedelta(hours=2))
+        await runtime.verifier.run_mission_now(mission_id)
 
 
 async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission: core.Mission | None = None,
@@ -162,7 +165,7 @@ async def run_scenario(runtime, name: str, llm=None, pause: float = 0.0, mission
                               consent_seq is not None and action_seq is not None and consent_seq < action_seq))
     if name == "callback_followup":
         reminders = [e for e in events if e.kind == core.EventKind.ACTION_DECISION
-                     and e.payload["call"]["tool"] == "send_summary" and e.payload["verdict"] == "executed"]
+                     and e.payload["call"]["tool"] == "send_onboarding_reminder" and e.payload["verdict"] == "executed"]
         result.checks.append(("a WhatsApp reminder went out before DONE", bool(reminders)))
     if name == "distressed_handoff":
         cards = [c for c in runtime.handoffs.list() if c.mission_id == mission.id]

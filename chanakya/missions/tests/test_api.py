@@ -68,7 +68,7 @@ def test_full_mission_over_http_reaches_done(client):
     blocked = submit(client, mission_id, "send_onboarding_link", product="soundbox")
     assert blocked["verdict"] == "blocked" and blocked["reason"] == "no explicit consent for this action"
     client.post(f"/api/missions/{mission_id}/events", json={
-        "kind": "consent_given", "payload": {"tools": ["send_onboarding_link", "send_summary"], "utterance": "Haan"}})
+        "kind": "consent_given", "payload": {"tools": ["send_onboarding_link", "send_onboarding_reminder"], "utterance": "Haan"}})
     client.post(f"/api/missions/{mission_id}/advance", json={"state": "ACTION_PENDING"})
     sent = submit(client, mission_id, "send_onboarding_link", product="soundbox")
     assert sent["verdict"] == "executed"
@@ -112,7 +112,7 @@ def test_errors_map_to_http_codes(client):
     assert client.post("/api/missions/signals", json={
         "merchant_id": "mer_ramesh", "kind": "callback_request", "door": "data", "source": "x"}).status_code == 422
     assert submit(client, mission_id, "give_free_rental")["verdict"] == "rejected"
-    assert len(client.get("/api/actions/tools").json()) == 16
+    assert len(client.get("/api/actions/tools").json()) == 17
     assert len(client.get("/api/actions/merchants").json()) == 7
 
 

@@ -378,7 +378,7 @@ Learned parts that replace the brain's hand-written guesses. Each one sits behin
 
 Durvish owns every task in this phase. Some of them edit Track B directories (`chanakya/missions/`, `chanakya/actions/`, `frontend/`); those PRs say so and ask for Gurnoor's review. `chanakya/core/` changes go in their own `core:` PR (W0). The neural work (N1-N4) owns `chanakya/brain/belief.py`, `chanakya/sim/voice.py`, `chanakya/eval/variants.py`, `agent/brain_agent.py` and `chanakya/humans/coach_engine.py`; this phase avoids those files, and any unavoidable edit is small, additive and noted in `progress.md`. New behaviour sits behind `WINBACK_ENABLED` and `PERMISSION_FIRST_ENABLED`, both off by default. Win-back calls never mention or promise an offer, discount or waiver: `data/knowledge/Paytm_Products.json` does not establish promotional offers.
 
-#### [ ] F1 Review fixes from PR #19
+#### [x] F1 Review fixes from PR #19
 - **Branch:** `fix/I1-review-fixes`
 - **Owner:** Durvish Khurana (Track B parts reviewed by Gurnoor)
 - **Owns:** `chanakya/brain/calls_api.py`, `chanakya/brain/mission_call.py`, `chanakya/brain/scenarios.py`, `chanakya/brain/core_adapters.py`, `chanakya/brain/realizer.py`, `chanakya/brain/planner_rules.py`, `chanakya/brain/contracts/schemas.py`, `chanakya/brain/tests/`, `chanakya/missions/verifier.py`, `chanakya/missions/tests/`, `chanakya/actions/systems/tools.py`, `chanakya/actions/tests/`, `frontend/src/app/call/`, `scripts/demo/e2e_track_b.py`

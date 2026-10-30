@@ -31,6 +31,7 @@ CONCERN_ALIASES = {
     "cash_flow": "rental_cost",  # a missed rental is treated as the cost worry until the bank has its own entry
 }
 SPEAKERS = {core.Speaker.AGENT: "agent", core.Speaker.MERCHANT: "merchant", core.Speaker.HUMAN: "human_agent"}
+CORE_SPEAKERS = {value: key for key, value in SPEAKERS.items()}
 
 
 def concern_id(name: str | None) -> str | None:
@@ -174,7 +175,7 @@ def to_ledger_event(event: brain_events.Event) -> core.MissionEvent | None:
 
 def to_core_turn(turn: brain.Turn, mission_id: str) -> core.Turn:
     """Brain turn -> core turn; hesitation timing goes into ``cues``."""
-    speaker = {value: key for key, value in SPEAKERS.items()}[turn.speaker]
+    speaker = CORE_SPEAKERS[turn.speaker]
     cues = {"pause_ms": float(turn.pause_before_ms)} if turn.pause_before_ms is not None else {}
     return core.Turn(speaker=speaker, text=turn.text, language=turn.language, cues=cues, at=turn.at,
                      move=to_core_move(turn.move, mission_id) if turn.move else None)

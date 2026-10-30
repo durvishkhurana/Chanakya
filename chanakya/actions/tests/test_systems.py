@@ -25,6 +25,7 @@ HAPPY = {
     "update_lead_stage": {"merchant_id": "mer_ramesh", "product": "soundbox", "stage": "interested"},
     "log_interaction": {"merchant_id": "mer_ramesh", "summary": "Asked about charges"},
     "send_onboarding_link": {"merchant_id": "mer_ramesh", "product": "soundbox", "language": "hi-IN"},
+    "send_onboarding_reminder": {"merchant_id": "mer_imran", "session_id": "onb_imran_stalled"},
     "send_summary": {"merchant_id": "mer_ramesh", "text": "Dhanyavaad"},
     "get_onboarding_status": {"merchant_id": "mer_imran"},
     "book_field_visit": {"merchant_id": "mer_gurpreet", "purpose": "technician", "slot": default_slot()},
@@ -128,3 +129,16 @@ def test_failures_are_reproducible_with_a_seed():
 
     assert outcomes(7) == outcomes(7)
     assert True in outcomes(7) and False in outcomes(7)
+
+
+def test_the_reminder_is_fixed_text_for_an_open_session_only():
+    reg = registry()
+    sent = reg.execute(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled"))
+    assert sent.ok and "yaad dila rahe hain" in sent.data["body"] and sent.data["link"].endswith("onb_imran_stalled")
+    with pytest.raises(InvalidArgumentsError):
+        reg.validate(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled",
+                          text="Free rental for you"))
+    assert not reg.execute(call("send_onboarding_reminder", merchant_id="mer_ramesh", session_id="onb_imran_stalled")).ok
+    complete_onboarding(reg.db, "onb_imran_stalled")
+    done = reg.execute(call("send_onboarding_reminder", merchant_id="mer_imran", session_id="onb_imran_stalled"))
+    assert not done.ok and "already completed" in done.error

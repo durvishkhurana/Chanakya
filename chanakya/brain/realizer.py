@@ -13,7 +13,7 @@ import re
 from agent.languages import VOICE_LANGUAGES, spoken_text
 from agent.prompts.prompts import sales_rules
 from chanakya.brain.contracts.llm import LLMClient, LLMError, complete_json
-from chanakya.brain.contracts.schemas import DialogueState, Move, MoveType
+from chanakya.brain.contracts.schemas import DialogueState, EndReason, Move, MoveType
 from chanakya.sim.judge import safety_violations
 
 from .concern_bank import DATA, ConcernBank, default_bank
@@ -223,7 +223,7 @@ class TemplateRealizer:
             case MoveType.ESCALATE:
                 return lines["escalate"]
             case _:
-                return lines["refuse"] if "sensitive" in move.reason else lines["end"]
+                return lines["refuse"] if move.end_reason == EndReason.SENSITIVE_REQUEST else lines["end"]
 
 
 class LLMRealizer:
@@ -266,7 +266,7 @@ class LLMRealizer:
             case MoveType.ESCALATE:
                 return "Say a human colleague will take over with full context so they won't repeat themselves."
             case _:
-                if "sensitive" in move.reason:
+                if move.end_reason == EndReason.SENSITIVE_REQUEST:
                     return "Refuse: you never ask for OTPs, PINs or passwords and they must never share them. End politely."
                 return "Thank them and end the call politely, pointing to the official Paytm for Business website."
 

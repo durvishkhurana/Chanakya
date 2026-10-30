@@ -20,6 +20,8 @@ from chanakya.missions.runtime import get_runtime
 router = APIRouter(prefix="/api/calls", tags=["calls"])
 calls: dict[str, MissionCall] = {}
 running: set[asyncio.Task] = set()
+scenario_running: set[str] = set()  # missions a scenario is playing on; nobody else may speak on them meanwhile
+SCENARIO_BUSY = "A demo scenario is playing on this mission; wait for it to finish."
 PAUSE_S = 1.5  # time between lines when a scenario plays on the dashboard, so it can be followed live
 
 
@@ -47,17 +49,28 @@ async def start_scenario(name: str) -> dict:
         raise HTTPException(status_code=404, detail="unknown scenario")
     runtime = get_runtime()
     mission = await open_mission(runtime, SCENARIOS[name])
-    if mission.state not in {core.MissionState.CREATED, core.MissionState.SCHEDULED} or mission.id in calls:
+    if (mission.state not in {core.MissionState.CREATED, core.MissionState.SCHEDULED} or mission.id in calls
+            or mission.id in scenario_running):
         raise HTTPException(status_code=409, detail=f"{mission.card.merchant_name} already has a mission in "
                                                     f"{mission.state.value}; finish it first")
+    scenario_running.add(mission.id)
     task = asyncio.create_task(run_scenario(runtime, name, llm=_llm(), pause=PAUSE_S, mission=mission))
     running.add(task)
     task.add_done_callback(running.discard)
+    task.add_done_callback(lambda _: scenario_running.discard(mission.id))
     return {"mission_id": mission.id}
 
 
+@router.get("/{mission_id}/status")
+async def status(mission_id: str) -> dict:
+    """Whether a demo scenario is playing on this mission (the Live Call View hides its inputs meanwhile)."""
+    return {"scenario_running": mission_id in scenario_running}
+
+
 async def _call(mission_id: str) -> MissionCall:
-    """The running call on this mission, started on first use."""
+    """The running call on this mission, started on first use. Refused while a scenario plays on it."""
+    if mission_id in scenario_running:
+        raise HTTPException(status_code=409, detail=SCENARIO_BUSY)
     runtime = get_runtime()
     mission = runtime.ledger.store.get(mission_id)
     if mission is None:
@@ -85,7 +98,9 @@ async def say(mission_id: str, utterance: Utterance) -> dict:
 async def voice(websocket: WebSocket, mission_id: str) -> None:
     """A spoken call on this mission: the browser voice protocol, with Chanakya answering through ``MissionCall``."""
     problem = None
-    if not Settings.from_env().llm_api_key or not os.getenv("SARVAM_API_KEY", "").strip():
+    if mission_id in scenario_running:
+        problem = SCENARIO_BUSY
+    elif not Settings.from_env().llm_api_key or not os.getenv("SARVAM_API_KEY", "").strip():
         problem = "Voice is not configured yet. Add the provider keys to the server's .env file and restart the backend."
     else:
         try:

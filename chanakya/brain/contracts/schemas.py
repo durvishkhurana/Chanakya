@@ -134,6 +134,16 @@ class MoveType(StrEnum):
     END_CALL_POLITELY = "END_CALL_POLITELY"
 
 
+class EndReason(StrEnum):
+    """Why Chanakya ends a call; the mission's close outcome and the closing line are read from it."""
+
+    DECLINED = "declined"
+    SENSITIVE_REQUEST = "sensitive_request"
+    ACTION_TAKEN = "action_taken"
+    FOLLOWUP_SCHEDULED = "followup_scheduled"
+    NO_LEGAL_MOVE = "no_legal_move"
+
+
 class Move(Contract):
     """One planned conversational move with its typed arguments."""
 
@@ -145,6 +155,7 @@ class Move(Contract):
     tool: str | None = None
     args: dict[str, Any] = Field(default_factory=dict)
     reason: str = ""
+    end_reason: EndReason | None = None
 
     def key(self) -> str:
         """Return a compact identity such as ``RESOLVE_CONCERN(hidden_charges)``."""

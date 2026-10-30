@@ -4,6 +4,7 @@ import time
 
 from chanakya.brain.contracts.schemas import (
     DialogueState,
+    EndReason,
     MissionCard,
     MissionKind,
     Move,
@@ -64,15 +65,17 @@ class RuleBasedPlanner:
         if lib.merchant_distressed(last):
             return Move(type=MoveType.ESCALATE, args={"reason": "distress"}), "distress"
         if lib.merchant_declined(last):
-            return Move(type=MoveType.END_CALL_POLITELY, reason="merchant declined"), "declined"
+            return Move(type=MoveType.END_CALL_POLITELY, reason="merchant declined", end_reason=EndReason.DECLINED), "declined"
         if lib.merchant_requests_sensitive_data(last):
-            return Move(type=MoveType.END_CALL_POLITELY, reason="refused sensitive data request"), "sensitive_request"
+            return Move(type=MoveType.END_CALL_POLITELY, reason="refused sensitive data request",
+                        end_reason=EndReason.SENSITIVE_REQUEST), "sensitive_request"
         if state.transcript.has_consent(tool) and f"TAKE_ACTION({tool})" not in done:
             return Move(type=MoveType.TAKE_ACTION, tool=tool), "consent_given"
         if f"TAKE_ACTION({tool})" in done:
-            return Move(type=MoveType.END_CALL_POLITELY, reason="action taken"), "finished"
+            return Move(type=MoveType.END_CALL_POLITELY, reason="action taken", end_reason=EndReason.ACTION_TAKEN), "finished"
         if "SCHEDULE_FOLLOWUP" in done:
-            return Move(type=MoveType.END_CALL_POLITELY, reason="follow-up scheduled"), "after_followup"
+            return Move(type=MoveType.END_CALL_POLITELY, reason="follow-up scheduled",
+                        end_reason=EndReason.FOLLOWUP_SCHEDULED), "after_followup"
         asked = state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT
         asks = sum(1 for m in state.moves if m.type == MoveType.CONFIRM_CONSENT)
         if lib.explicit_consent(last) and not asked and asks < 3:
@@ -107,7 +110,8 @@ class RuleBasedPlanner:
         started = time.perf_counter()
         move, rule = self.choose(state)
         if not lib.is_legal(move, state, self.bank):
-            move, rule = Move(type=MoveType.END_CALL_POLITELY, reason="no legal move"), "fallback"
+            move, rule = Move(type=MoveType.END_CALL_POLITELY, reason="no legal move",
+                              end_reason=EndReason.NO_LEGAL_MOVE), "fallback"
         move = move.model_copy(update={"reason": move.reason or rule})
         return PlanResult(move=move, candidates=[ScoredMove(move=move, score=1.0)],
                           elapsed_ms=round((time.perf_counter() - started) * 1000, 3), tree={"rule": rule})

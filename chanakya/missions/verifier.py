@@ -11,11 +11,6 @@ from chanakya.missions.ledger import MissionLedger
 from chanakya.missions.scheduler import Job, Scheduler
 
 S = MissionState
-REMINDER = {
-    "hi-IN": "Namaste {name}, yaad dila rahe hain: aapka {product} onboarding abhi baaki hai. Link: {link}",
-    "pa-IN": "Sat Sri Akal {name}, yaad karwa rahe haan: tuhada {product} onboarding baaki hai. Link: {link}",
-    "en-IN": "Hello {name}, a reminder that your {product} onboarding is still open. Link: {link}",
-}
 
 
 class OnboardingVerifier:
@@ -44,14 +39,28 @@ class OnboardingVerifier:
         jobs = self.scheduler.due()
         for job in jobs:
             self.scheduler.finish(job)
-            mission = self.ledger.store.get(job.mission_id)
-            if mission is None or not mission.is_open:
-                continue
-            if job.kind == "verify":
-                await self._verify(job)
-            elif job.kind == "nudge":
-                await self._nudge(job)
+            await self._run(job)
         return jobs
+
+    async def run_mission_now(self, mission_id: str) -> list[Job]:
+        """Run this mission's pending jobs straight away, without moving the clock or touching other missions.
+
+        Demo scenarios use it so a live backend's shared clock, and with it calling hours, stays where it is.
+        """
+        jobs = self.scheduler.pending(mission_id)
+        for job in jobs:
+            self.scheduler.finish(job)
+            await self._run(job)
+        return jobs
+
+    async def _run(self, job: Job) -> None:
+        mission = self.ledger.store.get(job.mission_id)
+        if mission is None or not mission.is_open:
+            return
+        if job.kind == "verify":
+            await self._verify(job)
+        elif job.kind == "nudge":
+            await self._nudge(job)
 
     async def check_now(self, session_id: str) -> list[str]:
         """Verify right away every mission waiting on this onboarding session (the onboarding page calls this)."""
@@ -95,12 +104,10 @@ class OnboardingVerifier:
 
     async def _nudge(self, job: Job) -> None:
         mission = self.ledger.store.get(job.mission_id)
-        template = REMINDER.get(mission.card.language, REMINDER["en-IN"])
-        text = template.format(name=mission.card.merchant_name, product=(mission.card.product or "").replace("_", " "),
-                               link=job.payload["link"])
+        # The reminder tool sends only its fixed template, so a yes to the link never approves free text.
         decision = await self.gate.submit(ToolCall(
-            mission_id=mission.id, tool="send_summary",
-            args={"merchant_id": mission.card.merchant_id, "channel": "whatsapp", "text": text},
+            mission_id=mission.id, tool="send_onboarding_reminder",
+            args={"merchant_id": mission.card.merchant_id, "session_id": job.payload["session_id"], "channel": "whatsapp"},
         ))
         if decision.verdict == Verdict.BLOCKED and decision.reason.startswith("outside calling hours"):
             await self.scheduler.schedule(mission.id, "nudge", self._next_calling_time(), **job.payload)

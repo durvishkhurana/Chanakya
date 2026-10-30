@@ -11,7 +11,7 @@
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
 | N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
-| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs | F1 #19 review fixes, W0 contracts, W1 win-back missions, W2 win-back brain, P1 permission-first |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes | W0 contracts, W1 win-back missions, W2 win-back brain, P1 permission-first |
 
 ## Status
 
@@ -60,7 +60,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 
 ## Blockers / Risks
 
-- [ ] Review points on #19 not yet fixed on main: scenario calls are not registered (a typed or spoken line starts a second brain), a yes to the link is recorded for every `send_summary`, the callback scenario moves the shared clock by at least 26 hours, voice barge-in can cut `say()` halfway, only the first decline is recorded
+- [x] Review points on #19 fixed on `fix/I1-review-fixes` (F1): one brain per mission while a scenario runs, a link yes covers only the link and the new fixed-text `send_onboarding_reminder`, the callback scenario no longer moves the clock, turns are locked and shielded, every decline is recorded and closes the mission
 - [ ] The neural parts need `requirements-neural.txt` (PyTorch through sentence-transformers) and a one-time model download of about 470 MB; `./init.sh` and CI do not install them
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
@@ -68,7 +68,6 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 - [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
 - [ ] Browser voice calls on a mission are wired but not yet tried with a microphone; phone calls are not tied to missions; `/call/demo` stays a labelled scripted recording
 - [ ] A call left mid-way stays IN_CONVERSATION until someone speaks on it again
-- [ ] The callback scenario fast-forwards the shared demo clock by a day on a live backend
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now
 - [ ] The old stacked branches (`fix/windows-init` ... `feat/I2-results`) were built on the pre-merge core; they are superseded and must not be merged
 - [ ] The frontend production build downloads Google Fonts, so it needs network access
@@ -84,7 +83,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 
 - **Pitch: AI merchant-success teammate that gets the job done.** The voice agent was built earlier; the Chanakya brain plus missions and actions are the new work
 - **Mission intake has three doors:** the merchant raises a hand, the data says so, a human hands it over. Each trigger seeds the belief tracker's starting worries
-- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write. Chanakya's link question also asks about a reminder, so a yes to it is recorded for `send_onboarding_link` and `send_summary`; every other consent covers only its own tool
+- **Consent can cover a named set of tools** (`tools: [...]` on `consent_given`); a decline naming no tool blocks every write. Chanakya's link question also asks about a reminder, so a yes to it is recorded for `send_onboarding_link` and `send_onboarding_reminder` (fixed template, no free text); `send_summary` always needs its own yes; every other consent covers only its own tool (F1)
 - **A mission is DONE only on system confirmation.** Two reminders at most, inside calling hours; "stop" ends with one passive check; then back to the queue as SCHEDULED with a callback time
 - **Missions API is behind `MISSIONS_ENABLED`** and mounted with appended lines in `backend/main.py`; the frontend reaches it through a same-origin `/api` proxy, so the backend's CORS policy is unchanged
 - **Design:** app screens use the framed-sheet style (IBM Plex Sans, green-grey frame); the landing page uses the well-kept board (League Spartan and Figtree, greys and mint). Styles are scoped (`.cx`, `.lp`) so they cannot collide

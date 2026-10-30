@@ -18,7 +18,7 @@ PRODUCTS = ("qr", "soundbox", "card_machine", "gateway", "payment_links")
 # Typed tools from docs/IDEA.md 3.7; the action registry (Track B) is the source of truth at run time.
 WRITE_TOOLS = frozenset({
     "create_callback_request", "create_lead", "update_lead_stage", "log_interaction", "send_onboarding_link",
-    "send_summary", "create_onboarding_session", "book_field_visit", "book_callback", "raise_ticket",
+    "send_onboarding_reminder", "send_summary", "create_onboarding_session", "book_field_visit", "book_callback", "raise_ticket",
 })
 READ_TOOLS = frozenset({
     "get_onboarding_status", "get_device_status", "get_device_usage", "get_device_order_status",

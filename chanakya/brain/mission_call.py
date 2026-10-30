@@ -10,6 +10,7 @@
 - distress is handed to the human queue with a context card; a clear no closes the mission.
 """
 
+import asyncio
 from datetime import timedelta
 
 from agent.brain_agent import BrainAgent
@@ -30,14 +31,27 @@ SUMMARY = {
     "default": "Chanakya (AI assistant) se baat karne ke liye dhanyavaad. Product aur charges ki sahi jaankari "
                "Paytm for Business ke official app ya website par milegi.",
 }
-# The link consent question also asks about a reminder (realizer), so a yes to it covers the verifier's reminders.
-CONSENT_COVERS = {"send_onboarding_link": ["send_onboarding_link", "send_summary"]}
+# The link consent question also asks about a reminder (realizer), so a yes to it covers the verifier's fixed-text
+# onboarding reminder, and nothing else: an end-of-call summary needs its own yes.
+CONSENT_COVERS = {"send_onboarding_link": ["send_onboarding_link", "send_onboarding_reminder"]}
+# Brain product names -> the messaging tools' product names.
+TOOL_PRODUCTS = {"gateway": "payment_gateway"}
+LINK_PRODUCTS = frozenset({"soundbox", "card_machine", "qr", "payment_gateway", "payment_links", "business_app"})
 
 
-def tool_args(tool: str, card: brain.MissionCard, slot: str) -> dict:
-    """Arguments for a write tool, filled from the mission card."""
+def agreed_product(state: brain.DialogueState) -> str:
+    """The product the merchant said yes to: the last one recommended before the link question, else the card's."""
+    asked = max((i for i, m in enumerate(state.moves)
+                 if m.type == brain.MoveType.CONFIRM_CONSENT and m.tool == "send_onboarding_link"), default=len(state.moves))
+    recommended = [m.product for m in state.moves[:asked] if m.type == brain.MoveType.RECOMMEND and m.product]
+    product = TOOL_PRODUCTS.get(recommended[-1], recommended[-1]) if recommended else None
+    return product if product in LINK_PRODUCTS else (state.card.context or "soundbox")
+
+
+def tool_args(tool: str, card: brain.MissionCard, slot: str, product: str | None = None) -> dict:
+    """Arguments for a write tool, filled from the mission card (``product`` overrides the card's)."""
     merchant = {"merchant_id": card.merchant.merchant_id}
-    product = card.context or "soundbox"
+    product = product or card.context or "soundbox"
     if tool == "send_onboarding_link":
         return merchant | {"product": product, "channel": "whatsapp", "language": card.merchant.language}
     if tool == "book_field_visit":
@@ -80,7 +94,7 @@ class LedgerGate:
             await runtime.ledger.advance(mission_id, S.ACTION_PENDING, reason=f"merchant agreed to {call.tool}")
         slot = (runtime.clock() + timedelta(days=1)).replace(hour=5, minute=30, second=0, microsecond=0).isoformat()
         decision = await runtime.submit(core.ToolCall(mission_id=mission_id, tool=call.tool,
-                                                      args=tool_args(call.tool, state.card, slot)))
+                                                      args=tool_args(call.tool, state.card, slot, agreed_product(state))))
         mission = runtime.ledger.store.get(mission_id)
         if mission.state == S.ACTION_PENDING:
             if decision.verdict == core.Verdict.EXECUTED:
@@ -106,7 +120,9 @@ class MissionCall:
                                 bus=LedgerBus(self), gate=LedgerGate(self), actions_enabled=True)
         self.recorded_consents = 0
         self.disclosed = False
-        self.declined = False
+        self.declined = False  # the merchant's latest word on consent was a no
+        self._lock = asyncio.Lock()  # one turn at a time, even when the merchant talks over Chanakya
+        self._turns: set[asyncio.Task] = set()
 
     @property
     def mission(self) -> core.Mission:
@@ -134,19 +150,30 @@ class MissionCall:
         self.agent.start(self.mission_id, to_brain_card(mission))
 
     async def say(self, text: str, language: str | None = None) -> str | None:
-        """The merchant says ``text``; returns what Chanakya says back, or None once the call is over."""
-        if not self.open:
-            return None
-        language = language or self.mission.card.language
-        await self.runtime.ledger.attach_turn(self.mission_id, core.Turn(speaker=core.Speaker.MERCHANT, text=text,
-                                                                         language=language))
-        if lib.merchant_declined(text) and not self.declined:
-            self.declined = True
-            await self.runtime.ledger.record(self.mission_id, core.EventKind.CONSENT_DECLINED, {"utterance": text})
-        reply = await self.agent.respond(text, self.mission_id, language)
-        await self.sync(self.state)
-        await self._after(self.state.moves[-1])
-        return reply
+        """The merchant says ``text``; returns what Chanakya says back, or None once the call is over.
+
+        The turn runs as its own task behind a shield: if the merchant talks over Chanakya and the caller is
+        cancelled, the reply is dropped but the turn still finishes, so its ledger writes, escalation or close land.
+        """
+        turn = asyncio.ensure_future(self._say(text, language))
+        self._turns.add(turn)
+        turn.add_done_callback(self._turns.discard)
+        return await asyncio.shield(turn)
+
+    async def _say(self, text: str, language: str | None) -> str | None:
+        async with self._lock:
+            if not self.open:
+                return None
+            language = language or self.mission.card.language
+            await self.runtime.ledger.attach_turn(self.mission_id, core.Turn(speaker=core.Speaker.MERCHANT, text=text,
+                                                                             language=language))
+            if lib.merchant_declined(text):
+                self.declined = True
+                await self.runtime.ledger.record(self.mission_id, core.EventKind.CONSENT_DECLINED, {"utterance": text})
+            reply = await self.agent.respond(text, self.mission_id, language)
+            await self.sync(self.state)
+            await self._after(self.state.moves[-1])
+            return reply
 
     async def astream(self, query: str, config=None, **kwargs):
         """The voice agent interface (``agent.graph.Agent.astream``), so a spoken call can run on this mission."""
@@ -160,6 +187,7 @@ class MissionCall:
         if state.transcript.disclosed_ai and not self.disclosed:
             await self.record_disclosure("")
         for consent in state.transcript.consents[self.recorded_consents:]:
+            self.declined = False  # a yes after a no; the gate reads the newest event the same way
             await self.runtime.ledger.record(self.mission_id, core.EventKind.CONSENT_GIVEN,
                                              {"tools": CONSENT_COVERS.get(consent.tool, [consent.tool]),
                                               "utterance": consent.utterance})
@@ -182,11 +210,15 @@ class MissionCall:
             await ledger.advance(self.mission_id, S.SCHEDULED, reason="merchant asked for a later call")
             await ledger.record(self.mission_id, core.EventKind.FOLLOWUP_SCHEDULED,
                                 {"kind": "callback", "due_at": (self.runtime.clock() + timedelta(days=1)).isoformat()})
-        elif move.type == brain.MoveType.END_CALL_POLITELY and mission.state == S.IN_CONVERSATION:
+        elif move.type == brain.MoveType.END_CALL_POLITELY and (mission.state == S.IN_CONVERSATION or self.declined):
+            # A no closes the mission wherever it is, even with a link out: verification and reminders stop too.
             if self.declined:
                 outcome = "merchant declined"
-            elif "sensitive" in move.reason:
+            elif move.end_reason == brain.EndReason.SENSITIVE_REQUEST:
                 outcome = "call ended after a request for sensitive data was refused"
             else:
                 outcome = "call ended without a yes"
+            if mission.state == S.ACTION_PENDING:
+                await ledger.advance(self.mission_id, S.IN_CONVERSATION, reason="merchant declined")
+            self.runtime.scheduler.cancel_all(self.mission_id)
             await ledger.close(self.mission_id, S.CLOSED_NOT_INTERESTED, outcome=outcome)

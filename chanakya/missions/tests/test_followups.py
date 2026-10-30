@@ -32,7 +32,7 @@ def run(coro):
 class Rig:
     """A sales mission up to the moment the onboarding link is sent, on a simulated clock."""
 
-    def __init__(self, consent_tools=("send_onboarding_link", "send_summary")):
+    def __init__(self, consent_tools=("send_onboarding_link", "send_onboarding_reminder")):
         self.clock = SimClock(START)
         self.db = MockDB()
         seed(self.db)
@@ -160,3 +160,33 @@ def test_broken_messaging_does_not_retry_forever():
     for _ in range(8):
         rig.tick(days=1)
     assert rig.state == S.SCHEDULED
+
+
+def test_reminders_use_the_fixed_reminder_tool_and_a_summary_still_needs_its_own_yes():
+    rig = Rig()
+    rig.tick(hours=2)
+    rig.tick(days=1)
+    reminders = [e.payload for e in rig.ledger.store.events(rig.mission.id) if e.kind == EventKind.ACTION_DECISION
+                 and e.payload["call"]["tool"] in {"send_onboarding_reminder", "send_summary"}]
+    assert [(r["call"]["tool"], r["verdict"]) for r in reminders] == [("send_onboarding_reminder", "executed")]
+    assert "text" not in reminders[0]["call"]["args"]
+    summary = run(rig.gate.submit(ToolCall(mission_id=rig.mission.id, tool="send_summary", args={
+        "merchant_id": "mer_ramesh", "text": "Dhanyavaad"})))
+    assert summary.verdict == Verdict.BLOCKED and summary.reason == "no explicit consent for this action"
+
+
+def test_a_summary_consent_does_not_send_reminders():
+    rig = Rig(consent_tools=("send_onboarding_link", "send_summary"))
+    rig.tick(hours=2)
+    rig.tick(days=1)
+    assert not [m for m in rig.outbox() if "yaad dila" in m["body"]]
+
+
+def test_running_one_mission_now_leaves_the_clock_and_other_missions_alone():
+    rig, other = Rig(), Rig()
+    other_jobs = other.scheduler.pending(other.mission.id)
+    before = rig.clock()
+    assert [j.kind for j in run(rig.verifier.run_mission_now(rig.mission.id))] == ["verify"]
+    assert [j.kind for j in run(rig.verifier.run_mission_now(rig.mission.id))] == ["nudge"]
+    assert "yaad dila rahe hain" in rig.outbox()[-1]["body"]
+    assert rig.clock() == before and other.scheduler.pending(other.mission.id) == other_jobs
