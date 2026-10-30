@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chanakya.actions.systems.db import MockDB, now_iso
+from chanakya.actions.systems.messaging_channels import render
 from chanakya.core.schemas import ToolCall, ToolKind, new_id
 
 Product = Literal["soundbox", "card_machine", "qr", "payment_gateway", "payment_links", "business_app"]
@@ -154,32 +155,17 @@ def log_interaction(db: MockDB, a: InteractionArgs, call: ToolCall) -> dict:
 
 # ── Messaging and onboarding ─────────────────────────────────────────────
 
-LINK_TEXT = {
-    "hi-IN": "Namaste {name}, aapka {product} onboarding link: {link}",
-    "pa-IN": "Sat Sri Akal {name}, tuhada {product} onboarding link: {link}",
-    "en-IN": "Hello {name}, here is your {product} onboarding link: {link}",
-}
-
-
 def send_onboarding_link(db: MockDB, a: OnboardingLinkArgs, call: ToolCall) -> dict:
     merchant = _merchant(db, a.merchant_id)
     session_id = new_id("onb")
     link = ONBOARDING_URL.format(session_id=session_id)
     db.write("INSERT INTO onboarding_sessions VALUES (?, ?, ?, ?, 'pending', ?, NULL)",
              session_id, a.merchant_id, call.mission_id, a.product, now_iso())
-    template = LINK_TEXT.get(a.language, LINK_TEXT["en-IN"])
-    body = template.format(name=merchant["name"], product=a.product.replace("_", " "), link=link)
+    body = render("link", a.channel, a.language, name=merchant["name"], product=a.product.replace("_", " "), link=link)
     message_id = new_id("msg")
     db.write("INSERT INTO outbox VALUES (?, ?, ?, ?, ?, ?, 'sent', ?)",
              message_id, a.merchant_id, call.mission_id, a.channel, body, link, now_iso())
     return {"session_id": session_id, "link": link, "message_id": message_id, "body": body}
-
-
-REMINDER_TEXT = {
-    "hi-IN": "Namaste {name}, yaad dila rahe hain: aapka {product} onboarding abhi baaki hai. Link: {link}",
-    "pa-IN": "Sat Sri Akal {name}, yaad karwa rahe haan: tuhada {product} onboarding baaki hai. Link: {link}",
-    "en-IN": "Hello {name}, a reminder that your {product} onboarding is still open. Link: {link}",
-}
 
 
 def send_onboarding_reminder(db: MockDB, a: ReminderArgs, call: ToolCall) -> dict:
@@ -191,8 +177,8 @@ def send_onboarding_reminder(db: MockDB, a: ReminderArgs, call: ToolCall) -> dic
     if session["status"] == "completed":
         raise LookupError(f"onboarding session {a.session_id} is already completed")
     link = ONBOARDING_URL.format(session_id=a.session_id)
-    template = REMINDER_TEXT.get(merchant["language"], REMINDER_TEXT["en-IN"])
-    body = template.format(name=merchant["name"], product=session["product"].replace("_", " "), link=link)
+    body = render("reminder", a.channel, merchant["language"], name=merchant["name"],
+                  product=session["product"].replace("_", " "), link=link)
     message_id = new_id("msg")
     db.write("INSERT INTO outbox VALUES (?, ?, ?, ?, ?, ?, 'sent', ?)",
              message_id, a.merchant_id, call.mission_id, a.channel, body, link, now_iso())

@@ -3,16 +3,15 @@
 ## Current State
 
 **Last Updated:** 2026-10-31
-**Active Feature:** N1 neural worry scorer (Gurnoor): merged to main and working; only the hand-written test set is left before it is done. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video. Phase 6 (Durvish): D1, F1, W0, W1, W2 and P1 are merged (see `session-handoff.md`).
+**Active Feature:** none. Everything planned is built; what is left needs people: Gurnoor's hand-written N1 test set, the I3 phone demo or backup video, and a real-microphone call. The code-review fixes are on `fix/codebase-review`, and B10 (UI), B13, N4 and the measurements below on `feat/finish-remaining`.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
-| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B12, B14, B15 | B10, B13 (optional) |
-| A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
-| Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
-| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results; N2 semantic memory (measured, no gain) | N1 hand-written test set, N4 demo |
-| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice; N1 model, wiring and full-call results; N3 value network (measured, no gain) | N1 hand-written test set, N2 semantic memory, N4 demo |
-| W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1 (merged) | B12 to reuse the reasons-for-leaving card |
+| B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B15 (B10 backend by Gurnoor, its UI and B13 by Durvish) | none |
+| A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 | A9 blocked: forest built, no measured gain with either scorer |
+| Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call; needs a person and a phone) |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0; N1 model, wiring and full-call results; N2 and N3 (measured, no gain); N4 screens | N1 hand-written test set; N4 blocked on one demo scenario with the embedding scorer |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1, F1, W0, W1, W2, P1; win-back re-measured with the embedding scorer | none |
 
 ## Status
 
@@ -56,27 +55,23 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 
 ### What's In Progress
 
-- [ ] A9 Strategy Forest (blocked): built and wired as the candidate prior, lookup 1-4 ms, but no measured gain (harness 0.96/0.98 with and without; look-ahead consent 0.920 vs 0.917 and 0.953 vs 0.953); needs harder twins or real transcripts
-- [ ] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh` on every push and PR; check the Actions tab once merged
+- [ ] A9 Strategy Forest (blocked): built and wired, lookup 1-4 ms, but no consistent gain: 0.62/0.61 vs 0.62/0.62 with the lexical scorer and 0.84/0.79 vs 0.84/0.77 with the embedding scorer (held-out lines, seeds 7/13). Needs harder twins or real transcripts
+- [ ] N4 (blocked): screens built and every check passes with all neural settings on except the `winback_device_fix` demo scenario, which fails with `WORRY_SCORER=embedding` (the N1 head reads the device-fault line as rental cost, 0.35 vs 0.34)
 
 ### What's Next
 
-Phase 5, neural brain (one owner per network, full plan in `docs/TASKS.md`):
+1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`), then `python -m chanakya.neural.train_worry --seed 7` for its per-slice results and mark N1 done. If a retrained head reads "Soundbox theek se kaam nahi karta tha, baar baar band ho jaata tha" as a device issue, re-run `WORRY_SCORER=embedding python scripts/demo/scenarios.py` and close N4
+2. I3: record the backup video or make the allowlisted phone call (`docs/PHONE_DEMO.md`)
+3. Try a spoken browser call on a mission with a real microphone
+4. Gurnoor: review what was merged without his review (F1, W0, W1, the N2/N3 core settings, the codebase fixes, B10's UI, B13, N4)
 
-1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`, about 150 lines, about 40 per slice), then re-run `python -m chanakya.neural.train_worry --seed 7` to add its per-slice results and mark N1 done
-2. N3, Durvish: the `PLANNER_VALUE` core PR, self-play data, the value network, the `leaf_value` hook and held-out measurement
-3. N2, Durvish: done. Neural memory (3,245 moments from 540 train-split conversations, lookup p50 7.8 ms) gives no measurable gain with the test-split voice: success 0.63/0.61 vs no memory 0.62/0.62 and forest 0.62/0.61 (seeds 7/13). `PLANNER_MEMORY` stays `forest`; not yet measured together with `WORRY_SCORER=embedding` (`docs/results/neural-memory/`)
-   - Flaky test seen once (2026-10-31, Windows): `chanakya/brain/tests/test_scenarios.py::test_the_dashboard_can_list_and_run_a_scenario` failed when `SQLiteMissionStore.get` read a row whose JSON was still None while the scenario wrote it; it passed on the rerun and 3/3 alone. Track B (`chanakya/missions/ledger.py`), not changed here
-2. N3, Durvish: done. The value network (2,100 self-play calls) gives no gain on held-out evaluation personas: success 0.94/0.92 vs formula 0.96/0.98 (seeds 7/13), look-ahead consent 0.927 vs 0.953, planner p50 181 vs 113 ms, seed stability 5/42 vs 21/42; it beats the formula only on the planning personas it trained on (0.963 vs 0.920). `PLANNER_VALUE` stays `formula` by default (`docs/results/neural-value-network/`)
-3. N2, Durvish: the `PLANNER_MEMORY` core PR, e5 + belief nearest-moment memory built from train-split lines, measured with the test-split voice
-4. N4, Gurnoor, after N1-N3: show the neural scorer and value estimate in the Live Call View and coach mode
+Measured on 2026-10-31 (commands and seeds in each README):
 
-Other:
-
-5. Durvish: merge the first three #19 review fixes (`fix/I1-review-fixes`)
-6. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3, backup video in `docs/PHONE_DEMO.md`, path A)
-7. A9: richer transcripts before claiming a gain (N2 may answer this)
-8. Track B: optional B10 approval queue, B13 multi-channel messaging
+- N3 value network: no gain on held-out personas, 0.94/0.92 vs formula 0.96/0.98 (`docs/results/neural-value-network/`)
+- N2 semantic memory: no gain, 0.63/0.61 vs 0.62/0.62 (`docs/results/neural-memory/`)
+- All planner variants with the embedding scorer: no consistent gain from the forest, the memory or the value network (`docs/results/neural-combined/`)
+- Win-back with the embedding scorer: reason accuracy 0.90/0.84 vs lexical 0.94/0.88, fix rate 0.93/0.83 vs 0.90/0.83 (`docs/results/winback/`)
+- End to end with every neural setting on: `scripts/demo/e2e_track_b.py` 18/18 against a live backend; demo scenarios 5/6
 
 ## Blockers / Risks
 
@@ -88,6 +83,7 @@ Other:
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
 - [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
+- [x] Main was broken by the N2/N3 merge (a SyntaxError in `backend/main.py` and `mission_call.py`, and `PLANNER_VALUE` always None); fixed on `fix/codebase-review`, with a SQLite thread race in the ledger and a cross-merchant ticket read
 - [ ] Browser voice calls on a mission are wired but not yet tried with a microphone; phone calls are not tied to missions; `/call/demo` stays a labelled scripted recording
 - [ ] A call left mid-way stays IN_CONVERSATION until someone speaks on it again
 - [ ] Concern ids differ: intake uses `swipe_charges`, `device_reliability` and `cash_flow`; the Concern Bank uses `per_swipe_charges` and `device_issue`, and `cash_flow` is mapped to `rental_cost` in the adapters for now

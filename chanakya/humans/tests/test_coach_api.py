@@ -76,3 +76,11 @@ def test_unknown_session_and_move_are_rejected():
     bad = http.post(f"/api/coach/sessions/{sid}/turns", json={"speaker": "human_agent", "text": "hi", "move": "GIVE_DISCOUNT"})
     assert bad.status_code == 422
     assert http.post(f"/api/coach/sessions/{sid}/turns", json={"speaker": "agent", "text": "hi"}).status_code == 422
+
+
+def test_suggestions_carry_the_value_estimate_and_the_scorer_evidence():
+    _, replies = play_recorded(make_client())
+    suggested = [r for r in replies if r["suggestion"]]
+    assert suggested and all(0.0 <= r["suggestion"]["value"] <= 1.0 for r in suggested)
+    assert all(len(r["suggestion"]["alternatives"]) <= 2 for r in suggested)
+    assert suggested[0]["scorer"] == "lexical" and suggested[0]["evidence"]  # WORRY_SCORER unset keeps lexical

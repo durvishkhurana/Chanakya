@@ -74,3 +74,13 @@ test("count rows are sorted, labelled and carry their share", () => {
     [["Device reliability", 3, 0.75], ["Not needed", 1, 0.25]]);
   assert.deepEqual(countRows({}), []);
 });
+
+test("call view keeps the scorer's evidence for the latest line and which scorer read it", () => {
+  const view = deriveCallView([
+    { kind: "mission_created", payload: { card } },
+    { kind: "belief_updated", payload: { probabilities: { rental_cost: 1 }, evidence: { rental_cost: 0.4 }, scorer: "embedding" } },
+    { kind: "belief_updated", payload: { probabilities: { hidden_charges: 1 }, evidence: { hidden_charges: 0.81 } } },
+  ]);
+  assert.deepEqual(view.evidence, { hidden_charges: 0.81 });
+  assert.equal(view.scorer, "embedding");
+});

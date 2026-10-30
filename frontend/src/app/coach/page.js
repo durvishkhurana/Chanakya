@@ -106,7 +106,7 @@ export default function CoachPage() {
     <div className="kpis" aria-label="Call at a glance">
       <div className="kpi"><div className="kpi-label">Turn</div><div className="kpi-value">{turns.length}</div><div className="kpi-note">{done ? "recording finished" : playing ? "playing the recording" : "paused"}</div></div>
       <div className="kpi"><div className="kpi-label">Most likely worry</div><div className="kpi-value">{topId ? percent(topP) : "—"}</div><div className="kpi-note">{topId ? worryLabel(topId) : "no estimate yet"}</div></div>
-      <div className="kpi"><div className="kpi-label">Suggestions</div><div className="kpi-value">{session?.suggestions ?? 0}</div><div className="kpi-note">one after each merchant turn</div></div>
+      <div className="kpi"><div className="kpi-label">Value of the suggestion</div><div className="kpi-value">{latest?.value != null ? latest.value.toFixed(2) : "—"}</div><div className="kpi-note">look-ahead chance of a yes, 0 to 1</div></div>
       <div className="kpi"><div className="kpi-label">Hand-off</div><div className="kpi-value">{session?.handoff ? "Now" : "No"}</div><div className="kpi-note">{session?.handoff ? "a senior should take over" : "not needed so far"}</div></div>
     </div>
 
@@ -138,6 +138,12 @@ export default function CoachPage() {
           {latest ? <Suggestion suggestion={latest} /> : <div className="empty">A suggestion appears each time the merchant speaks.</div>}
         </div>
         <div className="panel">
+          <header><h2>What the scorer heard</h2><span className="meta">{session?.scorer ? `${SCORER_LABELS[session.scorer] || session.scorer} scorer, latest merchant line` : "latest merchant line"}</span></header>
+          {topWorries(session?.evidence, 3).filter(([, s]) => s > 0.01).length
+            ? <ul className="checks">{topWorries(session.evidence, 3).filter(([, s]) => s > 0.01).map(([id, s]) => <li key={id}><span>{worryLabel(id)}</span><span className="num">{percent(s)}</span></li>)}</ul>
+            : <p className="meta">After the merchant speaks, the worries their words point to appear here.</p>}
+        </div>
+        <div className="panel">
           <header><h2>What the merchant is worried about</h2><span className="meta">updates every merchant turn</span></header>
           {session ? <ConcernMeter current={session.worries} starting={session.starting_worries} /> : <div className="skeleton" style={{ height: 120 }} />}
         </div>
@@ -151,11 +157,14 @@ export default function CoachPage() {
   </AppShell>;
 }
 
+const SCORER_LABELS = { lexical: "Keyword", llm: "LLM", embedding: "Neural (e5)" };
+
 function Suggestion({ suggestion }) {
-  const { move, reason, guide } = suggestion;
+  const { move, reason, guide, alternatives = [] } = suggestion;
   return <div>
     <p className="suggest-move">{coachMoveLabel(move)}</p>
     <p className="meta">{reason}</p>
+    {alternatives.length > 0 && <p className="meta">Next best: {alternatives.map((a) => `${a.key.replaceAll("_", " ").toLowerCase()} ${a.value.toFixed(2)}`).join(" · ")}</p>}
     {guide && <div className="how">
       <h3>How to answer</h3>
       <p>{guide.how}</p>

@@ -230,6 +230,9 @@ class BeliefState(Model):
 
     probabilities: dict[str, float]
     turn: int = 0
+    # What the latest merchant line said about each concern, and which scorer read it (lexical, llm or embedding).
+    evidence: dict[str, float] = Field(default_factory=dict)
+    scorer: str | None = None
 
     @field_validator("probabilities")
     @classmethod

@@ -226,7 +226,7 @@
       ],
       "status": "blocked",
       "done_when": "Forest lookup under 50 ms and improves planner win rate over baseline candidates in eval.",
-      "evidence": "Forest built and wired as the planner's candidate prior; lookup 1-4 ms (under 50 ms). No measured win-rate gain: harness 0.96 vs 0.96 (seed 7) and 0.98 vs 0.98 (seed 13); python -m chanakya.eval.planner_checks forest gives 0.920 vs 0.917 (300 planning calls) and 0.953 vs 0.953 (150 held-out calls).",
+      "evidence": "Forest built and wired as the planner's candidate prior; lookup 1-4 ms (under 50 ms). No measured win-rate gain: harness 0.96 vs 0.96 (seed 7) and 0.98 vs 0.98 (seed 13); python -m chanakya.eval.planner_checks forest gives 0.920 vs 0.917 (300 planning calls) and 0.953 vs 0.953 (150 held-out calls). 2026-10-31, held-out lines: 0.62/0.61 vs 0.62/0.62 with the lexical scorer (docs/results/neural-memory/), and 0.84/0.79 vs 0.84/0.77 with WORRY_SCORER=embedding (docs/results/neural-combined/, seeds 7/13): not a consistent gain. Needs harder twins or real transcripts.",
       "notes": "Blocked on the done_when gain: the simulator leaves little headroom and the mined moves overlap the planner's own candidates. Needs harder twins or real transcripts with outcomes before a gain can be measured."
     },
     {
@@ -444,9 +444,9 @@
         "B2",
         "B8"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A high-risk action waits, is approved, then executes, all in the ledger.",
-      "evidence": "",
+      "evidence": "2026-10-31: approval queue (chanakya/humans/approvals.py, by Gurnoor on feat/B10-approvals) merged with the Mission Control Approvals tab (approve or reject as Sunita, the gate's result after approval). 8 tests in chanakya/humans/tests/test_approvals.py, including 'a high-risk action waits, is approved, then executes, all in the ledger'. Checked in the browser against a live backend (APPROVAL_TOOLS=book_field_visit, soundbox_service scenario): the visit waited, was approved and executed. ./init.sh passed.",
       "notes": "Roadmap candidate."
     },
     {
@@ -501,9 +501,9 @@
       "dependencies": [
         "B1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "A mission continues correctly after a simulated WhatsApp reply.",
-      "evidence": "",
+      "evidence": "2026-10-31: chanakya/actions/systems/messaging_channels.py: link and reminder templates per channel (WhatsApp, SMS) and language (hi, pa, en), no prices or offers; a simulated inbox (POST /api/messages/reply) that records the reply as a merchant turn and moves the mission: STOP declines every message and the mission closes after one passive check, 'call me' reschedules with a callback due now, 'ho gaya' asks the onboarding system and reaches DONE only when it confirms, distress goes to a person. 13 tests in chanakya/actions/tests/test_messaging_channels.py ('a mission continues after a WhatsApp reply saying done'). Mission detail shows the thread and a reply box; checked in the browser. ./init.sh passed.",
       "notes": "Roadmap candidate."
     },
     {
@@ -726,9 +726,9 @@
         "N2",
         "N3"
       ],
-      "status": "not-started",
+      "status": "blocked",
       "done_when": "./init.sh, NEURAL=1 ./init.sh, the demo scenarios and the end-to-end script pass with every neural flag on.",
-      "evidence": ""
+      "evidence": "2026-10-31: built. Belief events carry the scorer's evidence and name (core BeliefState.evidence/scorer); the Live Call View and coach mode show 'What the scorer heard', and coach mode the look-ahead value of each suggestion and the next best moves; coached calls follow PLANNER_VALUE and PLANNER_MEMORY=neural; docs/architecture.svg and README updated. With WORRY_SCORER=embedding PLANNER_MEMORY=neural PLANNER_VALUE=network: NEURAL=1 FULL=1 ./init.sh passed (477 pytest); scripts/demo/e2e_track_b.py 18/18 against a live backend; scripts/demo/scenarios.py 5/6. Blocked: winback_device_fix fails with WORRY_SCORER=embedding because the N1 head reads the device-fault line as rental cost 0.35 vs device issue 0.34, so the win-back reason never becomes clear (docs/results/winback/README.md). Needs an N1 head that reads that wording; not tuned on the demo line."
     },
     {
       "id": "F1",

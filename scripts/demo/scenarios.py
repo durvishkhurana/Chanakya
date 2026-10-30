@@ -27,6 +27,8 @@ START = datetime(2026, 10, 29, 9, 30, tzinfo=UTC)  # 15:00 in Asia/Kolkata
 
 
 def main() -> int:
+    # Windows consoles default to cp1252, which cannot print Hindi or Punjabi lines.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Run Chanakya's demo scenarios end to end.")
     parser.add_argument("names", nargs="*", choices=[*SCENARIOS, []], help="Scenarios to run (default: all)")
     parser.add_argument("--live", action="store_true", help="Use the configured LLM provider for Chanakya's words")

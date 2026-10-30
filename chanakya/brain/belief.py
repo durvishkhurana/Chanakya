@@ -70,6 +70,8 @@ def dice(a: set[str], b: set[str]) -> float:
 class LexicalScorer:
     """Offline evidence scorer: trigram similarity to Concern Bank phrasings plus cue words."""
 
+    name = "lexical"
+
     def __init__(self, bank: ConcernBank):
         self.bank = bank
         self.phrasings = {cid: [trigrams(p) for p in bank.phrasings(cid)] for cid in bank.ids}
@@ -88,6 +90,8 @@ class LexicalScorer:
 
 class LLMScorer:
     """Asks a fast model how strongly the utterance supports each concern; falls back to lexical."""
+
+    name = "llm"
 
     def __init__(self, llm: LLMClient, bank: ConcernBank, role="rollout", timeout_s: float | None = None):
         self.llm = llm
@@ -131,6 +135,11 @@ class BayesianBeliefTracker:
         self.last_evidence: dict[str, float] = {}
         self.last_hesitation: Hesitation | None = None
 
+    @property
+    def scorer_name(self) -> str | None:
+        """lexical, llm or embedding: which scorer read the merchant's lines (shown on the Live Call View)."""
+        return getattr(self.scorer, "name", None)
+
     def start(self, prior: dict[str, float]) -> BeliefState:
         """Begin from the mission card's starting worries, spread over the whole Concern Bank."""
         total = sum(prior.get(cid, 0.0) for cid in self.bank.ids) or 1.0
@@ -173,5 +182,6 @@ class BayesianBeliefTracker:
         logger.info("belief update in %.1f ms; top %s", self.last_latency_ms, posterior.top(1))
         if self.bus is not None:
             await self.bus.publish(BeliefUpdated(mission_id=self.mission_id, belief=posterior,
-                                                 latency_ms=self.last_latency_ms, evidence=evidence))
+                                                 latency_ms=self.last_latency_ms, evidence=evidence,
+                                                 scorer=self.scorer_name))
         return posterior

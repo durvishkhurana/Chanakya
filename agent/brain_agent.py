@@ -125,7 +125,7 @@ class BrainAgent:
         state.belief = await tracker.update(state.belief, turn, state.transcript.turns)
         mission = state.card.mission_id
         events = [BeliefUpdated(mission_id=mission, belief=state.belief, latency_ms=tracker.last_latency_ms,
-                                evidence=tracker.last_evidence)]
+                                evidence=tracker.last_evidence, scorer=tracker.scorer_name)]
         plan = await self.planner.plan(state)
         events.append(PlanComputed(mission_id=mission, plan=plan))
         move = plan.move

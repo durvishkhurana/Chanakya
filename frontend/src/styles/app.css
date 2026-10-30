@@ -144,6 +144,7 @@
 .cx .message { padding: 10px 12px; border-radius: 8px; background: var(--raised); font-size: 13px; line-height: 18px; }
 .cx .message + .message { margin-top: 8px; }
 .cx .message .meta { display: block; margin-bottom: 4px; }
+.cx .message.in { margin-left: 24px; background: var(--surface); border: 1px solid var(--border); }
 .cx .message a { text-decoration: underline; text-underline-offset: 2px; }
 .cx .handoff { display: grid; gap: 6px; padding: 12px 0; border-top: 1px solid var(--rule); font-size: 13px; line-height: 18px; }
 .cx .handoff:first-of-type { border-top: 0; padding-top: 0; }

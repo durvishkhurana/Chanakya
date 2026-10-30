@@ -136,9 +136,12 @@ def to_brain_state(context: core.PlanContext, bank: ConcernBank | None = None) -
                                ended=not context.mission.is_open)
 
 
-def to_core_belief(belief: brain.BeliefState) -> core.BeliefState:
-    """Brain belief -> core belief."""
-    return core.BeliefState(probabilities=dict(belief.probabilities), turn=belief.turn_index)
+def to_core_belief(belief: brain.BeliefState, evidence: dict[str, float] | None = None,
+                   scorer: str | None = None) -> core.BeliefState:
+    """Brain belief -> core belief, with the scorer's evidence for the latest line when known."""
+    evidence = {cid: round(score, 4) for cid, score in (evidence or {}).items()}
+    return core.BeliefState(probabilities=dict(belief.probabilities), turn=belief.turn_index,
+                            evidence=evidence, scorer=scorer)
 
 
 class CorePlanner:
@@ -193,7 +196,7 @@ def to_ledger_event(event: brain_events.Event) -> core.MissionEvent | None:
     mission_id = event.mission_id or ""
     # Payloads are exactly the core models, because the gate, hand-off cards and dashboards parse them strictly.
     if isinstance(event, brain_events.BeliefUpdated):
-        return core.MissionEvent.of(mission_id, core.EventKind.BELIEF_UPDATED, to_core_belief(event.belief))
+        return core.MissionEvent.of(mission_id, core.EventKind.BELIEF_UPDATED, to_core_belief(event.belief, event.evidence, event.scorer))
     if isinstance(event, brain_events.PlanComputed):
         return core.MissionEvent.of(mission_id, core.EventKind.PLAN_COMPUTED, to_core_plan(event.plan, mission_id))
     if isinstance(event, brain_events.TurnCompleted):

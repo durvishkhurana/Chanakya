@@ -51,6 +51,7 @@ class BeliefUpdated(Event):
     belief: BeliefState
     latency_ms: float = 0.0
     evidence: dict[str, float] = Field(default_factory=dict)
+    scorer: str | None = None  # lexical, llm or embedding
 
 
 class PlanComputed(Event):

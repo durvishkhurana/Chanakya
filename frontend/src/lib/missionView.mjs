@@ -86,7 +86,7 @@ export function eventSummary(event) {
 
 /** Everything the Live Call View shows, derived from one mission's ledger events. */
 export function deriveCallView(events, card = null) {
-  const view = { card, state: "CREATED", transcript: [], concerns: card?.starting_worries || {}, plans: [], willingness: [], actions: [], consent: null };
+  const view = { card, state: "CREATED", transcript: [], concerns: card?.starting_worries || {}, plans: [], willingness: [], actions: [], consent: null, evidence: {}, scorer: null };
   for (const event of events) {
     const p = event.payload || {};
     if (event.kind === "mission_created" || event.kind === "mission_updated") {
@@ -94,7 +94,11 @@ export function deriveCallView(events, card = null) {
       if (!view.transcript.length) view.concerns = p.card.starting_worries;
     } else if (event.kind === "state_changed") view.state = p.to;
     else if (event.kind === "turn_completed") view.transcript.push({ speaker: p.speaker, text: p.text, move: p.move?.type || null });
-    else if (event.kind === "belief_updated") view.concerns = p.probabilities;
+    else if (event.kind === "belief_updated") {
+      view.concerns = p.probabilities;
+      view.evidence = p.evidence || {};
+      view.scorer = p.scorer || view.scorer;
+    }
     else if (event.kind === "plan_computed") {
       view.plans.push(p);
       const chosen = (p.candidates || []).find((c) => c.move.type === p.chosen?.type && c.move.concern_id === p.chosen?.concern_id);

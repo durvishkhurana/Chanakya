@@ -31,9 +31,9 @@
   <rect class="box" x="486" y="48" width="230" height="64" rx="8"/><text x="500" y="72" class="h">Voice</text><text x="500" y="92" class="s">browser or phone, Sarvam speech</text>
   <rect class="brain" x="486" y="132" width="230" height="182" rx="10"/>
   <text x="500" y="156" class="h">Chanakya brain</text>
-  <text x="500" y="182" class="s">1. Belief tracker: which worry is real</text>
+  <text x="500" y="182" class="s">1. Belief tracker: keyword or e5 scorer</text>
   <text x="500" y="204" class="s">2. Look-ahead planner (NRPA) against</text>
-  <text x="514" y="220" class="s">simulated merchants</text>
+  <text x="514" y="220" class="s">simulated merchants (formula value)</text>
   <text x="500" y="242" class="s">3. Realizer: words it from sourced</text>
   <text x="514" y="258" class="s">product facts, safety fallbacks</text>
   <text x="500" y="284" class="s">Coach mode runs the same brain</text>
@@ -43,12 +43,12 @@
 
   <text x="760" y="34" class="k">GETTING IT DONE</text>
   <rect class="safe" x="760" y="48" width="216" height="92" rx="10"/><text x="774" y="72" class="h">Safety gate</text><text x="774" y="92" class="s">AI disclosed, explicit consent,</text><text x="774" y="108" class="s">calling hours, do-not-call,</text><text x="774" y="124" class="s">no sensitive data, audit trail</text>
-  <rect class="mock" x="760" y="160" width="216" height="72" rx="8"/><text x="774" y="184" class="h">Mock business systems</text><text x="774" y="204" class="s">onboarding link, field visit,</text><text x="774" y="220" class="s">WhatsApp summary (labelled mocks)</text>
+  <rect class="mock" x="760" y="160" width="216" height="72" rx="8"/><text x="774" y="184" class="h">Mock business systems</text><text x="774" y="204" class="s">onboarding link, field visit,</text><text x="774" y="220" class="s">WhatsApp, SMS, inbox (labelled mocks)</text>
   <rect class="box" x="760" y="252" width="216" height="62" rx="8"/><text x="774" y="276" class="h">Verifier</text><text x="774" y="296" class="s">DONE only when a system confirms</text>
   <path class="l" d="M718 190 C740 190 740 94 758 94"/><path class="l" d="M868 140 L868 158"/><path class="l" d="M868 232 L868 250"/>
   <path class="l" d="M760 300 C600 360 470 330 440 300"/>
 
-  <rect class="box" x="760" y="352" width="216" height="62" rx="8"/><text x="774" y="376" class="h">Hand-off queue</text><text x="774" y="396" class="s">context card, no repeating</text>
+  <rect class="box" x="760" y="352" width="216" height="62" rx="8"/><text x="774" y="376" class="h">Hand-off queue</text><text x="774" y="396" class="s">context card; approvals queue</text>
   <path class="l" d="M718 290 C740 300 740 380 758 382"/>
 
   <text x="24" y="460" class="k">WATCHING IT</text>

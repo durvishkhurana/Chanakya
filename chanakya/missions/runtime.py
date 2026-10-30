@@ -12,6 +12,7 @@ from chanakya.actions.systems.seed import seed
 from chanakya.core.config import Settings
 from chanakya.core.llm import LLM
 from chanakya.core.schemas import ActionDecision, MissionType, ToolCall, Verdict
+from chanakya.humans.approvals import ApprovalQueue
 from chanakya.humans.handoff import HandoffQueue
 from chanakya.missions.churn import ChurnDetector
 from chanakya.missions.intake import MissionIntake
@@ -37,6 +38,7 @@ class Runtime:
     scheduler: Scheduler
     verifier: OnboardingVerifier
     handoffs: HandoffQueue
+    approvals: ApprovalQueue | None = None
 
     @classmethod
     def build(cls, settings: Settings | None = None, clock=None, llm: LLM | None = None) -> Runtime:
@@ -49,16 +51,20 @@ class Runtime:
         ledger = MissionLedger(SQLiteMissionStore(settings.db_path), clock=clock)
         gate = ActionGate(registry, ledger, settings=settings, clock=clock)
         scheduler = Scheduler(ledger, clock)
-        return cls(
+        runtime = cls(
             settings=settings, clock=clock, db=db, registry=registry, ledger=ledger, gate=gate,
             intake=MissionIntake(ledger, lambda merchant_id: merchant_from_db(registry, merchant_id)),
             queue=MissionQueue(ledger, settings=settings, clock=clock), scheduler=scheduler,
             verifier=OnboardingVerifier(ledger, gate, scheduler), handoffs=HandoffQueue(ledger, llm=llm),
         )
+        runtime.approvals = ApprovalQueue(ledger, scheduler, runtime.handoffs, settings, clock, runtime.submit)
+        gate.approvals = runtime.approvals
+        runtime.verifier.handlers["approval_timeout"] = runtime.approvals.expire
+        return runtime
 
-    async def submit(self, call: ToolCall) -> ActionDecision:
+    async def submit(self, call: ToolCall, approved_by: str | None = None) -> ActionDecision:
         """Send a call through the safety gate; a sent onboarding link starts verification automatically."""
-        decision = await self.gate.submit(call)
+        decision = await self.gate.submit(call, approved_by)
         if decision.verdict == Verdict.EXECUTED and call.tool == "send_onboarding_link":
             data = decision.result.data
             await self.verifier.expect_onboarding(call.mission_id, data["session_id"], data["link"])

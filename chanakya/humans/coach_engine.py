@@ -47,6 +47,7 @@ class CoachEngine:
         self.state = DialogueState(card=card, belief=self.tracker.start(card.starting_worries),
                                    transcript=Transcript(mission_id=card.mission_id, disclosed_ai=True))
         self.state.moves.append(Move(type=MoveType.DISCLOSE_AND_GREET, reason="human greeting"))
+        self.last_plan = None  # the latest look-ahead result, for the value estimate on the coach screen
 
     async def observe(self, turn: Turn) -> CoachSuggestion | None:
         """Fold in one turn; after a merchant turn, return the suggestion for the telecaller."""
@@ -57,6 +58,7 @@ class CoachEngine:
             return None
         self.state.belief = await self.tracker.update(self.state.belief, turn, self.state.transcript.turns)
         plan = await self.planner.plan(self.state)
+        self.last_plan = plan
         move = plan.move
         if move.type == MoveType.DISCLOSE_AND_GREET:
             move = Move(type=MoveType.DISCOVER_NEED)
