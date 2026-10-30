@@ -19,6 +19,8 @@ class EmbeddingScorer:
     into a Bayesian odds ratio against the training base rate instead of the lexical scorer's tuned sharpening.
     """
 
+    name = "embedding"
+
     def __init__(self, encoder, head):
         self.encoder = encoder
         self.head = head

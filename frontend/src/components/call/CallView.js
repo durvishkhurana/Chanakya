@@ -68,6 +68,10 @@ export default function CallView({ events, mission = null, newSince = 0 }) {
           <ConcernMeter current={view.concerns} starting={card.starting_worries} />
         </div>
         <div className="panel">
+          <header><h2>What the scorer heard</h2><span className="meta">{view.scorer ? `${SCORER_LABELS[view.scorer] || view.scorer} scorer` : "latest merchant line"}</span></header>
+          <Evidence evidence={view.evidence} />
+        </div>
+        <div className="panel">
           <header><h2>Next move</h2><span className="meta">{plan ? `${plan.candidates.reduce((s, c) => s + (c.visits || 0), 0)} simulated replies` : ""}</span></header>
           {plan ? <PlanTree plan={plan} /> : <div className="empty">The look-ahead planner’s candidate moves appear here once the brain is on for this mission.</div>}
         </div>
@@ -88,6 +92,17 @@ export default function CallView({ events, mission = null, newSince = 0 }) {
       </section>
     </div>
   </>;
+}
+
+const SCORER_LABELS = { lexical: "Keyword", llm: "LLM", embedding: "Neural (e5)" };
+
+/** The scorer's reading of the merchant's latest line: how strongly it points at each worry, before the Bayesian update. */
+function Evidence({ evidence }) {
+  const rows = topWorries(evidence, 3).filter(([, score]) => score > 0.01);
+  if (!rows.length) return <p className="meta">After the merchant speaks, the worries their words point to appear here.</p>;
+  return <ul className="checks">{rows.map(([id, score]) => <li key={id}>
+    <span>{worryLabel(id)}</span><span className="num">{percent(score)}</span>
+  </li>)}</ul>;
 }
 
 function PlanTree({ plan }) {

@@ -56,7 +56,8 @@ class Session:
         return {"session_id": self.id, "merchant": card.merchant.model_dump(mode="json"),
                 "trigger": card.trigger, "why_now": card.why_now, "starting_worries": self.starting,
                 "worries": self.engine.state.belief.probabilities, "turns": len(self.engine.state.transcript.turns),
-                "suggestions": self.suggestions, "handoff": self.handoff}
+                "suggestions": self.suggestions, "handoff": self.handoff,
+                "evidence": self.engine.tracker.last_evidence, "scorer": self.engine.tracker.scorer_name}
 
 
 _sessions: dict[str, Session] = {}  # ponytail: in memory, lost on restart; a store if coach calls must survive one
@@ -114,6 +115,16 @@ async def recorded() -> dict:
     return json.loads(FIXTURE.read_text(encoding="utf-8"))
 
 
+def value_estimate(plan, move) -> dict:
+    """The look-ahead's value for the suggested move (chance of a yes) and the best alternatives, for the screen."""
+    if plan is None or not plan.candidates:
+        return {"value": None, "alternatives": []}
+    chosen = next((c.score for c in plan.candidates if c.move.key() == move.key()), None)
+    others = sorted((c for c in plan.candidates if c.move.key() != move.key()), key=lambda c: -c.score)[:2]
+    return {"value": round(chosen, 3) if chosen is not None else None,
+            "alternatives": [{"key": c.move.key(), "value": round(c.score, 3)} for c in others]}
+
+
 @router.post("/sessions")
 async def start(request: StartRequest) -> dict:
     """Start following a call. The engine starts from the trigger's prior worries."""
@@ -121,7 +132,13 @@ async def start(request: StartRequest) -> dict:
         _sessions.pop(next(iter(_sessions)))
     # The planner seeds from the mission id, so a fixed id makes the recorded call replay the same way every time.
     pinned = {"mission_id": "coach_recorded"} if request.recorded else {}
+    from chanakya.brain.memory.memory import configured_memory
+    from chanakya.brain.planner_nrpa import NRPAPlanner
+    from chanakya.brain.value.network import configured_leaf_value
+    from chanakya.core.config import Settings
     from chanakya.neural.scorer import configured_worry_scorer, select_scorer
+
+    settings = Settings.from_env()  # PLANNER_MEMORY and PLANNER_VALUE apply to coached calls too (N4)
 
     engine = CoachEngine(MissionCard(
         **pinned,
@@ -130,7 +147,11 @@ async def start(request: StartRequest) -> dict:
         kind=MissionKind.SALES, goal="Coach a telecaller's call", door=Door.HUMAN, trigger=request.trigger,
         why_now="A telecaller is on the call; Chanakya coaches silently",
         starting_worries=default_bank().priors[request.trigger]),
-        scorer=select_scorer(configured_worry_scorer(), default_bank()))
+        scorer=select_scorer(configured_worry_scorer(), default_bank()),
+        # Coach mode never used the forest, so only PLANNER_MEMORY=neural adds a memory and the default is unchanged.
+        planner=NRPAPlanner(default_bank(),
+                            forest=configured_memory("neural") if settings.planner_memory == "neural" else None,
+                            leaf_value=configured_leaf_value(settings.planner_value)))
     session = Session(engine)
     _sessions[session.id] = session
     return session.view()
@@ -157,7 +178,7 @@ async def add_turn(session_id: str, request: TurnRequest) -> dict:
         concern = suggestion.move.concern
         body = {"move": suggestion.move.model_dump(mode="json"), "key": suggestion.move.key(), "reason": suggestion.reason,
                 "likelihood": session.engine.state.belief.probabilities.get(concern) if concern else None,
-                "guide": guide(session.engine, concern)}
+                "guide": guide(session.engine, concern), **value_estimate(session.engine.last_plan, suggestion.move)}
         if suggestion.move.type == MoveType.ESCALATE and session.handoff is None:
             session.handoff = _handoff(session, suggestion.reason)
     return {**session.view(), "suggestion": body}
