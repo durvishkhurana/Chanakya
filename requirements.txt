@@ -14,3 +14,5 @@ sarvamai
 twilio>=9,<10
 # Windows has no system time-zone database; zoneinfo needs it for Asia/Kolkata.
 tzdata; sys_platform == "win32"
+# The neural brain (chanakya/neural) does its maths in numpy; the encoder itself is optional, in requirements-neural.txt.
+numpy>=2.0

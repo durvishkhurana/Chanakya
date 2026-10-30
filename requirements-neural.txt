@@ -1,4 +1,6 @@
-# Optional: only the neural brain parts (tasks N0-N4) need these; ./init.sh and CI never install them.
-# multilingual-e5-small is the shared encoder (chosen in N0, docs/results/neural-baseline/).
+# Optional: only the neural brain (tasks N0-N4) needs these; ./init.sh and CI never install them.
+# multilingual-e5-small runs through ONNX Runtime (chosen in N0, docs/results/neural-baseline/), so no PyTorch at runtime.
 numpy>=2.0
-sentence-transformers>=6.0
+onnxruntime>=1.20
+tokenizers>=0.20
+huggingface_hub>=0.25
