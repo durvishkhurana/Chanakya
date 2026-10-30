@@ -97,6 +97,26 @@ class TemplateVoice:
         return TEMPLATES[label][intent.kind]
 
 
+class LinesVoice(TemplateVoice):
+    """Template replies, except that a voiced worry is spoken as a labelled paraphrase from one split of
+    ``data/neural/worry_lines.jsonl`` in the persona's language (task N1). Template twins speak Concern Bank
+    phrasings, which the lexical scorer matches almost perfectly; these lines test whether a scorer understands
+    wording it has never seen. Evaluation uses the test split; N2 builds its memory from the train split."""
+
+    def __init__(self, bank: ConcernBank, rows: list[dict]):
+        super().__init__(bank)
+        self.lines: dict[tuple[str, str], list[str]] = {}
+        for row in rows:
+            self.lines.setdefault((row["concern"], row["language"]), []).append(row["text"])
+
+    async def say(self, persona: Persona, intent: Intent, agent_text: str, rng: random.Random) -> str:
+        if intent.kind == "voice_concern" and intent.concern:
+            options = self.lines.get((intent.concern, language_label(persona, rng)))
+            if options:
+                return rng.choice(options)
+        return await super().say(persona, intent, agent_text, rng)
+
+
 class LLMVoice:
     """Phrases the judge's intent in character with an LLM; falls back to templates on failure."""
 

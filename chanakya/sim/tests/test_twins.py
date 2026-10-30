@@ -141,3 +141,18 @@ def test_llm_voice_uses_its_role_and_falls_back_to_templates():
     fallback = asyncio.run(LLMVoice(FakeLLM(broken), "twin_b", default_bank()).say(
         persona, intent, "hello", random.Random(0)))
     assert fallback in default_bank().phrasings("hidden_charges")
+
+
+def test_lines_voice_speaks_a_labelled_line_for_the_worry_and_language_else_the_template():
+    from chanakya.sim.judge import Intent
+    from chanakya.sim.voice import LinesVoice, TemplateVoice, language_label
+
+    bank = default_bank()
+    persona = load_personas(split="evaluation")[0]
+    label = language_label(persona, random.Random(0))
+    voice = LinesVoice(bank, [{"text": "Every month the rent eats my margin", "concern": "rental_cost", "language": label}])
+    said = asyncio.run(voice.say(persona, Intent("voice_concern", "rental_cost"), "", random.Random(0)))
+    assert said == "Every month the rent eats my margin"
+    other = asyncio.run(voice.say(persona, Intent("voice_concern", "setup_hassle"), "", random.Random(0)))
+    assert other == asyncio.run(TemplateVoice(bank).say(persona, Intent("voice_concern", "setup_hassle"), "", random.Random(0)))
+    assert twin_b(persona, voice=voice).voice is voice

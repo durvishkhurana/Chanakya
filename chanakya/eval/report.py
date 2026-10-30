@@ -8,6 +8,7 @@ ROWS = [
     ("mission_success_rate", "Mission success (consent to onboarding)"),
     ("follow_up_rate", "Follow-up agreed"),
     ("walk_away_rate", "Merchant walked away"),
+    ("belief_top1_accuracy", "Belief top-1 accuracy (top worry is one the merchant holds)"),
     ("turns_to_close", "Agent turns to close"),
     ("turns_on_failed_calls", "Agent turns on failed calls"),
     ("escalation_precision", "Escalation precision"),

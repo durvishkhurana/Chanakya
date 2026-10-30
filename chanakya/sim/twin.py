@@ -51,10 +51,10 @@ def twin_a(persona: Persona, llm: LLMClient | None = None, seed: int = 0,
 
 
 def twin_b(persona: Persona, llm: LLMClient | None = None, seed: int = 0,
-           bank: ConcernBank | None = None) -> SimulatedMerchant:
+           bank: ConcernBank | None = None, voice=None) -> SimulatedMerchant:
     """Evaluation twin on a different model family; refuses planning personas so evaluation stays held out."""
     if persona.split != "evaluation":
         raise ValueError(f"Twin-B only plays held-out evaluation personas, not {persona.persona_id}")
     bank = bank or default_bank()
-    voice = LLMVoice(llm, "twin_b", bank) if llm is not None else TemplateVoice(bank)
+    voice = voice or (LLMVoice(llm, "twin_b", bank) if llm is not None else TemplateVoice(bank))
     return SimulatedMerchant(persona, voice, seed, name="twin_b")
