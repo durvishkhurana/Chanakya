@@ -43,10 +43,10 @@ def create_voice_agent():
     if settings.planner_enabled:
         from agent.brain_agent import BrainAgent
         from chanakya.brain.contracts.llm import default_llm
-        from chanakya.brain.forest.forest import default_forest
+        from chanakya.brain.memory.memory import configured_memory
         from chanakya.brain.planner_nrpa import NRPAPlanner
 
-        return BrainAgent(llm=default_llm(settings), planner=NRPAPlanner(forest=default_forest()),
+        return BrainAgent(llm=default_llm(settings), planner=NRPAPlanner(forest=configured_memory(settings.planner_memory)),
                           actions_enabled=settings.actions_enabled)
     return Agent(name="Chanakya-Voice", system_prompt=voice_assistant_system_prompt)
 

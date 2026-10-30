@@ -682,9 +682,9 @@
       "dependencies": [
         "N1"
       ],
-      "status": "not-started",
+      "status": "in-progress",
       "done_when": "Win rate for no memory, the trigram forest and neural memory with the test-split lines voice over seeds 7 and 13, plus lookup p50 and p90 ms, reported either way; PLANNER_MEMORY setting in a core: PR; tests use FakeEncoder.",
-      "evidence": ""
+      "evidence": "2026-10-30 on feat/N2-semantic-memory: PLANNER_MEMORY setting (core/planner-memory-setting), chanakya/brain/memory (e5 + belief nearest-moment memory behind the forest's moves_for hook, Wilson-ranked), build command with the train-split lines voice, chanakya_memory variant, PLANNER_MEMORY wiring on live calls; 8 tests with FakeEncoder. Not done: the memory build and win-rate measurement need the e5 encoder, and huggingface.co is blocked by this environment's network policy."
     },
     {
       "id": "N3",

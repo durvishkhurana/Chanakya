@@ -19,7 +19,7 @@ from chanakya.brain import moves as lib
 from chanakya.brain.contracts import events as brain_events
 from chanakya.brain.contracts import schemas as brain
 from chanakya.brain.core_adapters import to_brain_card, to_ledger_event
-from chanakya.brain.forest.forest import default_forest
+from chanakya.brain.memory.memory import configured_memory
 from chanakya.brain.planner_nrpa import NRPAPlanner
 from chanakya.core import schemas as core
 
@@ -134,7 +134,8 @@ class MissionCall:
     def __init__(self, runtime, mission_id: str, llm=None, planner=None):
         self.runtime = runtime
         self.mission_id = mission_id
-        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=default_forest()),
+        memory = configured_memory(runtime.settings.planner_memory)  # PLANNER_MEMORY: forest or neural (N2)
+        self.agent = BrainAgent(llm=llm, planner=planner or NRPAPlanner(forest=memory),
                                 bus=LedgerBus(self), gate=LedgerGate(self), actions_enabled=True)
         self.recorded_consents = 0
         self.disclosed = False
