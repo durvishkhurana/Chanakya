@@ -149,6 +149,7 @@ LINES = {
         "done": "Ho gaya. Yeh demo ka mock system hai, isliye asli onboarding Paytm ke official app ya site par hi hogi.",
         "done_book_field_visit": "Ho gaya, technician visit demo ke mock system mein book ho gaya hai.",
         "not_done": "Abhi main yeh khud nahi kar sakta. Aap Paytm for Business ke official app ya website par onboarding kar sakte hain.",
+        "pending_approval": "Is kaam ke liye mere ek saathi ki manzoori chahiye. Unke haan kehte hi yeh ho jayega, aur agar nahi hua toh ek saathi aapse khud baat karega.",
         "followup": "Koi baat nahi, main aapko baad mein call karunga. Aapke liye kaunsa time theek rahega?",
         "escalate": "Main aapko ek insaani saathi se jodne ka intezaam karta hoon, aapko baat dobara nahi batani padegi.",
         "end": "Aapke samay ke liye dhanyavaad. Koi sawaal ho toh Paytm for Business ki official website dekh sakte hain.",
@@ -173,6 +174,7 @@ LINES = {
         "done": "Done. This demo uses mock systems, so real onboarding happens only in Paytm's official app or site.",
         "done_book_field_visit": "Done, the technician visit is booked in the demo's mock system.",
         "not_done": "I can't do that myself right now. You can onboard in the official Paytm for Business app or website.",
+        "pending_approval": "This needs a colleague's approval. As soon as they say yes it will be done, and if not, a colleague will speak with you directly.",
         "followup": "No problem, I will call you back later. What time suits you?",
         "escalate": "I will connect you with a human colleague, and you won't have to repeat yourself.",
         "end": "Thank you for your time. For any questions, Paytm for Business has an official website.",
@@ -287,6 +289,12 @@ def visit_for_sales(move: Move, state: DialogueState) -> bool:
     return move.tool == "book_field_visit" and lib.is_winback(state) and lib.winback_reason(state) in lib.VISIT_REASONS
 
 
+def last_action_pending(state: DialogueState, tool: str | None) -> bool:
+    """Whether the latest call for ``tool`` is waiting for a person's approval (B10)."""
+    decisions = [d for d in state.actions if d.call.tool == tool]
+    return bool(decisions) and decisions[-1].verdict == "pending_approval"
+
+
 def last_action_executed(state: DialogueState, tool: str | None) -> bool:
     """Whether the gate actually executed the latest call for ``tool``."""
     decisions = [d for d in state.actions if d.call.tool == tool]
@@ -325,6 +333,8 @@ class TemplateRealizer:
             case MoveType.TAKE_ACTION:
                 if move.tool == "get_settlement_status":
                     return settlement_line(state, lines)
+                if last_action_pending(state, move.tool):
+                    return lines["pending_approval"]
                 if not last_action_executed(state, move.tool):
                     return lines["not_done"]
                 if visit_for_sales(move, state):
@@ -382,6 +392,9 @@ class LLMRealizer:
             case MoveType.TAKE_ACTION if move.tool == "get_settlement_status":
                 return ("Explain only this result from the mock settlement system, in plain words, with no amount and "
                         f"no promise about timing: {settlement_line(state, LINES['english'])}")
+            case MoveType.TAKE_ACTION if last_action_pending(state, move.tool):
+                return ("Say this needs a colleague's approval first: once they approve it will be done, and if they do not, "
+                        "a colleague will speak with the merchant. Do not promise when.")
             case MoveType.TAKE_ACTION:
                 done = last_action_executed(state, move.tool)
                 return ("Confirm the action was done in the demo's mock system and that real onboarding happens in "

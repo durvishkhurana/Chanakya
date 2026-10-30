@@ -25,7 +25,7 @@ from chanakya.core import schemas as core
 
 S = core.MissionState
 VERDICTS = {core.Verdict.EXECUTED: "executed", core.Verdict.BLOCKED: "blocked", core.Verdict.FAILED: "failed",
-            core.Verdict.REJECTED: "blocked"}
+            core.Verdict.REJECTED: "blocked", core.Verdict.PENDING: "pending_approval"}
 SUMMARY = {
     "en-IN": "Thank you for talking to Chanakya, an AI assistant. For product details and current charges, "
              "please use the official Paytm for Business app or website.",
@@ -118,6 +118,8 @@ class LedgerGate:
             if decision.verdict == core.Verdict.EXECUTED:
                 await runtime.ledger.advance(mission_id, S.AWAITING_CONFIRMATION,
                                              reason=f"{call.tool} done; waiting for the outcome")
+            elif decision.verdict == core.Verdict.PENDING:
+                pass  # stays ACTION_PENDING until a person approves or rejects it (B10)
             else:
                 await runtime.ledger.advance(mission_id, S.IN_CONVERSATION, reason=f"{call.tool} {decision.reason}")
         result = decision.result
