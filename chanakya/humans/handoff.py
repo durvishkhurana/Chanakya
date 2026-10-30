@@ -106,7 +106,9 @@ class HandoffQueue:
         self.ledger = ledger
         self.llm = llm
         self.conn = ledger.store.conn
-        self.conn.executescript(SCHEMA)
+        self.lock = ledger.store.lock  # the ledger's connection, so the ledger's lock
+        with self.lock:
+            self.conn.executescript(SCHEMA)
 
     async def escalate(self, mission_id: str, reason: str, urgent: bool = False) -> HandoffCard:
         """Build a card, move the mission to ESCALATED and put the card in the queue."""
@@ -135,12 +137,14 @@ class HandoffQueue:
 
     def get(self, handoff_id: str) -> HandoffCard | None:
         """One card by id."""
-        row = self.conn.execute("SELECT data FROM handoffs WHERE id = ?", (handoff_id,)).fetchone()
+        with self.lock:
+            row = self.conn.execute("SELECT data FROM handoffs WHERE id = ?", (handoff_id,)).fetchone()
         return HandoffCard.model_validate_json(row[0]) if row else None
 
     def list(self, status: HandoffStatus | None = None) -> list[HandoffCard]:
         """Cards, urgent first, then oldest first."""
-        rows = self.conn.execute("SELECT data FROM handoffs ORDER BY urgent DESC, created_at").fetchall()
+        with self.lock:
+            rows = self.conn.execute("SELECT data FROM handoffs ORDER BY urgent DESC, created_at").fetchall()
         cards = [HandoffCard.model_validate_json(row[0]) for row in rows]
         return [c for c in cards if status is None or c.status == status]
 
@@ -153,7 +157,7 @@ class HandoffQueue:
         return card
 
     def _save(self, card: HandoffCard) -> None:
-        with self.conn:
+        with self.lock, self.conn:
             self.conn.execute("REPLACE INTO handoffs VALUES (?, ?, ?, ?, ?, ?)",
                               (card.id, card.mission_id, card.status.value, int(card.urgent),
                                card.created_at.isoformat(), card.model_dump_json()))

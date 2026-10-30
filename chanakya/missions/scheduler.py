@@ -65,13 +65,15 @@ class Scheduler:
         self.ledger = ledger
         self.clock = clock
         self.conn = ledger.store.conn
-        self.conn.executescript(SCHEMA)
+        self.lock = ledger.store.lock  # the ledger's connection, so the ledger's lock
+        with self.lock:
+            self.conn.executescript(SCHEMA)
 
     async def schedule(self, mission_id: str, kind: str, due_at: datetime, **payload: Any) -> Job:
         """Add a job and record a FOLLOWUP_SCHEDULED event."""
         due_at = due_at.astimezone(UTC)  # one timezone, so text order in SQLite is time order
         job = Job(new_id("job"), mission_id, kind, due_at, "pending", payload)
-        with self.conn:
+        with self.lock, self.conn:
             self.conn.execute("INSERT INTO jobs VALUES (?, ?, ?, ?, ?, ?)",
                               (job.id, mission_id, kind, due_at.isoformat(), "pending", json.dumps(payload)))
         await self.ledger.record(mission_id, EventKind.FOLLOWUP_SCHEDULED,
@@ -84,18 +86,19 @@ class Scheduler:
 
     def pending(self, mission_id: str | None = None) -> list[Job]:
         """All pending jobs, optionally for one mission, oldest first."""
-        rows = self.conn.execute("SELECT * FROM jobs WHERE status = 'pending' ORDER BY due_at, rowid").fetchall()
+        with self.lock:
+            rows = self.conn.execute("SELECT * FROM jobs WHERE status = 'pending' ORDER BY due_at, rowid").fetchall()
         jobs = [Job(r[0], r[1], r[2], datetime.fromisoformat(r[3]), r[4], json.loads(r[5])) for r in rows]
         return [j for j in jobs if mission_id is None or j.mission_id == mission_id]
 
     def finish(self, job: Job, status: str = "done") -> None:
         """Mark a job done or cancelled."""
-        with self.conn:
+        with self.lock, self.conn:
             self.conn.execute("UPDATE jobs SET status = ? WHERE id = ?", (status, job.id))
 
     def cancel_all(self, mission_id: str) -> None:
         """Cancel every pending job of a mission, for example once it is DONE."""
-        with self.conn:
+        with self.lock, self.conn:
             self.conn.execute("UPDATE jobs SET status = 'cancelled' WHERE mission_id = ? AND status = 'pending'",
                               (mission_id,))
 
