@@ -702,9 +702,9 @@
       "dependencies": [
         "N0"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "On held-out evaluation personas over seeds 7 and 13: success, walk-away, turns and planner p50/p90 for formula vs network; planner_checks stability and lookahead with and without it; a test that forced safety rules decide first; PLANNER_VALUE setting in a core: PR.",
-      "evidence": ""
+      "evidence": "2026-10-31: network trained on 2,100 self-play calls (python -m chanakya.brain.value.train --seed 7 --seeds 70; validation MSE 0.041 vs formula 0.278). Held-out evaluation personas (python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7/13 --variants chanakya,chanakya_value): success formula 0.96/0.98 vs network 0.94/0.92, walk-away 0.04/0.01 vs 0.06/0.07, turns to close 5.09/5.06 vs 5.79/5.70, turn p50 99/100 ms vs 154/150 ms, p90 116/116 vs 181/177, 0 safety violations. planner_checks lookahead: planning 0.920 vs 0.963, evaluation 0.953 vs 0.927, planner p50/p90 113/118 vs 181/203 ms; stability: whole call identical 21/42 vs 5/42. No gain on held-out personas (overfits the planning personas); PLANNER_VALUE stays formula by default. Forced-safety test in chanakya/brain/value/tests. ./init.sh passed (434 pytest, Ruff clean). docs/results/neural-value-network/."
     },
     {
       "id": "N4",

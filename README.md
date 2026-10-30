@@ -158,7 +158,7 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 |---|---|---|---|
 | Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
 | Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | planned |
-| Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` (setting added) | in progress |
+| Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | measured, no gain on held-out personas: success 0.94/0.92 vs formula 0.96/0.98 ([results](docs/results/neural-value-network/README.md)); default stays formula |
 
 All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries are optional and never needed by `./init.sh`:
 

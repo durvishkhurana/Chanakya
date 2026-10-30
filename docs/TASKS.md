@@ -381,7 +381,7 @@ One owner per neural network does all of it (data, model, wiring, measurement); 
   - **Win rate** for no memory (`chanakya`), the trigram forest (`chanakya_forest`) and neural memory (`chanakya_memory`) is measured with the test-split voice over seeds 7 and 13, with lookup p50 and p90 ms, and reported either way.
   - **Tests** use `FakeEncoder`.
 
-#### [ ] N3 Value network for the planner (Durvish)
+#### [x] N3 Value network for the planner (Durvish)
 - **Branch:** `feat/N3-value-network`
 - **Owns:** `chanakya/brain/value/`, `data/neural/value_net.npz`, `docs/results/neural-value-network/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
 - **Depends on:** nothing to start (numpy arrives with N1)

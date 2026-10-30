@@ -1,0 +1,6 @@
+merchant turn 1: RESOLVE_CONCERN(competitor_qr) 41/42, RESOLVE_CONCERN(language_comfort) 1/42
+merchant turn 2: RESOLVE_CONCERN(competitor_qr) 42/42
+merchant turn 3: RESOLVE_CONCERN(rental_cost) 22/42, RESOLVE_CONCERN(hidden_charges) 20/42
+merchant turn 4: RESOLVE_CONCERN(rental_cost) 42/42
+merchant turn 5: CONFIRM_CONSENT(send_onboarding_link) 42/42
+whole call identical to the most common run: 21/42
