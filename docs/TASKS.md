@@ -306,6 +306,46 @@ Rules for every task are in `CLAUDE.md`. Branch name format: `feat/<ID>-<slug>`.
 
 ---
 
+## Phase 5: Neural brain (Gurnoor)
+
+Learned parts that replace the brain's hand-written guesses. Each one sits behind its own flag, off by default, and is measured against what it replaces on held-out data. The safety rules (disclosure, distress, a no, sensitive data) stay hand-written and are never learned. Gurnoor owns this phase, including the small wiring edits in `chanakya/brain/`; Durvish reviews those.
+
+#### [ ] N0 Baselines and labelled data
+- **Branch:** `feat/N0-neural-baseline`
+- **Owns:** `chanakya/neural/`, `data/neural/`, `docs/results/neural-baseline/`
+- **Build:** labelled merchant lines in four languages from two model families (train from the Twin-A model, test from the Twin-B model, nothing close to a Concern Bank phrasing); baselines for today's lexical scorer, the LLM scorer and two candidate encoders; the encoder choice.
+- **Done when:** baselines and the encoder choice are in `docs/results/neural-baseline/` with the command that produced them.
+
+#### [ ] N1 Neural worry scorer
+- **Branch:** `feat/N1-worry-scorer`
+- **Owns:** `chanakya/neural/`, wiring in `agent/brain_agent.py`, `chanakya/humans/coach_engine.py`, `chanakya/eval/variants.py`
+- **Depends on:** N0
+- **Build:** shared encoder plus a calibrated 13-worry network behind the belief tracker's `score(text, history)` interface, giving Bayesian likelihoods instead of tuned constants; behind `NEURAL_BELIEF_ENABLED`; falls back to the lexical scorer when the model is missing.
+- **Done when:** beats the lexical scorer on held-out lines and is measured end to end in the harness over two seeds; tests never download a model.
+
+#### [ ] N2 Semantic memory
+- **Branch:** `feat/N2-semantic-memory`
+- **Owns:** `chanakya/neural/`, an embedding hook in `chanakya/brain/forest/forest.py`
+- **Depends on:** N1
+- **Build:** the Strategy Forest's hashed trigram vectors replaced by sentence embeddings plus the belief, with nearest-moment lookup; behind `NEURAL_MEMORY_ENABLED`.
+- **Done when:** win rate with no memory, the trigram forest and neural memory is measured over two seeds and reported either way.
+
+#### [ ] N3 Value network for the planner
+- **Branch:** `feat/N3-value-network`
+- **Owns:** `chanakya/neural/`, a `leaf_value` hook in `chanakya/brain/planner_nrpa.py`
+- **Depends on:** N1
+- **Build:** a value network trained on self-play twin calls replaces the planner's fixed horizon guess (`0.8 × consent_chance`); optional policy prior for candidate order; behind `NEURAL_PLANNER_ENABLED`.
+- **Done when:** win rate, planner time and seed stability are measured on held-out personas over two seeds; a test shows the forced safety rules still win.
+
+#### [ ] N4 Show the neural brain
+- **Branch:** `feat/N4-neural-demo`
+- **Owns:** the Live Call View, coach mode, `docs/architecture.svg`, README
+- **Depends on:** N1, N2, N3
+- **Build:** the Live Call View and coach mode show the neural scorer's evidence and the value estimate; architecture diagram and README updated with measured numbers only.
+- **Done when:** `./init.sh`, `NEURAL=1 ./init.sh`, the demo scenarios and the end-to-end script pass with every neural flag on.
+
+---
+
 ## Dependency summary
 
 ```
