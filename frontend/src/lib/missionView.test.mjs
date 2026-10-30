@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { deriveCallView, eventSummary, groupMissions, missionCounts, topWorries, worryLabel } from "./missionView.mjs";
+import { countRows, deriveCallView, eventSummary, groupMissions, missionCounts, topWorries, worryLabel } from "./missionView.mjs";
 
 const card = { goal: "Sell soundbox -> verified onboarding", starting_worries: { hidden_charges: 0.5, competitor_qr: 0.3, just_busy: 0.2 }, priority: 0.9 };
 const row = (id, state, priority, ready) => ({ mission: { id, state, card: { ...card, priority } }, queue: ready === undefined ? null : { ready } });
@@ -67,4 +67,10 @@ test("without belief updates the meter shows the card's starting worries", () =>
 test("win-back ledger events read as sentences", () => {
   assert.equal(eventSummary({ kind: "leaving_reason_recorded", payload: { reason: "device_issue" } }), "Reason for leaving: Device reliability");
   assert.equal(eventSummary({ kind: "holdout_assigned", payload: {} }), "Holdout: not called, kept for comparison");
+});
+
+test("count rows are sorted, labelled and carry their share", () => {
+  assert.deepEqual(countRows({ not_needed: 1, device_issue: 3 }, worryLabel).map((r) => [r.label, r.count, r.share]),
+    [["Device reliability", 3, 0.75], ["Not needed", 1, 0.25]]);
+  assert.deepEqual(countRows({}), []);
 });

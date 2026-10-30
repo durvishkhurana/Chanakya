@@ -2,7 +2,7 @@ import pytest
 
 from chanakya.actions.registry import InvalidArgumentsError, MockToolRegistry
 from chanakya.actions.systems.db import FailurePolicy, MockDB
-from chanakya.actions.systems.seed import MERCHANTS, seed
+from chanakya.actions.systems.seed import FORMER_MERCHANTS, MERCHANTS, seed
 from chanakya.actions.systems.tools import TOOLS, complete_onboarding, default_slot
 from chanakya.core.interfaces import ToolRegistry, UnknownToolError
 from chanakya.core.schemas import ToolCall, ToolKind
@@ -117,7 +117,7 @@ def test_seed_is_idempotent():
     db = MockDB()
     seed(db)
     seed(db)
-    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS)
+    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + len(FORMER_MERCHANTS)
 
 
 def test_failures_are_reproducible_with_a_seed():
@@ -160,4 +160,16 @@ def test_an_older_database_gains_the_win_back_columns_on_open(tmp_path):
     seed(db)
     row = db.one("SELECT relationship, churned_at FROM merchants WHERE id = 'mer_old'")
     assert row == {"relationship": "customer", "churned_at": None}
-    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + 1
+    assert len(db.all("SELECT id FROM merchants")) == len(MERCHANTS) + len(FORMER_MERCHANTS) + 1
+
+
+def test_former_merchants_are_seeded_with_a_reason_to_have_left():
+    db = MockDB()
+    seed(db)
+    former = db.all("SELECT id, churned_at FROM merchants WHERE relationship = 'former' ORDER BY id")
+    assert [m["id"] for m in former] == sorted(m[0] for m in FORMER_MERCHANTS) and all(m["churned_at"] for m in former)
+    assert db.all("SELECT relationship FROM merchants WHERE id = 'mer_ramesh'") == [{"relationship": "customer"}]
+    returned = {d["merchant_id"] for d in db.all("SELECT merchant_id FROM devices WHERE status = 'returned'")}
+    assert returned == {"mer_harish", "mer_joginder", "mer_kavita"}
+    assert db.one("SELECT status FROM settlements WHERE merchant_id = 'mer_joginder'")["status"] == "delayed"
+    assert db.one("SELECT status FROM tickets WHERE merchant_id = 'mer_kavita'")["status"] == "open"

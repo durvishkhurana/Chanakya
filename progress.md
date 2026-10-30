@@ -11,7 +11,7 @@
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results in `docs/results/` | I3 (needs a phone or a backup video), I4 |
 | N: neural brain | Gurnoor Singh Pannu | N0 baselines, labelled lines, encoder choice | N1 worry scorer, N2 semantic memory, N3 value network, N4 demo |
-| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes, W0 contracts | W1 win-back missions, W2 win-back brain, P1 permission-first |
+| W: review fixes, win-back, permission-first | Durvish Khurana | D1 specs, F1 #19 review fixes, W0 contracts, W1 win-back missions | W2 win-back brain, P1 permission-first |
 
 ## Status
 
@@ -43,7 +43,7 @@
 
 ### Phase 6: review fixes, win-back and permission-first (Durvish)
 
-Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_list.json`. Order: F1 (the #19 review points), W0 (`core:` contracts and both flags), W1 (churn detection, holdout, DONE check), W2 (the win-back conversation), P1 (permission-first opening for lead-list missions). W1 and F1 edit Track B directories and need Gurnoor's review. This work stays out of the N1-N4 files (`belief.py`, `sim/voice.py`, `eval/variants.py`, `agent/brain_agent.py`, `coach_engine.py`).
+Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_list.json`. Win-back missions (W1): `chanakya/missions/churn.py` finds former merchants (CRM says former, a returned device, or no payment for 60 days), calls those who churned 14 to 180 days ago and had no win-back in 90 days, hands merchants with an open complaint to a person, and holds out 20% by a seeded hash (demo seed 2027 holds out Joginder). A win-back mission is DONE only on a resolved ticket, a device active again or a payment within 14 days of the call. **B12 (manager insights) should reuse `leaving_reasons()` in `chanakya/missions/churn.py` and the Mission Control reasons card, not rebuild them.** Order: F1 (the #19 review points), W0 (`core:` contracts and both flags), W1 (churn detection, holdout, DONE check), W2 (the win-back conversation), P1 (permission-first opening for lead-list missions). W1 and F1 edit Track B directories and need Gurnoor's review. This work stays out of the N1-N4 files (`belief.py`, `sim/voice.py`, `eval/variants.py`, `agent/brain_agent.py`, `coach_engine.py`).
 
 ### What's In Progress
 

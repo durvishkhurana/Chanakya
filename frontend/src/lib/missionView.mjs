@@ -105,3 +105,11 @@ export function deriveCallView(events, card = null) {
   }
   return view;
 }
+
+/** Rows for a counts card (reason, city or product -> count), largest first, each with its share of the total. */
+export function countRows(counts = {}, label = (key) => key) {
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  return Object.entries(counts)
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+    .map(([key, count]) => ({ key, label: label(key), count, share: total ? count / total : 0 }));
+}

@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 import logging
 import os
+from dataclasses import asdict
 from datetime import timedelta
 from typing import Any
 
@@ -14,6 +15,7 @@ from pydantic import BaseModel, Field
 
 from chanakya.core.interfaces import IllegalTransitionError
 from chanakya.core.schemas import EventKind, MerchantSignal, MissionState
+from chanakya.missions.churn import holdouts, leaving_reasons
 from chanakya.missions.runtime import get_runtime
 from chanakya.missions.signals import demo_feed
 
@@ -115,7 +117,25 @@ async def ingest_demo_feed() -> dict:
     for signal in demo_feed():
         _, new = await runtime.intake.ingest(signal)
         created += new
-    return {"created": created, "missions": len(runtime.ledger.store.list())}
+    winback = [asdict(d) for d in await runtime.churn_detector().scan()] if runtime.settings.winback_enabled else []
+    return {"created": created, "missions": len(runtime.ledger.store.list()), "winback": winback}
+
+
+@router.get("/winback")
+async def winback() -> dict:
+    """Win-back at a glance: holdout merchants (not called) and recorded reasons for leaving."""
+    runtime = get_runtime()
+    return {"enabled": runtime.settings.winback_enabled, "holdouts": holdouts(runtime.ledger),
+            "reasons": leaving_reasons(runtime.ledger)}
+
+
+@router.post("/winback/scan")
+async def winback_scan() -> dict:
+    """Find former merchants now and route each to a call, a person or the holdout (needs WINBACK_ENABLED)."""
+    runtime = get_runtime()
+    if not runtime.settings.winback_enabled:
+        raise HTTPException(status_code=409, detail="Win-back is off; set WINBACK_ENABLED=true")
+    return {"decisions": [asdict(d) for d in await runtime.churn_detector().scan()]}
 
 
 @router.post("/tick")

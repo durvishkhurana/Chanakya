@@ -21,6 +21,14 @@ MERCHANTS = [
     ("mer_sharma", "Sharma General Store", "general store", "Delhi", "hi-IN", (9, 21), 0, 0, 0, "3345"),
     ("mer_baldev", "Baldev Dhaba", "restaurant", "Amritsar", "pa-IN", (15, 18), 1, 0, 0, "5508"),
 ]
+# Former merchants for win-back missions (WINBACK_ENABLED): id, name, business type, city, language, window,
+# phone last 4, days since they stopped. Fictional, like everyone above.
+FORMER_MERCHANTS = [
+    ("mer_harish", "Harish Electronics", "electronics", "Patna", "hi-IN", (10, 19), "6120", 35),  # returned a Soundbox
+    ("mer_meena", "Meena Sweets", "sweet shop", "Bhopal", "hi-IN", (11, 20), "8841", 70),  # Soundbox idle 70 days
+    ("mer_joginder", "Joginder Auto Parts", "auto parts", "Chandigarh", "pa-IN", (10, 18), "3017", 25),  # late settlement
+    ("mer_kavita", "Kavita Fancy Store", "clothing store", "Kanpur", "hi-IN", (12, 20), "5562", 50),  # open complaint
+]
 
 
 def _ago(days: int) -> str:
@@ -49,6 +57,27 @@ def seed(db: MockDB) -> None:
         db.conn.executemany("INSERT OR IGNORE INTO settlements VALUES (?, ?, ?, ?, ?, ?)", settlements)
         db.conn.execute("INSERT OR IGNORE INTO onboarding_sessions VALUES (?, ?, NULL, ?, 'pending', ?, NULL)",
                         ("onb_imran_stalled", "mer_imran", "soundbox", _ago(2)))
+        seed_former(db)
+
+
+def seed_former(db: MockDB) -> None:
+    """Former merchants with a returned or idle device, one late settlement and one open complaint ticket."""
+    for merchant_id, name, kind, city, language, (start, end), last4, days in FORMER_MERCHANTS:
+        db.conn.execute("INSERT OR IGNORE INTO merchants (id, name, business_type, city, language, start_hour, "
+                        "end_hour, do_not_call, has_soundbox, has_card_machine, phone_last4, relationship, churned_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, 'former', ?)",
+                        (merchant_id, name, kind, city, language, start, end, last4, _ago(days)))
+    db.conn.executemany("INSERT OR IGNORE INTO devices VALUES (?, ?, ?, ?, ?, ?)", [
+        ("dev_harish_sb", "mer_harish", "soundbox", "returned", _ago(36), "closed"),
+        ("dev_meena_sb", "mer_meena", "soundbox", "online", _ago(70), "paid"),
+        ("dev_joginder_sb", "mer_joginder", "soundbox", "returned", _ago(26), "closed"),
+        ("dev_kavita_sb", "mer_kavita", "soundbox", "returned", _ago(51), "closed"),
+    ])
+    db.conn.execute("INSERT OR IGNORE INTO settlements VALUES (?, ?, ?, ?, ?, ?)",
+                    ("set_joginder_1", "mer_joginder", 9300, "delayed", _ago(27)[:10], "bank account details mismatch"))
+    db.conn.execute("INSERT OR IGNORE INTO tickets VALUES (?, ?, NULL, ?, ?, 'open', ?)",
+                    ("tkt_kavita_open", "mer_kavita", "device",
+                     "Soundbox stopped announcing payments; merchant returned it and is waiting for an answer", _ago(52)))
 
 
 if __name__ == "__main__":

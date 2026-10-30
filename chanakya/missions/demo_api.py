@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from chanakya.actions.systems.tools import complete_onboarding
+from chanakya.actions.systems.tools import complete_onboarding, resolve_ticket
 from chanakya.missions.runtime import get_runtime
 
 router = APIRouter(prefix="/api/demo", tags=["demo"])
@@ -32,3 +32,14 @@ async def complete(session_id: str) -> dict:
     complete_onboarding(get_runtime().db, session_id)
     verified = await get_runtime().verifier.check_now(session_id)
     return _session(session_id) | {"verified_missions": verified}
+
+
+@router.post("/tickets/{ticket_id}/resolve")
+async def resolve(ticket_id: str) -> dict:
+    """The mock ticketing team fixes the issue; any win-back mission waiting on the ticket is verified at once."""
+    runtime = get_runtime()
+    try:
+        ticket = resolve_ticket(runtime.db, ticket_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return {"ticket": ticket, "verified_missions": await runtime.verifier.check_winback_now(ticket_id)}

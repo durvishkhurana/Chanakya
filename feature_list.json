@@ -813,9 +813,9 @@
         "W0",
         "F1"
       ],
-      "status": "not-started",
+      "status": "done",
       "done_when": "tests cover the eligibility edges, a deterministic holdout for a given seed, each DONE path and no DONE without system confirmation, do-not-call and open-ticket routing; FULL=1 ./init.sh passes.",
-      "evidence": ""
+      "evidence": "2026-10-30 on feat/W1-winback-missions: FULL=1 SKIP_INSTALL=1 ./init.sh passed (agent 104 OK, backend 98 OK, pytest 334 passed, Ruff clean, frontend 24 passed, lint clean, build compiled). Tests in chanakya/missions/tests/test_winback.py: the four seeded former merchants route to call (Harish, Meena), holdout (Joginder, demo seed 2027) and a hand-off for the open complaint (Kavita); a second scan changes nothing; eligibility edges 13/15/179/181 days, do-not-call skipped, a win-back older than 90 days no longer blocks; an idle device (65 days) counts as former; the holdout is deterministic per seed and about 20%; DONE on a resolved ticket, on a device active again and on a payment within 14 days (not at 20 days, and an always-online device is no change); never DONE without a system, back to the queue with a callback after three checks and no messages sent; a sales ticket starts no win-back check; GET /api/missions/winback lists the holdout and counts reasons by reason, city and product; the mock ticketing endpoint verifies a waiting mission; the scan is refused with WINBACK_ENABLED off. Seed tests in chanakya/actions/tests/test_systems.py; countRows test in frontend/src/lib/missionView.test.mjs."
     },
     {
       "id": "W2",

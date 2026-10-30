@@ -270,6 +270,14 @@ def get_ticket_status(db: MockDB, a: TicketStatusArgs, call: ToolCall) -> dict:
     return {"ticket": row}
 
 
+def resolve_ticket(db: MockDB, ticket_id: str) -> dict:
+    """Called by the mock ticketing team, never by the agent: the issue behind a ticket is fixed."""
+    if db.one("SELECT id FROM tickets WHERE id = ?", ticket_id) is None:
+        raise LookupError(f"unknown ticket {ticket_id}")
+    db.write("UPDATE tickets SET status = 'resolved' WHERE id = ?", ticket_id)
+    return db.one("SELECT * FROM tickets WHERE id = ?", ticket_id)
+
+
 def get_settlement_status(db: MockDB, a: MerchantArgs, call: ToolCall) -> dict:
     _merchant(db, a.merchant_id)
     return {"settlements": db.all("SELECT * FROM settlements WHERE merchant_id = ? ORDER BY expected_on DESC", a.merchant_id)}

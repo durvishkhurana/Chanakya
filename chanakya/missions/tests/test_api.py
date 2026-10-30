@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from chanakya.actions.api import router as actions_router
+from chanakya.actions.systems.seed import FORMER_MERCHANTS, MERCHANTS
 from chanakya.actions.systems.tools import complete_onboarding
 from chanakya.core.config import Settings
 from chanakya.humans.api import router as handoffs_router
@@ -50,7 +51,7 @@ def submit(client, mission_id, tool, **args):
 
 
 def test_demo_feed_and_queue(client):
-    assert client.post("/api/missions/signals/demo-feed").json() == {"created": 6, "missions": 6}
+    assert client.post("/api/missions/signals/demo-feed").json() == {"created": 6, "missions": 6, "winback": []}
     assert client.post("/api/missions/signals/demo-feed").json()["created"] == 0
     callback(client)
     missions = client.get("/api/missions").json()
@@ -113,7 +114,7 @@ def test_errors_map_to_http_codes(client):
         "merchant_id": "mer_ramesh", "kind": "callback_request", "door": "data", "source": "x"}).status_code == 422
     assert submit(client, mission_id, "give_free_rental")["verdict"] == "rejected"
     assert len(client.get("/api/actions/tools").json()) == 17
-    assert len(client.get("/api/actions/merchants").json()) == 7
+    assert len(client.get("/api/actions/merchants").json()) == len(MERCHANTS) + len(FORMER_MERCHANTS)
 
 
 def test_handoff_flow(client):

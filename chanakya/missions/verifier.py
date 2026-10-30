@@ -11,6 +11,8 @@ from chanakya.missions.ledger import MissionLedger
 from chanakya.missions.scheduler import Job, Scheduler
 
 S = MissionState
+ACTIVE_DEVICE = frozenset({"online", "active"})
+PAYMENT_WINDOW = timedelta(days=14)
 
 
 class OnboardingVerifier:
@@ -61,6 +63,8 @@ class OnboardingVerifier:
             await self._verify(job)
         elif job.kind == "nudge":
             await self._nudge(job)
+        elif job.kind == "winback_verify":
+            await self._verify_winback(job)
 
     async def check_now(self, session_id: str) -> list[str]:
         """Verify right away every mission waiting on this onboarding session (the onboarding page calls this)."""
@@ -101,6 +105,74 @@ class OnboardingVerifier:
         await self.ledger.record(mission.id, EventKind.FOLLOWUP_SCHEDULED,
                                  {"kind": "callback", "due_at": self.scheduler.later(timedelta(hours=1)).isoformat(),
                                   **job.payload})
+
+    # ── win-back: DONE only when a system shows the merchant is back ─────
+
+    async def expect_winback(self, mission_id: str, ticket_id: str | None = None) -> None:
+        """Call after a win-back fix ran (ticket, visit): check the systems later, never the call's words."""
+        mission = self.ledger.store.get(mission_id)
+        if mission.state == S.ACTION_PENDING:
+            await self.ledger.advance(mission_id, S.AWAITING_CONFIRMATION, reason="fix requested; waiting for the systems")
+        devices = await self._read(mission, "get_device_status")
+        baseline = {d["id"]: d["status"] for d in devices.get("devices", [])}
+        await self.scheduler.schedule(mission_id, "winback_verify", self.scheduler.later(self.verify_after),
+                                      since=self.scheduler.clock().isoformat(), ticket_id=ticket_id,
+                                      baseline=baseline, nudges=0)
+
+    async def check_winback_now(self, ticket_id: str) -> list[str]:
+        """Verify right away every win-back mission waiting on this ticket (the mock ticketing page calls this)."""
+        verified = []
+        for job in self.scheduler.pending():
+            if job.kind == "winback_verify" and job.payload.get("ticket_id") == ticket_id:
+                self.scheduler.finish(job)
+                await self._verify_winback(job)
+                verified.append(job.mission_id)
+        return verified
+
+    async def _read(self, mission, tool: str, **args) -> dict:
+        args = args or {"merchant_id": mission.card.merchant_id}
+        decision = await self.gate.submit(ToolCall(mission_id=mission.id, tool=tool, args=args))
+        return decision.result.data if decision.verdict == Verdict.EXECUTED else {}
+
+    async def winback_confirmation(self, mission, payload: dict) -> str | None:
+        """What a system shows, if anything: the call's ticket resolved, a device active again, or a payment within
+        14 days of the call. Every read goes through the gate, so the checks are in the audit trail."""
+        if payload.get("ticket_id"):
+            ticket = (await self._read(mission, "get_ticket_status", ticket_id=payload["ticket_id"])).get("ticket") or {}
+            if ticket.get("status") == "resolved":
+                return f"ticket {payload['ticket_id']} resolved (ticketing system)"
+        baseline = payload.get("baseline") or {}
+        for device in (await self._read(mission, "get_device_status")).get("devices", []):
+            if device["status"] in ACTIVE_DEVICE and baseline.get(device["id"]) not in ACTIVE_DEVICE:
+                return f"device {device['id']} is {device['status']} again (devices system)"
+        since = datetime.fromisoformat(payload["since"])
+        for device in (await self._read(mission, "get_device_usage")).get("devices", []):
+            paid = device.get("last_payment_at")
+            if paid and since <= datetime.fromisoformat(paid) <= since + PAYMENT_WINDOW:
+                return f"device {device['id']} took a payment within 14 days of the call (devices system)"
+        return None
+
+    async def _verify_winback(self, job: Job) -> None:
+        mission = self.ledger.store.get(job.mission_id)
+        if mission.state != S.VERIFYING:
+            await self.ledger.advance(mission.id, S.VERIFYING, reason="checking whether the merchant is back")
+        confirmed = await self.winback_confirmation(mission, job.payload)
+        await self.ledger.record(mission.id, EventKind.VERIFICATION_CHECKED,
+                                 {"kind": "win_back", "status": "confirmed" if confirmed else "not yet",
+                                  "evidence": confirmed})
+        if confirmed:
+            self.scheduler.cancel_all(mission.id)
+            await self.ledger.close(mission.id, S.DONE, outcome=f"merchant is back: {confirmed}")
+            return
+        if job.payload["nudges"] < self.max_nudges:
+            # A passive re-check: win-back sends no messages, because nobody agreed to receive any.
+            await self.ledger.advance(mission.id, S.AWAITING_CONFIRMATION, reason="no system shows them back yet")
+            await self.scheduler.schedule(mission.id, "winback_verify", self.scheduler.later(self.nudge_after),
+                                          **(job.payload | {"nudges": job.payload["nudges"] + 1}))
+            return
+        await self.ledger.advance(mission.id, S.SCHEDULED, reason="still not back after re-checks; call again")
+        await self.ledger.record(mission.id, EventKind.FOLLOWUP_SCHEDULED,
+                                 {"kind": "callback", "due_at": self.scheduler.later(timedelta(hours=1)).isoformat()})
 
     async def _nudge(self, job: Job) -> None:
         mission = self.ledger.store.get(job.mission_id)

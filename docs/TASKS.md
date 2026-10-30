@@ -405,7 +405,7 @@ Durvish owns every task in this phase. Some of them edit Track B directories (`c
   - `core_adapters.py` maps the new trigger and carries the merchant fields; a prior for `merchant_churned` over existing concerns only; an intake rule for the new signal; the mock merchants table gains the two columns (with a migration for existing databases); every lookup keyed by trigger, signal or mission type gets the new value.
 - **Done when:** both merchant models round-trip through the adapters with the new fields; `concern_bank.validate()` passes; intake builds a win-back card for `MERCHANT_CHURNED`; both flags default off; `./init.sh` passes.
 
-#### [ ] W1 Churn detection, holdout and the win-back DONE check
+#### [x] W1 Churn detection, holdout and the win-back DONE check
 - **Branch:** `feat/W1-winback-missions`
 - **Owner:** Durvish Khurana (Track B directories, reviewed by Gurnoor)
 - **Owns:** `chanakya/actions/systems/seed.py`, `chanakya/actions/systems/tools.py`, `chanakya/missions/churn.py`, `chanakya/missions/verifier.py`, `chanakya/missions/runtime.py`, `chanakya/missions/api.py`, `chanakya/missions/demo_api.py`, `chanakya/missions/tests/`, `frontend/src/app/missions/`, `frontend/src/lib/`
