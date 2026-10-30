@@ -2,14 +2,15 @@
 
 ## Current State
 
-**Last Updated:** 2026-10-29
-**Active Feature:** none in progress. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video.
+**Last Updated:** 2026-10-31
+**Active Feature:** N1 neural worry scorer (Gurnoor) on `feat/N1-worry-scorer`. I1 (#19), the A6 seed fix (#20), I3 hardening (#21) and I4 (#22) are merged; I3 waits only for the backup video.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
 | B: missions, actions, humans, frontend | Gurnoor Singh Pannu | F0.2, B1-B9, B11, B14, B15 | B10, B12, B13 roadmap |
 | A: brain, sim, eval, voice | Durvish Khurana | A1-A8, A10, A11, F0.3 (merged on main) | A9 (forest built, no measured gain) |
 | Integration | both | I1 demo scenarios, I2 measured results, I4 README and pitch assets | I3 (backup video or phone call) |
+| N: neural brain | Gurnoor (N1, N4), Durvish (N2, N3) | N0 baselines, labelled lines, encoder choice | N1 worry scorer (in progress), N2 semantic memory, N3 value network, N4 demo |
 
 ## Status
 
@@ -45,6 +46,10 @@
 - [ ] F0.3 CI: `.github/workflows/ci.yml` runs `FULL=1 ./init.sh` on every push and PR; check the Actions tab once merged
 
 ### What's Next
+
+- N1 (Gurnoor): worry model on `feat/N1-worry-scorer` (ONNX e5-small, 13-sigmoid head, calibrated); more training lines from other model families, then the belief tracker change, the held-out twin voice and full-call results. Gurnoor writes the hand-written test lines
+- N2 and N3 (Durvish): semantic memory and the planner value network, each with its own `core:` setting PR (see `docs/TASKS.md`, Phase 5)
+- Durvish: the first three #19 review fixes (`fix/I1-review-fixes`)
 
 1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
 2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
