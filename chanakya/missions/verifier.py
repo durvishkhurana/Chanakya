@@ -138,7 +138,8 @@ class OnboardingVerifier:
         """What a system shows, if anything: the call's ticket resolved, a device active again, or a payment within
         14 days of the call. Every read goes through the gate, so the checks are in the audit trail."""
         if payload.get("ticket_id"):
-            ticket = (await self._read(mission, "get_ticket_status", ticket_id=payload["ticket_id"])).get("ticket") or {}
+            ticket = (await self._read(mission, "get_ticket_status", merchant_id=mission.card.merchant_id,
+                                           ticket_id=payload["ticket_id"])).get("ticket") or {}
             if ticket.get("status") == "resolved":
                 return f"ticket {payload['ticket_id']} resolved (ticketing system)"
         baseline = payload.get("baseline") or {}

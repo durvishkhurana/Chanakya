@@ -64,8 +64,23 @@ def test_failure_path_returns_an_error_result(name):
 def test_ticket_round_trip():
     reg = registry()
     ticket = reg.execute(call("raise_ticket", **HAPPY["raise_ticket"])).data["ticket_id"]
-    assert reg.execute(call("get_ticket_status", ticket_id=ticket)).data["ticket"]["status"] == "open"
-    assert not reg.execute(call("get_ticket_status", ticket_id="tkt_missing")).ok
+    owner = HAPPY["raise_ticket"]["merchant_id"]
+    assert reg.execute(call("get_ticket_status", merchant_id=owner, ticket_id=ticket)).data["ticket"]["status"] == "open"
+    assert not reg.execute(call("get_ticket_status", merchant_id=owner, ticket_id="tkt_missing")).ok
+    # Another merchant's ticket is never readable, even by its exact id.
+    assert not reg.execute(call("get_ticket_status", merchant_id="mer_ramesh" if owner != "mer_ramesh" else "mer_imran",
+                                ticket_id=ticket)).ok
+
+
+def test_visit_and_callback_times_must_be_iso_date_times():
+    reg = registry()
+    for tool, field in (("book_field_visit", "slot"), ("book_callback", "due_at")):
+        bad = HAPPY[tool] | {field: "tomorrow evening"}
+        try:
+            reg.validate(call(tool, **bad))
+        except InvalidArgumentsError:
+            continue
+        raise AssertionError(f"{tool} accepted a free-text {field}")
 
 
 def test_unknown_tools_and_bad_arguments_are_rejected():
