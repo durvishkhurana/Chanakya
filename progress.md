@@ -47,20 +47,32 @@
 
 ### What's Next
 
-- N1 (Gurnoor): worry model on `feat/N1-worry-scorer` (ONNX e5-small, 13-sigmoid head, calibrated); more training lines from other model families, then the belief tracker change, the held-out twin voice and full-call results. Gurnoor writes the hand-written test lines
-- N2 and N3 (Durvish): semantic memory and the planner value network, each with its own `core:` setting PR (see `docs/TASKS.md`, Phase 5)
-- Durvish: the first three #19 review fixes (`fix/I1-review-fixes`)
+Phase 5, neural brain (one owner per network, full plan in `docs/TASKS.md`):
 
-1. Gurnoor: review the I1 PR; it touches two frontend pages (Mission Control, Live Call View) and appends one router mount in `backend/main.py`
-2. Try a spoken call on a mission ("Talk by voice instead" on `/call/<id>`) with a real microphone; the route was checked up to `voice_ready` only. Phone calls (Twilio) still run without a mission (I3)
-3. A6: Gurnoor found the NRPA choice varies with its seed on the coach recording; look at why so few samples flip the choice
-4. A9: richer transcripts or concern-history features before claiming a gain; repeated objections need a "no worry left" outcome in the belief (see Decisions)
-5. Track B: optional B10, B12, B13. Together: I3 backup video (docs/PHONE_DEMO.md, path A)
+1. N1, Gurnoor, on `feat/N1-worry-scorer`:
+   - more training lines from two more model families, then retrain
+   - the belief tracker odds-ratio path, `select_scorer` wiring and a `chanakya_embedding` variant
+   - a lines voice for twins (N2 needs it too) and the belief top-1 accuracy metric
+   - full-call results
+   - the hand-written test set, written by Gurnoor himself
+   - the e5 citation and `NEURAL=1 ./init.sh`
+2. N3, Durvish: the `PLANNER_VALUE` core PR, self-play data, the value network, the `leaf_value` hook and held-out measurement
+3. N2, Durvish: the `PLANNER_MEMORY` core PR, e5 + belief nearest-moment memory built from train-split lines, measured with the test-split voice
+4. N4, Gurnoor, after N1-N3: show the neural scorer and value estimate in the Live Call View and coach mode
+
+Other:
+
+5. Durvish: merge the first three #19 review fixes (`fix/I1-review-fixes`)
+6. Try a spoken call on a mission with a real microphone; phone calls (Twilio) still run without a mission (I3, backup video in `docs/PHONE_DEMO.md`, path A)
+7. A9: richer transcripts before claiming a gain (N2 may answer this)
+8. Track B: optional B10, B12, B13
 
 ## Blockers / Risks
 
 - [ ] Review points on #19 not yet fixed on main: scenario calls are not registered (a typed or spoken line starts a second brain), a yes to the link is recorded for every `send_summary`, the callback scenario moves the shared clock by at least 26 hours, voice barge-in can cut `say()` halfway, only the first decline is recorded
-- [ ] The neural parts need `requirements-neural.txt` (PyTorch through sentence-transformers) and a one-time model download of about 470 MB; `./init.sh` and CI do not install them
+- [ ] The neural parts need `requirements-neural.txt` and a one-time encoder download of about 470 MB; `./init.sh` and CI do not install them. From N1 the encoder runs on ONNX Runtime, so PyTorch is no longer needed; numpy joins `requirements.txt`
+- [ ] N1 accuracy is 0.536 on N0's test split (lexical 0.394, LLM 0.777); fine-tuning the encoder learned the training model's style (validation 0.72, test 0.55), so more model families in the training data come next
+- [ ] #23 dropped the N0-N4 entries from `feature_list.json` in a merge (restored in #29); check that file after resolving merge conflicts
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
 - [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
@@ -75,6 +87,9 @@
 - [ ] Coach sessions live in backend memory (at most 50) and are lost on restart; the hand-off card is copied as text, not sent to the hand-off queue, because a coached call has no mission in the ledger
 
 ## Decisions Made
+
+- **One owner per neural network (2026-10-31):** Gurnoor owns N1 and N4, Durvish owns N2 and N3. Each owner does the data, model, wiring and measurement; the other reviews. Each part is chosen by a setting in `chanakya/core/config.py` (`WORRY_SCORER`, `PLANNER_MEMORY`, `PLANNER_VALUE`) whose default keeps today's behaviour
+- **Encoder on ONNX Runtime:** `multilingual-e5-small` through ONNX gives the same vectors as PyTorch at about 2.5 ms per line, so no PyTorch at runtime or for embedding training lines
 
 - **Track A ported onto main's core (2026-10-29):** Gurnoor merged F0.2 and Track B while Track A was being built on a separate contracts branch. Track A's own types moved to `chanakya/brain/contracts` (personas, consent-aware dialogue state, typed brain events, fakes), and its LLM calls now go through `chanakya.core.llm`, which gained a Groq provider in a separate `core:` change. Offline evaluation and safety numbers were identical before and after the port
 - **Twin realism fix found by the evaluation:** the first twin voiced worries too often and let merchants agree with worries open, so an answer-and-ask-repeatedly agent reached 98% against Chanakya's 91-92%. The twin now holds worries back (arXiv 2605.22240), each open worry multiplies the chance of a yes by 0.35, and re-asking after a no is pressure. Even so actions-only (0.99) and Chanakya (0.97) are within noise offline; do not claim Chanakya beats actions-only on success
