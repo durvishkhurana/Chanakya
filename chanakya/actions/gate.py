@@ -50,15 +50,22 @@ class ActionGate:
         self.planner = planner
         self.settings = settings or Settings()
         self.clock = clock
+        self.approvals = None  # the approval queue (B10), set by the runtime
 
-    async def submit(self, call: ToolCall) -> ActionDecision:
-        """Check, then execute or block the call; the decision is always written to the mission ledger."""
-        decision = await self._decide(call)
+    async def submit(self, call: ToolCall, approved_by: str | None = None) -> ActionDecision:
+        """Check, then execute, block or hold the call for approval; the decision is always written to the ledger.
+
+        A tool in ``APPROVAL_TOOLS`` that passes every check waits for a person (``Verdict.PENDING``) unless
+        ``approved_by`` names who approved it; it still goes through every check again when it runs.
+        """
+        decision = await self._decide(call, approved_by)
         if self.ledger.store.get(call.mission_id) is not None:
             await self.ledger.attach_action(call.mission_id, decision)
+            if decision.verdict == Verdict.PENDING and self.approvals is not None:
+                await self.approvals.request(decision.call)
         return decision
 
-    async def _decide(self, call: ToolCall) -> ActionDecision:
+    async def _decide(self, call: ToolCall, approved_by: str | None = None) -> ActionDecision:
         try:
             call = self.registry.validate(call)
         except UnknownToolError:
@@ -90,9 +97,13 @@ class ActionGate:
             if not await self.planner.reconsider(context, call):
                 return ActionDecision(call=call, verdict=Verdict.BLOCKED, reason="planner reconsidered", kind=tool.kind)
 
+        if tool.name in self.settings.approval_tools and approved_by is None:
+            return ActionDecision(call=call, verdict=Verdict.PENDING, reason="waiting for approval", kind=tool.kind)
+
         result = self.registry.execute(call)
         verdict = Verdict.EXECUTED if result.ok else Verdict.FAILED
-        return ActionDecision(call=call, verdict=verdict, reason="ok" if result.ok else result.error or "failed",
+        ok = f"ok, approved by {approved_by}" if approved_by else "ok"
+        return ActionDecision(call=call, verdict=verdict, reason=ok if result.ok else result.error or "failed",
                               kind=tool.kind, result=result)
 
     @staticmethod

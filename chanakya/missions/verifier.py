@@ -27,6 +27,7 @@ class OnboardingVerifier:
         self.verify_after = verify_after
         self.nudge_after = nudge_after
         self.max_nudges = max_nudges
+        self.handlers: dict = {}  # other job kinds by name, for example the approval queue's timeouts (B10)
 
     async def expect_onboarding(self, mission_id: str, session_id: str, link: str) -> None:
         """Call after ``send_onboarding_link`` executed: wait for the merchant, then verify."""
@@ -65,6 +66,8 @@ class OnboardingVerifier:
             await self._nudge(job)
         elif job.kind == "winback_verify":
             await self._verify_winback(job)
+        elif job.kind in self.handlers:
+            await self.handlers[job.kind](job)
 
     async def check_now(self, session_id: str) -> list[str]:
         """Verify right away every mission waiting on this onboarding session (the onboarding page calls this)."""
