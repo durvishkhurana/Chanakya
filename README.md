@@ -157,7 +157,7 @@ Three learned parts are replacing the brain's hand-written guesses, each chosen 
 | Part | Replaces | Setting | Status |
 |---|---|---|---|
 | Worry scorer (N1) | keyword evidence in the belief tracker | `WORRY_SCORER=lexical\|llm\|embedding` | working: 0.648 vs 0.388 on held-out lines |
-| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` (setting added) | in progress |
+| Semantic memory (N2) | the Strategy Forest's trigram vectors | `PLANNER_MEMORY=forest\|neural` | measured, no gain: success 0.63/0.61 vs 0.62/0.62 with no memory ([results](docs/results/neural-memory/README.md)); default stays forest |
 | Value network (N3) | the planner's horizon formula | `PLANNER_VALUE=formula\|network` | planned |
 
 All three use `intfloat/multilingual-e5-small` on ONNX Runtime. Its libraries are optional and never needed by `./init.sh`:

@@ -682,9 +682,9 @@
       "dependencies": [
         "N1"
       ],
-      "status": "in-progress",
+      "status": "done",
       "done_when": "Win rate for no memory, the trigram forest and neural memory with the test-split lines voice over seeds 7 and 13, plus lookup p50 and p90 ms, reported either way; PLANNER_MEMORY setting in a core: PR; tests use FakeEncoder.",
-      "evidence": "2026-10-30 on feat/N2-semantic-memory: PLANNER_MEMORY setting (core/planner-memory-setting), chanakya/brain/memory (e5 + belief nearest-moment memory behind the forest's moves_for hook, Wilson-ranked), build command with the train-split lines voice, chanakya_memory variant, PLANNER_MEMORY wiring on live calls; 8 tests with FakeEncoder. Not done: the memory build and win-rate measurement need the e5 encoder, and huggingface.co is blocked by this environment's network policy."
+      "evidence": "2026-10-31: memory built (python -m chanakya.brain.memory.build --seed 11): 540 train-split conversations, 3,245 moments, data/neural/memory.npz 1.0 MB, lookup p50 7.79 ms, p90 9.15 ms. Win rate with the test-split voice (python -m chanakya.eval.harness --mode offline --merchants 100 --seed 7/13 --voice test --variants chanakya,chanakya_forest,chanakya_memory): success no memory 0.62/0.62, forest 0.62/0.61, neural memory 0.63/0.61; walk-away 0.34/0.36, 0.35/0.38, 0.33/0.37; turn p50 111/105, 106/105, 129/128 ms; 0 safety violations. No measurable gain; PLANNER_MEMORY stays forest by default. 8 tests with FakeEncoder. ./init.sh passed (421 pytest, Ruff clean; one flaky scenario test on the first run, see progress.md). docs/results/neural-memory/."
     },
     {
       "id": "N3",

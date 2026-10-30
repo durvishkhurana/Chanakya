@@ -368,7 +368,7 @@ One owner per neural network does all of it (data, model, wiring, measurement); 
   - **Speed:** p50 and p90 ms per turn, with a target under 10 ms.
   - **CI** is unchanged apart from numpy.
 
-#### [ ] N2 Semantic memory (Durvish)
+#### [x] N2 Semantic memory (Durvish)
 - **Branch:** `feat/N2-semantic-memory`
 - **Owns:** `chanakya/brain/forest/`, `chanakya/brain/memory/`, `data/neural/memory*`, `docs/results/neural-memory/`
 - **Depends on:** the N1 encoder and lines voice (on `feat/N1-worry-scorer` until N1 merges)
