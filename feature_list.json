@@ -650,15 +650,19 @@
       "branch": "feat/N1-worry-scorer",
       "owns": [
         "chanakya/neural/",
+        "data/neural/",
+        "docs/results/neural-worry-scorer/",
+        "chanakya/brain/belief.py",
         "agent/brain_agent.py",
         "chanakya/humans/coach_engine.py",
-        "chanakya/eval/variants.py"
+        "chanakya/eval/variants.py",
+        "chanakya/sim/voice.py"
       ],
       "dependencies": [
         "N0"
       ],
       "status": "not-started",
-      "done_when": "Beats the lexical scorer on held-out lines and is measured end to end in the harness over two seeds; tests never download a model.",
+      "done_when": "On a hand-written test set (about 300 lines, committed before training, never LLM-written), per-line accuracy by slice (Hinglish, negation, no worry, Punjabi) for embedding vs lexical vs LLM, and the embedding scorer beats lexical overall; calibration error before and after temperature scaling; consent rate and belief top-1 accuracy in the offline harness with a held-out-lines twin voice, seeds 7 and 13; p50 and p90 ms per turn; WORRY_SCORER setting added in a core: PR first; tests use a fake embedder and CI is unchanged.",
       "evidence": ""
     },
     {
