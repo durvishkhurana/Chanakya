@@ -25,7 +25,11 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
 .utterance span { font-size: 13px; color: #5f6e57; }
 .utterance p { font-size: 15px; line-height: 1.6; margin: 4px 0; }
 .utterance.user p { color: var(--muted); }
-.end-call { display: inline-flex; gap: 10px; align-items: center; color: white; background: #a6463b; border: 0; border-radius: 8px; padding: 14px 20px; margin-top: 22px; font-size: 15px; }
+.push-to-talk { display: flex; gap: 10px; align-items: center; justify-content: center; width: min(100%, 320px); margin: 24px auto 0; color: #14321f; background: var(--mint); border: 2px solid #5e8051; border-radius: 999px; padding: 16px 24px; font-size: 16px; font-weight: 600; cursor: pointer; touch-action: none; user-select: none; transition: transform .08s ease, background .15s ease; }
+.push-to-talk:hover:not(:disabled) { background: #c7e8cf; }
+.push-to-talk:disabled { opacity: .5; cursor: not-allowed; }
+.push-to-talk[data-talking="true"] { background: #5e8051; color: white; transform: scale(1.03); box-shadow: 0 0 0 6px #5e805133; }
+.end-call { display: inline-flex; gap: 10px; align-items: center; color: white; background: #a6463b; border: 0; border-radius: 8px; padding: 14px 20px; margin-top: 14px; font-size: 15px; }
 .end-call:hover { background: #89372e; }
 .session-footnote { color: var(--muted); font-size: 13px; margin: 13px 0 0; }
 @media (max-width: 580px) { .session { padding: 23px 18px; } .session-backdrop { padding: 12px; } }
