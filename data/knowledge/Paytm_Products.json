@@ -1,10 +1,10 @@
 {
   "metadata": {
     "name": "Paytm business payment products",
-    "description": "Official product capabilities, published pricing, settlement, devices, sign-up, safety and support for QR, Soundbox, card machines, online payments, Payment Links and the Business app. A merchant's own plan and charges require official confirmation.",
-    "pageNum": 25,
+    "description": "Official product capabilities, published pricing, settlement, devices, sign-up, safety and support for QR, Soundbox, card machines, online payments, Payment Links and the Business app, plus official UPI fee rules, UPI usage figures, RBI complaint escalation and Paytm's privacy policy. A merchant's own plan and charges require official confirmation.",
+    "pageNum": 29,
     "reviewed_at": "2026-10-31",
-    "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26 (first six sections) and 2026-10-31 (the rest). Section text includes its source URL and review date. This is a local knowledge snapshot, not a live offer feed."
+    "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26 (first six sections) and 2026-10-31 (the rest, including government press releases, RBI FAQs and Paytm's privacy policy). Section text includes its source URL and review date. This is a local knowledge snapshot, not a live offer feed."
   },
   "tree": {
     "result": [
@@ -55,7 +55,7 @@
         "title": "Card machine pricing: standard plan MDR",
         "page_index": 7,
         "summary": "Published merchant discount rates for card machine payments, by payment source and merchant size.",
-        "text": "Paytm's official pricing page lists a Standard Plan merchant discount rate (MDR) for card machine (EDC) payments, applicable to SME merchants. A small merchant has a previous financial year turnover below 20 lakh rupees; a big merchant has a turnover above 20 lakh. Rates listed for a small merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards (Visa, Mastercard, Maestro) 0.40%, UPI credit card and credit line on UPI 0.00% below 2,000 rupees and 1.99% above, credit cards 1.40% for grocery and kirana, 1.20% for tolls, government, utilities and education, 1.99% for other categories. Rates listed for a big merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards 0.40% below 2,000 rupees and 0.90% above, UPI credit card and credit line on UPI 1.99%, credit cards the same category rates as a small merchant. Premium, corporate and international cards carry higher rates listed on the same page. The page says the monthly transaction limit depends on the documents a merchant provides, and lists free account setup and no annual maintenance charges. Source: https://business.paytm.com/pricing . Reviewed 2026-10-31. The page does not state device rental, security deposit or whether GST is added. A merchant's own plan can differ from the published standard plan and is shown in the Paytm for Business app. Do not promise a rate to a merchant; point to the official page."
+        "text": "Paytm's official pricing page lists a Standard Plan merchant discount rate (MDR) for card machine (EDC) payments, applicable to SME merchants. A small merchant has a previous financial year turnover below 20 lakh rupees; a big merchant has a turnover above 20 lakh. Rates listed for a small merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards (Visa, Mastercard, Maestro) 0.40%, UPI credit card and credit line on UPI 0.00% below 2,000 rupees and 1.99% above, credit cards 1.40% for grocery and kirana, 1.20% for tolls, government, utilities and education, 1.99% for other categories. Rates listed for a big merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards 0.40% below 2,000 rupees and 0.90% above, UPI credit card and credit line on UPI 1.99%, credit cards the same category rates as a small merchant. Premium, corporate and international cards carry higher rates listed on the same page. The page says the monthly transaction limit depends on the documents a merchant provides, and lists free account setup and no annual maintenance charges. Source: https://business.paytm.com/pricing . Reviewed 2026-10-31. The page does not state device rental, security deposit or whether GST is added. A merchant's own plan can differ from the published standard plan and is shown in the Paytm for Business app. Do not promise a rate to a merchant; point to the official page. A government UPI framework announced on 15 September 2026 sets MDR on some merchant UPI payments above 2,000 rupees; see the UPI merchant fee rules section."
       },
       {
         "node_id": "pricing_online",
@@ -182,6 +182,34 @@
         "page_index": 25,
         "summary": "Brand and bank EMI on the Paytm card machine, with 85 plus brands and 21 plus banks.",
         "text": "Paytm's Affordability Suite page describes brand EMI and bank EMI on the Paytm card machine to help merchants sell higher-value items, in partnership with 85 plus brands and 21 plus banks. On the machine the customer inserts a credit card, the cashier selects Bank EMI, the customer picks from the EMI options shown, and the total amount payable appears for checking before going ahead. Source: https://business.paytm.com/emi . Also https://business.paytm.com/support/how-can-i-generate-emi-option-during-transaction-on-edc-device . Reviewed 2026-10-31. This snapshot does not establish interest rates, which party pays them, a particular bank or brand scheme, or a no-cost EMI offer."
+      },
+      {
+        "node_id": "upi_mdr_framework",
+        "title": "UPI merchant fee rules: government framework",
+        "page_index": 26,
+        "summary": "Government UPI framework of 15 September 2026: what stays free and which merchant payments carry MDR.",
+        "text": "The Ministry of Finance said on 15 September 2026 that a new UPI framework under the Payment and Settlement Systems Act, 2007 keeps every person-to-person UPI payment free. Merchant payments up to 2,000 rupees stay free of MDR, and small merchants, including street vendors, receiving up to 1 lakh rupees a month through UPI QR codes under the P2PM category keep zero MDR on all transactions. An MDR of 0.4% applies only to specified merchant payments above 2,000 rupees, capped at 300 rupees per payment of 75,000 rupees and above. Payments above 2,000 rupees in essential sectors such as railways, telecom, insurance, fuel and agricultural inputs carry a flat 5 rupees each. The release says MDR is not a charge on customers, banks have been told to make sure merchants do not pass it on, and about 96% of merchant transactions stay unaffected. Source: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2310586 . Reviewed 2026-10-31. The release gives no start date. Paytm's pricing page, reviewed the same day, still lists UPI at 0.00% for small and big merchants, so a merchant's own UPI charge must be confirmed in the Paytm for Business app or with Paytm. Do not tell a merchant that their UPI payments are free or charged; point to the official sources."
+      },
+      {
+        "node_id": "upi_adoption",
+        "title": "UPI in India: how widely customers pay digitally",
+        "page_index": 27,
+        "summary": "Official national UPI figures: volume, share of digital payments, merchant payments and small ticket sizes.",
+        "text": "The Ministry of Finance said on 24 August 2026, citing NPCI data, that UPI handled over 24,162 crore transactions worth about 314 lakh crore rupees in FY 2025-26, about 66 crore transactions a day in 2026, and a record 2,366 crore transactions in July 2026. UPI made up 84% of India's digital payments in FY 2025-26, and 741 banks were live on UPI as of July 2026. Person-to-merchant payments are 63% of UPI volume, and 86% of merchant payments are below 500 rupees, so UPI is used for small everyday shop purchases. The release calls UPI an interoperable platform, and Paytm's retail page says a merchant can accept payments directly in their account via any UPI app. Sources: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2302657 and https://business.paytm.com/retail . Reviewed 2026-10-31. These are national figures, not figures for any one shop, city or Paytm itself."
+      },
+      {
+        "node_id": "rbi_ombudsman",
+        "title": "Complaints: escalating to the RBI Ombudsman",
+        "page_index": 28,
+        "summary": "Free RBI complaint route after a bank or covered payment company does not resolve a complaint.",
+        "text": "The Reserve Bank - Integrated Ombudsman Scheme, 2026 came into force on 1 July 2026 as a free grievance route for complaints about deficiency in service by the regulated entities it covers, mainly banks, certain NBFCs, non-bank prepaid payment instrument issuers and credit information companies. A complainant must first complain to the entity itself. They can then go to the RBI Ombudsman if there is no reply within 30 days, or within any longer time set by RBI, NPCI or card network rules, or if they are not satisfied with the reply, and must do so within 90 days after that. Complaints are filed online at https://cms.rbi.org.in , and the RBI contact centre answers on toll-free 14448. RBI says there is no fee and no need to go through any third-party agency. Source: https://www.rbi.org.in/Scripts/FAQDisplay.aspx?Id=153 . Reviewed 2026-10-31. This snapshot does not establish whether a particular Paytm company is covered; a merchant first raises the issue through Paytm's official support."
+      },
+      {
+        "node_id": "paytm_privacy",
+        "title": "Paytm privacy policy: personal data",
+        "page_index": 29,
+        "summary": "What Paytm's privacy policy says about selling, transferring and complaining about personal data.",
+        "text": "Paytm's privacy policy, issued by One 97 Communications Limited and last updated on 10 July 2024, says Paytm will not sell personal data to any third party. It says Paytm does not transfer personal data to a country or territory outside India where the Government restricts such transfers, and that the policy is governed by the Information Technology Act, 2000 and other applicable laws of India. Grievances about personal data go through the contacts the policy gives. Source: https://paytm.com/company/privacy-policy . Reviewed 2026-10-31. Chanakya never collects a PAN, bank detail, document or other personal data on a call; a merchant shares them only in the official app or at an authorised point."
       }
     ]
   },

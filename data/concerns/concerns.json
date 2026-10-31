@@ -17,7 +17,7 @@
       "resolve_conditions": [
         {
           "description": "Say plainly that exact charges, rental and taxes are listed on Paytm's official pricing page and must be confirmed with Paytm before ordering; Chanakya never quotes, estimates or denies a charge.",
-          "knowledge_node_ids": ["onboarding", "pricing_in_store"]
+          "knowledge_node_ids": ["onboarding", "pricing_in_store", "upi_mdr_framework"]
         }
       ]
     },
@@ -49,7 +49,7 @@
       "resolve_conditions": [
         {
           "description": "Say that transaction charges depend on the chosen device and merchant terms and are confirmed through Paytm's official card machine and pricing pages; never state a rate.",
-          "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store", "card_machine_help"]
+          "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store", "card_machine_help", "upi_mdr_framework"]
         }
       ]
     },
@@ -81,7 +81,7 @@
       "resolve_conditions": [
         {
           "description": "Acknowledge the existing setup without criticising any competitor, then explain the sourced benefit that fits the shop: the All-in-One QR accepts payments from UPI apps, and Soundbox gives an instant spoken confirmation while serving customers.",
-          "knowledge_node_ids": ["qr", "soundbox"]
+          "knowledge_node_ids": ["qr", "soundbox", "upi_adoption"]
         }
       ]
     },
@@ -97,7 +97,7 @@
       "resolve_conditions": [
         {
           "description": "Explain that the Paytm for Business app lets merchants track payments and view bank settlements, and that settlement schedules are confirmed with Paytm; never promise a settlement time.",
-          "knowledge_node_ids": ["onboarding", "settlement", "support", "settlement_help", "instant_settlement"]
+          "knowledge_node_ids": ["onboarding", "settlement", "support", "settlement_help", "instant_settlement", "rbi_ombudsman"]
         }
       ]
     },
@@ -177,7 +177,7 @@
       "resolve_conditions": [
         {
           "description": "Confirm that Chanakya never asks for identity documents, OTPs, PINs or card numbers on a call, and that any onboarding details go only into Paytm's official app or site.",
-          "knowledge_node_ids": ["onboarding", "merchant_safety", "signup_kyc"]
+          "knowledge_node_ids": ["onboarding", "merchant_safety", "signup_kyc", "paytm_privacy"]
         }
       ]
     },
@@ -209,7 +209,7 @@
       "resolve_conditions": [
         {
           "description": "Accept cash as valid, then mention only the sourced option for customers who do want to pay digitally: the All-in-One QR accepts payments from UPI apps. Do not claim any increase in sales.",
-          "knowledge_node_ids": ["qr"]
+          "knowledge_node_ids": ["qr", "upi_adoption"]
         }
       ]
     }
