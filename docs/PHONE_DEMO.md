@@ -1,7 +1,95 @@
 # Phone demo runbook (I3)
 
-Two ways to show a live call. Browser voice is the safe default; the phone path needs a streaming-capable Twilio
-account. Tests never place real calls, and the phone path only ever dials the one allowlisted number in `.env`.
+Three ways to show a live call. The recommended one is C: you speak as the merchant on your own phone, in the browser,
+while the laptop shows Chanakya's thinking. It needs no telephone account. The Twilio path (B) needs a
+streaming-capable account. Tests never place real calls, and the Twilio path only ever dials the one allowlisted
+number in `.env`.
+
+## C. Your phone in the browser (recommended)
+
+### One-time setup
+
+1. Install cloudflared once: `winget install Cloudflare.cloudflared`.
+2. In `.env`, besides the keys (`GROQ_API_KEY` or `OPENROUTER_API_KEY`, and `SARVAM_API_KEY`):
+
+   ```bash
+   MISSIONS_ENABLED=true
+   PLANNER_ENABLED=true
+   COACH_ENABLED=true
+   WINBACK_ENABLED=true
+   APPROVAL_TOOLS=book_field_visit
+   CALLING_HOURS=0-24
+   DEMO_TOOLS_ENABLED=true
+   ```
+
+3. Start the backend on port 8000 and the frontend on port 3000 (README, "Run locally"). If the frontend runs on
+   another port, set `PHONE_LINK_PORT` to it.
+
+### Each demo
+
+1. Start from a fresh ledger: stop the backend, delete `.state/chanakya.db` and `.state/mock_systems.db`, start it
+   again. A merchant already onboarded in an earlier run makes the next sale to them stop, correctly.
+   Never run `scripts/demo/e2e_track_b.py` against the ledger you demo on, for the same reason.
+2. On the laptop open `/missions`, select **Load demo signals**, open a mission's live call (`/call/<mission id>`).
+3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then tap
+   **Talk by voice instead** and allow the microphone.
+4. Speak as the merchant. The laptop's Live Call View fills as you talk.
+5. When done, select **Save run log**, then **Disconnect phone**. Stopping the backend also closes the link.
+
+While the link is open anyone who has its URL can open the demo and use your API keys, so disconnect after each
+demo. Only the laptop can open or close the link or save a run; requests through the tunnel are refused.
+
+### Demo flow (about 6 minutes; the starred beats make a 3-minute cut)
+
+| Beat | Where | What it shows |
+|---|---|---|
+| 1 ★ Opening | `/` | Three doors for missions |
+| 2 Merchant asks | `/demo/soundbox`, **Request a callback** | A merchant-requested mission |
+| 3 ★ Signals | `/missions`, **Load demo signals** | Data-driven missions, cards, priority queue |
+| 4 ★ Phone call | phone + laptop `/call/<id>` | AI disclosure, worry meter, plan, sourced answers, consent, link through the safety gate |
+| 5 ★ Verified done | phone: tap the link in the actions list, complete the mock page | DONE only when the onboarding system confirms |
+| 6 ★ Knowing when to stop | **Run scenario**: Distressed merchant | Hand-off to a person with a context card, no writes |
+| 7 Approval | **Run scenario**: Offline Soundbox, then the Approvals tab | The visit waits for a person's approval |
+| 8 Win-back | **Run scenario**: Win-back, device problem | Listens, raises a ticket, no offer |
+| 9 Coach | `/coach` | Suggests a human caller's next move |
+| 10 Insights | `/insights` | Worries, funnel, hand-off reasons |
+| 11 ★ Close | | Every business system is a labelled mock, not affiliated with Paytm |
+
+### What to say on the phone (beat 4)
+
+Use a Soundbox mission such as Sharma General Store. These lines were run through the tunnel against the live model:
+
+1. "Haan ji, boliye?" Chanakya says it is an AI assistant first.
+2. "Iska mahine ka kiraya kitna hai? Koi extra charge toh nahi katega?" The worry meter moves to charges; Chanakya
+   points to official pricing and quotes no number.
+3. Wait until Chanakya asks whether to send the link, then: "Haan ji, link bhej dijiye. Reminder bhi bhej dena."
+   The link appears under actions as executed. A yes said before it asks, or a plain "Achha, theek hai", is
+   correctly not taken as consent, and it asks again.
+4. "Theek hai, dhanyavaad."
+
+Do not offer an OTP in the sale call: Chanakya refuses and closes the mission as not interested. To show that refusal,
+use a second mission.
+
+### Logs and finding problems
+
+With `DEMO_TOOLS_ENABLED=true` the backend writes its log to `.state/logs/backend.log` (rotated at 5 MB). **Save run
+log** writes `.state/runs/<time>/`:
+
+- `missions.json`: every mission with its full ledger
+- `transcript.md`: each call as readable lines, with each move and action
+- `report.md`: problems found in every called mission: no AI disclosure, a write without recorded consent, a reply
+  slower than 4 seconds, rule breaks in Chanakya's lines (sensitive data asked, invented amounts, pressure, the em
+  dash), Hinglish mixed with Devanagari in one reply, and ERROR or Traceback lines in the backend log since the last
+  save. Blocked or pending actions and reply times are listed as notes.
+
+`.state/` is ignored by git, so no transcripts or logs are committed.
+
+### Rehearsal loop
+
+1. Before each session: `./init.sh`, then `python scripts/demo/scenarios.py` (expect 6/6).
+2. Run the demo once from a fresh ledger, then **Save run log**.
+3. Read `report.md`, fix the cause, and repeat only the beat that failed (one scenario or one phone call).
+4. Two clean full runs, then record the backup video (below).
 
 ## A. Browser voice on a mission (recommended)
 
