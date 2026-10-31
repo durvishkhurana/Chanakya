@@ -2,7 +2,7 @@
   "metadata": {
     "name": "Paytm business payment products",
     "description": "Official product capabilities, published pricing, settlement, devices, sign-up, safety and support for QR, Soundbox, card machines, online payments, Payment Links and the Business app. A merchant's own plan and charges require official confirmation.",
-    "pageNum": 15,
+    "pageNum": 25,
     "reviewed_at": "2026-10-31",
     "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26 (first six sections) and 2026-10-31 (the rest). Section text includes its source URL and review date. This is a local knowledge snapshot, not a live offer feed."
   },
@@ -83,7 +83,7 @@
         "title": "Soundbox help: announcements, faults and damage",
         "page_index": 11,
         "summary": "What a Soundbox announces, how to replay, and where to report faults or damage.",
-        "text": "Paytm support says a Soundbox announces successful payments only; it does not announce failed or pending payments. A merchant can replay past payments by pressing the function key. The first generation Soundbox has no battery and must stay plugged in to a power socket. To change the announcement language, Paytm asks merchants to call the Business Helpdesk at 0120-4440440. For a damaged Soundbox, Paytm asks merchants to email smartretail.support@paytm.com with a photo and video of the damage. Physical damage and liquid damage are not covered by warranty. The Soundbox page lists a 24x7 service guarantee as a Soundbox benefit. Source: https://business.paytm.com/support/paytm-soundbox . Reviewed 2026-10-31. Do not troubleshoot hardware on a call beyond these steps; offer a technician visit or the official helpdesk."
+        "text": "Paytm support says a Soundbox announces successful payments only; it does not announce failed or pending payments. A merchant can replay past payments by pressing the function key. The first generation Soundbox has no battery and must stay plugged in to a power socket. To change the announcement language, Paytm asks merchants to call the Business Helpdesk at 0120-4440440. For a damaged Soundbox, Paytm asks merchants to email smartretail.support@paytm.com with a photo and video of the damage. If the red light stays on, re-insert the SIM and restart; the device is ready once the blue light is steady. If the blue light is on but payments are not announced, restart it and call the helpdesk if that does not help. Paytm recommends keeping the Paytm SIM supplied with the device; a new SIM can be ordered through the helpdesk. Physical damage and liquid damage are not covered by warranty. The Soundbox page lists a 24x7 service guarantee as a Soundbox benefit. Source: https://business.paytm.com/support/paytm-soundbox . Reviewed 2026-10-31. Do not troubleshoot hardware on a call beyond these steps; offer a technician visit or the official helpdesk."
       },
       {
         "node_id": "card_machine_plans",
@@ -112,6 +112,76 @@
         "page_index": 15,
         "summary": "Official helpdesk number and in-app query route for QR, Soundbox and card machine.",
         "text": "Paytm's contact page says merchants with queries about the QR code, Soundbox, card machine or becoming a Paytm merchant can call the IVR helpdesk at 0120-4440440, or raise a query in the Paytm for Business app. Payment Gateway queries go through https://dashboard.paytmpayments.com/login/ . The pricing page lists 24x7 merchant support. Source: https://business.paytm.com/contact-us . Reviewed 2026-10-31. A merchant can always check a caller's claims by calling this official number themselves."
+      },
+      {
+        "node_id": "settlement_help",
+        "title": "Settlement help: cycle, checking and failures",
+        "page_index": 16,
+        "summary": "Payments reach the bank by the next working day; how to check, reconcile and fix a failed settlement.",
+        "text": "Paytm support says the total received in one day is transferred to the merchant's bank account by the next working day in most cases (T+1, where T is the day the payment was received), and bank holidays can extend this. QR payments go straight to the registered bank account, not to a Paytm wallet, and any bank account can be used; a Paytm bank account is not required. After each settlement Paytm sends an SMS or app notification with a reference number. To check, open the Settlements tab in the Paytm for Business app and pick Today, Yesterday or a date range: it shows the amount, date, time and UTR number, and the same UTR appears on the bank statement for reconciliation. If a settlement is missing, check the Settlements tab and the bank statement; Paytm says the money is safe and it retries within 24 hours, and the merchant should call the 24x7 helpline if it is still missing 2 days after the payment. If settlements fail repeatedly because of the bank, Paytm suggests changing the linked account in the app under Accept Payment Settings, Bank Details; keep the account number and IFSC ready. The change is usually almost immediate, and Paytm may ask for a cancelled cheque in the merchant's name when it cannot link the new account automatically. Source: https://business.paytm.com/support/what-is-my-settlement-cycle . Also https://business.paytm.com/support/i-didnt-receive-my-settlementpayout , https://business.paytm.com/support/how-can-i-check-my-settlements and https://business.paytm.com/support/my-settlement-is-repeatedly-failing . Reviewed 2026-10-31. Chanakya never takes bank details on a call; the merchant changes them only in the app."
+      },
+      {
+        "node_id": "instant_settlement",
+        "title": "Instant settlement: move money any time",
+        "page_index": 17,
+        "summary": "Select merchants can transfer above Rs. 50 any time, or set same-day auto transfers.",
+        "text": "Paytm support says select merchants have an Instant Settlements feature: received payments build up as a balance that the merchant can move to the bank whenever they want. With it enabled, the merchant can transfer any amount above Rs. 50 at any time from the Paytm for Business app, as often as they like, or choose a same-day automatic transfer once a day at 5:00 AM, twice a day at 5:00 AM and 4:00 PM, or three times a day at 5:00 AM, 12:00 PM and 6:00 PM. Source: https://business.paytm.com/support/how-do-instant-bank-settlements-work . Reviewed 2026-10-31. The page does not say which merchants qualify or whether a fee applies; confirm in the app or with Paytm."
+      },
+      {
+        "node_id": "qr_help",
+        "title": "QR help: alerts, scanning problems and shop name",
+        "page_index": 18,
+        "summary": "Payment alerts by SMS, email and app; what to check when the QR stops working; changing the shop name.",
+        "text": "Paytm support says every successful payment is notified by SMS to the merchant's mobile and by email, and payments show in real time in the Paytm for Business app and the Paytm Dashboard. If the QR stops accepting payments, check that the printed QR is in good condition and scans easily, and that the monthly payment acceptance limit is not used up; otherwise contact Paytm. The name customers see when they scan is the display name, which the merchant can change in the app: Menu, Business Profile, then Change next to the business name. Select merchants can create a separate QR for each store through the Paytm Dashboard by contacting Paytm. A Soundbox mapped to the QR announces every successful payment made by scanning it, whether the customer pays by wallet, UPI, net banking or another payment app. Source: https://business.paytm.com/support/how-am-i-notified-of-successful-payments . Also https://business.paytm.com/support/i-am-unable-to-accept-payments-with-my-qr-code , https://business.paytm.com/support/how-to-update-display-name-of-my-qr-code and https://business.paytm.com/support/how-does-the-soundbox-work . Reviewed 2026-10-31."
+      },
+      {
+        "node_id": "limits_and_plans",
+        "title": "Payment limits, plan upgrades and GST",
+        "page_index": 19,
+        "summary": "Over the monthly limit UPI still works; upgrading needs business documents; GST not needed below Rs. 20 lakh.",
+        "text": "Paytm support says that if a merchant goes over the monthly payment acceptance limit they can still accept payments through UPI, and can upgrade the limit. Upgrading means submitting business documents in the Paytm Dashboard under Settings, Account Upgrade; once they are verified the monthly limit can go to Unlimited. Paytm says there are no one-time or recurring charges for setting up and running a Paytm for Business account, and lists all plans at https://business.paytm.com/pricing . A company without a GST certificate can give a declaration of GST non-enrolment or a provisional GST certificate, and a GST document is not required for merchants with annual turnover below Rs. 20 lakh. If activation documents are rejected, Paytm emails the reasons and the merchant can fix them and resubmit. A 'bank account name does not match PAN' error means Paytm could not verify that the bank account and PAN belong to the same person. Source: https://business.paytm.com/support/what-will-happen-if-i-exceed-my-monthly-payment-acceptance-limit . Also https://business.paytm.com/support/i-need-higher-monthly-payment-limits-how-can-i-upgrade , https://business.paytm.com/support/does-paytm-charge-a-setup-or-maintenance-fee , https://business.paytm.com/support/i-have-a-company-but-i-dont-have-a-gst-certificate-can-i-still-use-paytm-for-my-business and https://business.paytm.com/support/my-account-activation-documents-were-rejected-what-can-i-do-now . Reviewed 2026-10-31. Documents go only through the official dashboard or app, never on a call."
+      },
+      {
+        "node_id": "card_machine_help",
+        "title": "Card machine help: payment modes, failed status and charges",
+        "page_index": 20,
+        "summary": "What the machine accepts, what to do when the status says failed, and where to check charges.",
+        "text": "Paytm support says the card machine accepts all major credit and debit cards and dynamic QR, which takes UPI and Paytm Wallet payments, and also supports international cards and EMI. Contact and contactless cards both work; swiping is disabled because swipe cards are unsafe. The payment status on the machine is accurate: give goods or services only when it shows successful. If money left the customer's account but the machine shows failed, or the app shows processing, tell the customer it will be reversed to their account within 5 to 7 business days. If the machine is slow or hangs, restart it, then check for software and firmware updates. Charges follow the merchant's plan and can be checked in the app under Accept Payment Settings, Charges and Limits; for a mismatch Paytm lists the Business Helpdesk on 0120-4580007. To spot tampering, compare the device with photos of it when it was known to be secure, or mark it with a UV marker pen, because fraudsters often replace the outer casing. Source: https://business.paytm.com/support/what-all-payment-modes-can-i-use-on-this-machine . Also https://business.paytm.com/support/what-should-i-do-if-the-amount-has-been-deducted-from-the-customers-account-but-machine-shows-transaction-status-as-failed , https://business.paytm.com/support/i-have-been-wrongly-charged-for-a-payment-and-want-to-check-the-applicable-commission-rates and https://business.paytm.com/support/how-can-i-check-if-the-device-is-tampered . Reviewed 2026-10-31."
+      },
+      {
+        "node_id": "refunds",
+        "title": "Refunds to customers",
+        "page_index": 21,
+        "summary": "Refund from the Transactions page at no charge; banks may take a few days to show it.",
+        "text": "Paytm support says a merchant refunds a payment from the Transactions page: select the payment to open its details, then use Initiate Refund. There is no charge for refunding a payment. Paytm sends the refund to the customer's bank immediately, but banks follow their own processes, so the credit may not show at once; if the customer has not received it after a few days, the merchant should contact Paytm. Source: https://business.paytm.com/support/how-can-i-initiate-refunds-for-payments-received-via-paytm-for-business . Also https://business.paytm.com/support/will-i-be-charged-to-refund-a-payment and https://business.paytm.com/support/i-initiated-a-refund-successfully-but-my-customer-hasnt-received-it . Reviewed 2026-10-31. Chanakya cannot issue a refund; the merchant does it in the app."
+      },
+      {
+        "node_id": "statements",
+        "title": "Transaction and settlement statements",
+        "page_index": 22,
+        "summary": "Download a statement for any date range from the Paytm for Business app.",
+        "text": "Paytm support says a merchant can download transaction or settlement reports from the Paytm for Business app or the web dashboard: tap the Payments icon at the bottom left, choose the date range, then Download statement. Downloaded statements are in the Statement tab of the main menu, where they can also be sent by email. Source: https://business.paytm.com/support/how-to-download-transaction-settlement-reports- . Reviewed 2026-10-31."
+      },
+      {
+        "node_id": "merchant_offers",
+        "title": "Merchant cashback and offers: where to look",
+        "page_index": 23,
+        "summary": "Offers vary by merchant and are listed only in the app; never promise one on a call.",
+        "text": "Paytm support says Paytm rewards merchants from time to time through offers, and a merchant sees the offers they are eligible for in the Paytm for Business app: tap the CashBack icon at the top right of the home page, open an offer for its eligibility, conditions and duration, and tap Activate Offer. Some merchants will not see any offer. Source: https://business.paytm.com/support/am-i-eligible-for-merchant-cashback . Reviewed 2026-10-31. This snapshot does not establish any particular offer, amount or eligibility. Chanakya never mentions, promises or estimates an offer or cashback; it can only say where the merchant can check."
+      },
+      {
+        "node_id": "dynamic_qr",
+        "title": "Dynamic QR: exact-amount QR at the billing counter",
+        "page_index": 24,
+        "summary": "A QR with the bill amount pre-filled, generated from the POS for each order.",
+        "text": "Paytm's Dynamic QR page describes a QR with the amount pre-filled and an instant on-screen confirmation, described as GST compliant. The cashier creates an order with the bill amount in the POS system, a dynamic QR is generated automatically, the cashier shows it on a customer-facing screen or prints it on the invoice, and the customer scans it with Paytm or any UPI app. Paytm says it works with POS terminals, shows the order and payment together for reconciliation, and offers 24x7 online assistance. It lists healthcare, pharmacy, furniture, apparel, electronics, restaurants and groceries as businesses that use it. Source: https://business.paytm.com/dynamic-qr . Reviewed 2026-10-31. This snapshot does not establish its price, device or eligibility; it suits a counter that already bills on a POS system."
+      },
+      {
+        "node_id": "emi",
+        "title": "EMI on the card machine",
+        "page_index": 25,
+        "summary": "Brand and bank EMI on the Paytm card machine, with 85 plus brands and 21 plus banks.",
+        "text": "Paytm's Affordability Suite page describes brand EMI and bank EMI on the Paytm card machine to help merchants sell higher-value items, in partnership with 85 plus brands and 21 plus banks. On the machine the customer inserts a credit card, the cashier selects Bank EMI, the customer picks from the EMI options shown, and the total amount payable appears for checking before going ahead. Source: https://business.paytm.com/emi . Also https://business.paytm.com/support/how-can-i-generate-emi-option-during-transaction-on-edc-device . Reviewed 2026-10-31. This snapshot does not establish interest rates, which party pays them, a particular bank or brand scheme, or a no-cost EMI offer."
       }
     ]
   },
