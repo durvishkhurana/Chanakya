@@ -8,7 +8,7 @@ import Approvals from "../../components/missions/Approvals";
 import AppShell from "../../components/missions/AppShell";
 import ConcernMeter from "../../components/missions/ConcernMeter";
 import LeavingReasons from "../../components/missions/LeavingReasons";
-import { api, useMissionStream } from "../../lib/chanakyaApi";
+import { api, resetMission, useDemoTools, useMissionStream } from "../../lib/chanakyaApi";
 import {
   countRows, deriveCallView, doorLabel, eventSummary, groupMissions, languageLabel, missionCounts, percent, stateLabel, time, topWorries, worryLabel,
 } from "../../lib/missionView.mjs";
@@ -52,8 +52,10 @@ function MissionControl() {
     return () => clearTimeout(timer);
   }, [load, events.length]);
 
-  const groups = useMemo(() => groupMissions(rows || []), [rows]);
-  const counts = useMemo(() => missionCounts(rows || [], handoffs), [rows, handoffs]);
+  // A run retired by Reset stays in the ledger but leaves the board; its fresh copy waits in the queue.
+  const visible = useMemo(() => (rows || []).filter((r) => r.mission.outcome !== "reset"), [rows]);
+  const groups = useMemo(() => groupMissions(visible), [visible]);
+  const counts = useMemo(() => missionCounts(visible, handoffs), [visible, handoffs]);
   const listed = tab === "queue" ? groups.waiting : tab === "active" ? groups.active : groups.finished;
   const selectedId = selected || listed[0]?.mission.id || null;
   const next = groups.waiting.find((r) => r.queue?.ready)?.mission;
@@ -179,6 +181,7 @@ function StatePill({ state }) {
 }
 
 function MissionDetail({ id, version, busy, act }) {
+  const demoTools = useDemoTools();
   const [data, setData] = useState(null);
   const [outbox, setOutbox] = useState([]);
   const [error, setError] = useState("");
@@ -221,6 +224,8 @@ function MissionDetail({ id, version, busy, act }) {
         <Link className="btn" href={`/call/${mission.id}`}>Open live call view</Link>
         {canEscalate && <button className="btn ghost" disabled={!!busy} onClick={() => act("escalate", () => api("/api/handoffs/escalate", {
           method: "POST", body: { mission_id: mission.id, reason: "Operator asked a person to take over" } }))}>Hand to a person</button>}
+        {demoTools && <button className="btn ghost" disabled={!!busy} title="Put this mission back in the queue for another run"
+          onClick={() => act("reset", () => resetMission(mission.id))}>{busy === "reset" ? "Resetting…" : "Reset to queue"}</button>}
       </div>
     </section>
     <section className="panel">

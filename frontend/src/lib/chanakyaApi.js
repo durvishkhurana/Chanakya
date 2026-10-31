@@ -12,6 +12,22 @@ export function wsBase() {
   return `${protocol === "https:" ? "wss" : "ws"}://${host}`;
 }
 
+/** Whether the laptop-only demo tools (DEMO_TOOLS_ENABLED) are on and this page runs on the laptop. */
+export function useDemoTools() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const { hostname } = window.location;
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") return;
+    api("/api/phone-link").then(() => setOn(true)).catch(() => setOn(false));
+  }, []);
+  return on;
+}
+
+/** Retire a mission's run and put a fresh copy of it in the queue (demo tools). Returns the new mission's id. */
+export async function resetMission(missionId) {
+  return (await api(`/api/demo-tools/missions/${missionId}/reset`, { method: "POST" })).mission_id;
+}
+
 /** JSON request to the backend through the same-origin /api proxy. Throws with the server's detail on error. */
 export async function api(path, { method = "GET", body } = {}) {
   const response = await fetch(path, {

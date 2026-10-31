@@ -79,6 +79,8 @@ phone**: it opens a temporary Cloudflare quick tunnel to the frontend and shows 
 on your phone while the laptop shows the call. **Save run log** writes every mission's transcript and an automatic
 problem report to `.state/runs/`, and the backend log goes to `.state/logs/backend.log`. Setup, demo flow and script
 are in [docs/PHONE_DEMO.md](docs/PHONE_DEMO.md).
+**Reset to queue** (Mission Control) and **Reset this call** (call page) put a mission back in the queue for another
+run; the old run stays in the ledger (`POST /api/demo-tools/missions/<id>/reset`, laptop only).
 
 When Chanakya sends the onboarding link, the call page shows it as a message card with an **Open the onboarding link**
 button. With `LINK_EMAIL_ENABLED=true` and the `LINK_EMAIL_TO` and `SMTP_*` values in `.env`, the link is also emailed

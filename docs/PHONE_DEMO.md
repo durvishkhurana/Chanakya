@@ -34,6 +34,10 @@ number in `.env`.
 1. Start from a fresh ledger: stop the backend, delete `.state/chanakya.db` and `.state/mock_systems.db`, start it
    again. A merchant already onboarded in an earlier run makes the next sale to them stop, correctly.
    Never run `scripts/demo/e2e_track_b.py` against the ledger you demo on, for the same reason.
+   To run one mission again without wiping everything, select **Reset to queue** on it in Mission Control, or
+   **Reset this call** under **Demo tools** on its call page. The old run stays in the ledger, hidden from the board,
+   the mock systems forget what it wrote (the merchant's products go back to the seed), and a fresh copy waits in the
+   queue.
 2. On the laptop open `/missions`, select **Load demo signals**, open a mission's live call (`/call/<mission id>`).
 3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then hold the
    mic button and allow the microphone.

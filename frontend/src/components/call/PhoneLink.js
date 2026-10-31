@@ -1,12 +1,14 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
-import { api } from "../../lib/chanakyaApi";
+import { api, resetMission } from "../../lib/chanakyaApi";
 
 /** Laptop-only demo tools (DEMO_TOOLS_ENABLED): open this call on a phone through a tunnel, and save the run log. */
 export default function PhoneLink({ missionId }) {
+  const router = useRouter();
   const [onLaptop, setOnLaptop] = useState(false);
   const [link, setLink] = useState(null);
   const [qr, setQr] = useState("");
@@ -57,6 +59,13 @@ export default function PhoneLink({ missionId }) {
     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
       <button className="btn" disabled={!!busy} onClick={() => run("save", "/api/run-logs", setSaved)}>
         {busy === "save" ? "Saving…" : "Save run log"}</button>
+      <button className="btn ghost" disabled={!!busy} onClick={async () => {
+        setBusy("reset");
+        setError("");
+        try { router.push(`/call/${await resetMission(missionId)}`); }
+        catch (err) { setError(err.message); }
+        finally { setBusy(""); }
+      }}>{busy === "reset" ? "Resetting…" : "Reset this call"}</button>
       {saved && <span className="meta">{saved.calls} calls ({saved.missions} missions) saved to <code>{saved.folder}</code></span>}
     </div>
     {saved && (saved.problems.length
