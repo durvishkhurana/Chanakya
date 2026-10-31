@@ -1,0 +1,120 @@
+diff --git a/chanakya/neural/paraphrase.py b/chanakya/neural/paraphrase.py
+index f617b13..33c2a46 100644
+--- a/chanakya/neural/paraphrase.py
++++ b/chanakya/neural/paraphrase.py
+@@ -10,7 +10,10 @@ phrasing, or to a line in the other split, are dropped.
+     python -m chanakya.neural.paraphrase --seed 11 --extend-train mistralai/mistral-small-2603 --extend-train z-ai/glm-5.3-flash
+ 
+ ``--extend-train`` adds train lines written by other model families (never the test family) and leaves the test
+-split untouched; new lines close to any test line are dropped.
++split untouched; new lines close to any test line or to a line the demo scenarios speak are dropped.
++``--winback`` makes those lines come from former merchants saying why they stopped or gave the device back:
++
++    python -m chanakya.neural.paraphrase --seed 23 --winback --extend-train mistralai/mistral-small-2603
+ """
+ 
+ import argparse
+@@ -38,6 +41,12 @@ TONES = ["blunt", "polite", "indirect and hesitant", "rambling", "suspicious", "
+ TOO_CLOSE = 0.85
+ NONE_BRIEF = ("says something on a sales call that shows no worry at all: a greeting, an okay, a yes to continue, "
+               "asking who is calling, or small talk about the shop")
++# Sales-call lines raise a worry before buying; a former merchant explains, in the past tense, why they left.
++WINBACK_BRIEF = ("used to use this company's device or QR, stopped using it or gave the device back, and now says "
++                 "why, in the past tense; the real reason was that: {description}")
++WINBACK_NONE_BRIEF = ("used to be a customer and says something that gives no reason for leaving: a greeting, an "
++                      "okay, asking who is calling, or saying they remember using it")
++WINBACK_COUNT = 10  # lines per concern and language in a win-back batch
+ 
+ 
+ def prompt(brief: str, language: str, count: int, rng: random.Random) -> str:
+@@ -84,10 +93,18 @@ def clean(rows: list[dict], bank: ConcernBank) -> list[dict]:
+     return kept
+ 
+ 
++def demo_lines() -> list[str]:
++    """Every merchant line the demo scenarios speak; these are never trained on."""
++    from chanakya.brain.scenarios import SCENARIOS
++
++    return [line for s in SCENARIOS.values() for line in (s.opener, *s.worries, s.consent, s.filler) if line]
++
++
+ def extend(existing: list[dict], new: list[dict], bank: ConcernBank) -> list[dict]:
+-    """``existing`` plus the new train lines that repeat nothing and stay clear of the bank and of every test line."""
++    """``existing`` plus the new train lines that repeat nothing and stay clear of the bank, every test line and the demo."""
+     reference = [trigrams(p) for cid in bank.ids for p in bank.phrasings(cid)]
+     reference += [trigrams(r["text"]) for r in existing if r["split"] == "test"]
++    reference += [trigrams(line) for line in demo_lines()]
+     seen = {" ".join(r["text"].lower().split()) for r in existing}
+     kept = []
+     for row in new:
+@@ -100,14 +117,21 @@ def extend(existing: list[dict], new: list[dict], bank: ConcernBank) -> list[dic
+ 
+ 
+ async def generate(llm, seed: int, bank: ConcernBank | None = None, parallel: int = 4,
+-                   splits: dict | None = None) -> list[dict]:
+-    """Every (split, concern or none, language) batch, generated with a bounded number of requests at once."""
++                   splits: dict | None = None, winback: bool = False) -> list[dict]:
++    """Every (split, concern or none, language) batch, generated with a bounded number of requests at once.
++
++    ``winback`` asks for former merchants explaining why they left instead of sales-call worries.
++    """
+     bank = bank or default_bank()
+     rng = random.Random(seed)
+     jobs = []
+     for split, (role, count) in (splits or SPLITS).items():
+         for label in [*bank.ids, NONE]:
+-            brief = NONE_BRIEF if label == NONE else f"is worried that: {bank.concerns[label].description}"
++            if winback:
++                brief = WINBACK_NONE_BRIEF if label == NONE else WINBACK_BRIEF.format(
++                    description=bank.concerns[label].description)
++            else:
++                brief = NONE_BRIEF if label == NONE else f"is worried that: {bank.concerns[label].description}"
+             for language in LANGUAGES:
+                 jobs.append((split, role, label, language, prompt(brief, language, count + 4, rng), rng.randrange(10**6)))
+     gate = asyncio.Semaphore(parallel)
+@@ -138,6 +162,8 @@ def main() -> None:
+     parser.add_argument("--out", type=Path, default=OUT)
+     parser.add_argument("--extend-train", action="append", default=[], metavar="MODEL",
+                         help="Add train lines from this model to the existing file; repeatable")
++    parser.add_argument("--winback", action="store_true",
++                        help="With --extend-train: lines from former merchants saying why they left")
+     args = parser.parse_args()
+     load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+     if args.extend_train:
+@@ -148,7 +174,8 @@ def main() -> None:
+         bank, rows, base = default_bank(), load(path=args.out), Settings.from_env()
+         for number, model in enumerate(args.extend_train):
+             llm = default_llm(dataclasses.replace(base, models={**base.models, "twin_a": model}))
+-            new = asyncio.run(generate(llm, args.seed + number, bank, splits={"train": SPLITS["train"]}))
++            split = {"train": (SPLITS["train"][0], WINBACK_COUNT if args.winback else SPLITS["train"][1])}
++            new = asyncio.run(generate(llm, args.seed + number, bank, splits=split, winback=args.winback))
+             before = len(rows)
+             rows = extend(rows, new, bank)
+             print(f"{model}: {len(new)} generated, {len(rows) - before} kept")
+diff --git a/chanakya/neural/tests/test_paraphrase.py b/chanakya/neural/tests/test_paraphrase.py
+index 6c02684..469a778 100644
+--- a/chanakya/neural/tests/test_paraphrase.py
++++ b/chanakya/neural/tests/test_paraphrase.py
+@@ -77,3 +77,22 @@ def test_dashes_from_a_model_become_commas():
+             return '{"lines": ["Pehle batao \\u2014 koi charge?", "  "]}'
+ 
+     assert aio.run(ask(Dashy(), "twin_a", "x", 1)) == ["Pehle batao, koi charge?"]
++
++
++def test_winback_lines_ask_why_a_former_merchant_left_and_never_copy_a_demo_line():
++    from chanakya.neural.paraphrase import WINBACK_COUNT, demo_lines, extend
++
++    class Recorder(FakeLLM):
++        async def complete(self, role, messages, **kwargs):
++            self.prompts = [*getattr(self, "prompts", []), messages[0]["content"]]
++            return await super().complete(role, messages, **kwargs)
++
++    bank, llm = default_bank(), Recorder()
++    asyncio.run(generate(llm, seed=3, bank=bank, splits={"train": ("twin_a", WINBACK_COUNT)}, winback=True))
++    assert all("past tense" in p or "no reason for leaving" in p for p in llm.prompts)
++    assert any(bank.concerns["device_issue"].description in p for p in llm.prompts)
++
++    demo = next(line for line in demo_lines() if "wapas kar diya" in line)
++    rows = extend([], [{"text": demo.rstrip("."), "split": "train"},
++                       {"text": "Machine chalti hi nahi thi theek se, toh lauta di", "split": "train"}], bank)
++    assert [r["text"] for r in rows] == ["Machine chalti hi nahi thi theek se, toh lauta di"]

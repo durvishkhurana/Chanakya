@@ -56,7 +56,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 ### What's In Progress
 
 - [ ] A9 Strategy Forest (blocked): built and wired, lookup 1-4 ms, but no consistent gain: 0.62/0.61 vs 0.62/0.62 with the lexical scorer and 0.84/0.79 vs 0.84/0.77 with the embedding scorer (held-out lines, seeds 7/13). Needs harder twins or real transcripts
-- [ ] N4 (blocked): screens built and every check passes with all neural settings on except the `winback_device_fix` demo scenario, which fails with `WORRY_SCORER=embedding` (the N1 head reads the device-fault line as rental cost, 0.35 vs 0.34)
+- [ ] N4 (blocked): screens built and every check passes with all neural settings on except the `winback_device_fix` demo scenario, which fails with `WORRY_SCORER=embedding`. Diagnosed in `docs/results/neural-worry-scorer/filler-diagnosis/`: filler lines move the belief; the tracker fixes tried there pass the demo but lower sales success, so none is merged
 
 ### What's Next
 
