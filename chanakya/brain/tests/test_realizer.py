@@ -60,7 +60,7 @@ def test_action_line_never_claims_an_action_that_did_not_run():
 
 
 def test_evidence_nodes_follow_concern_and_product():
-    assert evidence_nodes(Move(type=MoveType.RESOLVE_CONCERN, concern="rental_cost"), BANK) == ["onboarding", "soundbox"]
+    assert evidence_nodes(Move(type=MoveType.RESOLVE_CONCERN, concern="rental_cost"), BANK) == ["card_machine_plans", "onboarding", "soundbox"]
     assert evidence_nodes(Move(type=MoveType.RECOMMEND, product="gateway"), BANK) == ["gateway"]
     assert evidence_nodes(Move(type=MoveType.DISCOVER_NEED), BANK) == []
     assert set(knowledge_texts()) >= set(PRODUCTS)

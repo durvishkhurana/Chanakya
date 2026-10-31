@@ -17,7 +17,7 @@
       "resolve_conditions": [
         {
           "description": "Say plainly that exact charges, rental and taxes are listed on Paytm's official pricing page and must be confirmed with Paytm before ordering; Chanakya never quotes, estimates or denies a charge.",
-          "knowledge_node_ids": ["onboarding"]
+          "knowledge_node_ids": ["onboarding", "pricing_in_store"]
         }
       ]
     },
@@ -33,7 +33,7 @@
       "resolve_conditions": [
         {
           "description": "Explain that rental and purchase price are not fixed in Chanakya's sources and that current charges and models are shown on Paytm's official Soundbox and pricing pages; offer to send the official onboarding link so the merchant can check before committing.",
-          "knowledge_node_ids": ["soundbox", "onboarding"]
+          "knowledge_node_ids": ["soundbox", "onboarding", "card_machine_plans"]
         }
       ]
     },
@@ -49,7 +49,7 @@
       "resolve_conditions": [
         {
           "description": "Say that transaction charges depend on the chosen device and merchant terms and are confirmed through Paytm's official card machine and pricing pages; never state a rate.",
-          "knowledge_node_ids": ["card_machine", "onboarding"]
+          "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store"]
         }
       ]
     },
@@ -65,7 +65,7 @@
       "resolve_conditions": [
         {
           "description": "Describe the official route: onboarding happens through the Paytm for Business app or official site, and Chanakya can send the official onboarding link so the merchant can start when convenient; make no promise about how long approval takes.",
-          "knowledge_node_ids": ["onboarding"]
+          "knowledge_node_ids": ["onboarding", "signup_kyc"]
         }
       ]
     },
@@ -97,7 +97,7 @@
       "resolve_conditions": [
         {
           "description": "Explain that the Paytm for Business app lets merchants track payments and view bank settlements, and that settlement schedules are confirmed with Paytm; never promise a settlement time.",
-          "knowledge_node_ids": ["onboarding"]
+          "knowledge_node_ids": ["onboarding", "settlement", "support"]
         }
       ]
     },
@@ -113,7 +113,7 @@
       "resolve_conditions": [
         {
           "description": "Repeat that Chanakya is an AI assistant, that it will never ask for an OTP, UPI PIN, CVV or password, and that onboarding and any payment happen only through official Paytm channels the merchant can open themselves.",
-          "knowledge_node_ids": ["onboarding"]
+          "knowledge_node_ids": ["onboarding", "merchant_safety", "support"]
         }
       ]
     },
@@ -145,7 +145,7 @@
       "resolve_conditions": [
         {
           "description": "Do not troubleshoot hardware on the call: note that features vary by model, offer a technician visit through field operations, and set a follow-up to check the device works.",
-          "knowledge_node_ids": ["soundbox", "card_machine"]
+          "knowledge_node_ids": ["soundbox", "card_machine", "soundbox_help", "support"]
         }
       ]
     },
@@ -161,7 +161,7 @@
       "resolve_conditions": [
         {
           "description": "Continue in the merchant's language and explain that Paytm's Business homepage describes multilingual support for Soundbox; specific languages per model are confirmed with Paytm.",
-          "knowledge_node_ids": ["soundbox"]
+          "knowledge_node_ids": ["soundbox", "soundbox_models"]
         }
       ]
     },
@@ -177,7 +177,7 @@
       "resolve_conditions": [
         {
           "description": "Confirm that Chanakya never asks for identity documents, OTPs, PINs or card numbers on a call, and that any onboarding details go only into Paytm's official app or site.",
-          "knowledge_node_ids": ["onboarding"]
+          "knowledge_node_ids": ["onboarding", "merchant_safety", "signup_kyc"]
         }
       ]
     },
