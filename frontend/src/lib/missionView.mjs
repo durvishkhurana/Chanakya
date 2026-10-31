@@ -58,6 +58,27 @@ export function missionCounts(rows, handoffs = []) {
   };
 }
 
+const TOOLS = { book_field_visit: "Field visit", raise_ticket: "Support ticket", send_onboarding_link: "Onboarding link",
+  send_onboarding_reminder: "Onboarding reminder", send_summary: "Call summary", create_lead: "New lead", book_callback: "Callback" };
+
+/** A tool name as words, for example "book_field_visit" → "Field visit". */
+export const toolLabel = (tool) => TOOLS[tool] || String(tool || "action").replaceAll("_", " ");
+
+/** The few arguments a person needs to judge an approval, as one line. */
+export function approvalDetails(args = {}) {
+  const parts = [];
+  if (args.purpose) parts.push(`${args.purpose} visit`);
+  if (args.slot) parts.push(`slot ${time(args.slot)} IST`);
+  if (args.product) parts.push(String(args.product).replaceAll("_", " "));
+  if (args.category) parts.push(args.category);
+  return parts.join(", ");
+}
+
+/** Whole minutes from ``now`` until ``iso`` (negative once it has passed). */
+export function minutesLeft(iso, now) {
+  return Math.floor((new Date(iso) - new Date(now)) / 60000);
+}
+
 /** One readable line per ledger event for the mission timeline. */
 export function eventSummary(event) {
   const p = event.payload || {};
@@ -80,6 +101,8 @@ export function eventSummary(event) {
     case "handoff_resolved": return `Hand-off resolved: ${p.resolution}`;
     case "leaving_reason_recorded": return `Reason for leaving: ${worryLabel(p.reason)}`;
     case "holdout_assigned": return "Holdout: not called, kept for comparison";
+    case "approval_requested": return `${toolLabel(p.tool)} waits for a person's approval`;
+    case "approval_decided": return `${toolLabel(p.tool)} ${p.status} by ${p.by}${p.note ? ` (${p.note})` : ""}`;
     default: return p.text || event.kind;
   }
 }

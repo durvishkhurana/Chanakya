@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import Approvals from "../../components/missions/Approvals";
 import AppShell from "../../components/missions/AppShell";
 import ConcernMeter from "../../components/missions/ConcernMeter";
 import LeavingReasons from "../../components/missions/LeavingReasons";
@@ -89,7 +90,7 @@ function MissionControl() {
     <div className="kpis notes-optional" aria-label="Mission counts">
       <Kpi label="Ready to call" value={counts.ready} note={`of ${counts.waiting} waiting in the queue`} loading={rows === null} />
       <Kpi label="In conversation" value={counts.talking} note="calls running now" loading={rows === null} />
-      <Kpi label="Waiting on the merchant" value={counts.onMerchant} note="link sent, being verified" loading={rows === null} />
+      <Kpi label="Waiting on the merchant" value={counts.onMerchant} note="awaiting approval, link sent or being verified" loading={rows === null} />
       <Kpi label="Done, verified" value={counts.done} note="confirmed by the system" loading={rows === null} />
       <Kpi label="Closed or handed off" value={counts.closed} note="declined, do-not-call or a person" loading={rows === null} />
     </div>
@@ -103,7 +104,7 @@ function MissionControl() {
         </div>
         {tab === "handoffs"
           ? <Handoffs cards={handoffs} busy={busy} act={act} />
-          : tab === "approvals" ? <Approvals requests={approvals} busy={busy} act={act} />
+          : tab === "approvals" ? <Approvals requests={approvals} now={clock} busy={busy} act={act} />
           : <MissionTable rows={listed} tab={tab} loading={rows === null} selectedId={selectedId} onSelect={setSelected}
               onLoadDemo={() => act("feed", () => api("/api/missions/signals/demo-feed", { method: "POST" }))} />}
       </section>
@@ -284,32 +285,6 @@ function Handoffs({ cards, busy, act }) {
   </article>)}</div>;
 }
 
-const APPROVAL_PILL = { pending: ["warn", "Waiting for approval"], approved: ["pos", "Approved"], rejected: ["neg", "Rejected"], expired: ["neg", "Timed out"] };
-
-/** Approval queue (B10): high-risk actions wait here for a person; approving runs them through the full safety gate. */
-function Approvals({ requests, busy, act }) {
-  if (!requests.length) return <div className="empty">No action is waiting for approval. Tools listed in APPROVAL_TOOLS stop here before they run.</div>;
-  return <div>{requests.map((r) => {
-    const [tone, label] = APPROVAL_PILL[r.status] || ["", r.status];
-    const args = Object.entries(r.call?.args || {}).filter(([key]) => key !== "merchant_id");
-    return <article key={r.approval_id} className="handoff">
-      <div className="handoff-head">
-        <span className="name">{r.merchant_name} · {r.tool.replaceAll("_", " ")}</span>
-        <span className={`pill ${tone}`}>{label}</span>
-      </div>
-      {args.length > 0 && <p className="meta">{args.map(([key, value]) => `${key.replaceAll("_", " ")}: ${value}`).join(" · ")}</p>}
-      <p className="meta">Requested {r.requested_at?.slice(11, 16)} UTC · {r.status === "pending" ? `escalates at ${r.expires_at?.slice(11, 16)} UTC` : `${r.status} by ${r.decided_by}${r.note ? `: ${r.note}` : ""}`}</p>
-      {r.verdict && <p className="meta">Gate result: {r.verdict}{r.verdict_reason && r.verdict_reason !== "ok" ? ` (${r.verdict_reason})` : ""}</p>}
-      <div className="actions" style={{ justifyContent: "flex-start" }}>
-        {r.status === "pending" && <>
-          <button className="btn small" disabled={!!busy} onClick={() => act("approve", () => api(`/api/approvals/${r.approval_id}/approve`, { method: "POST", body: { by: "Sunita" } }))}>Approve as Sunita</button>
-          <button className="btn small ghost" disabled={!!busy} onClick={() => act("reject", () => api(`/api/approvals/${r.approval_id}/reject`, { method: "POST", body: { by: "Sunita", note: "Not now" } }))}>Reject</button>
-        </>}
-        <Link className="btn small ghost" href={`/missions?m=${r.mission_id}`}>Open mission</Link>
-      </div>
-    </article>;
-  })}</div>;
-}
 
 /** Win-back at a glance (WINBACK_ENABLED): who is held out for comparison, and why former merchants left. */
 function Winback({ version }) {

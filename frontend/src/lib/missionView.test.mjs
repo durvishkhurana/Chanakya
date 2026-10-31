@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { countRows, deriveCallView, eventSummary, groupMissions, missionCounts, topWorries, worryLabel } from "./missionView.mjs";
+import { approvalDetails, countRows, deriveCallView, eventSummary, groupMissions, minutesLeft, missionCounts, toolLabel, topWorries, worryLabel } from "./missionView.mjs";
 
 const card = { goal: "Sell soundbox -> verified onboarding", starting_worries: { hidden_charges: 0.5, competitor_qr: 0.3, just_busy: 0.2 }, priority: 0.9 };
 const row = (id, state, priority, ready) => ({ mission: { id, state, card: { ...card, priority } }, queue: ready === undefined ? null : { ready } });
@@ -83,4 +83,13 @@ test("call view keeps the scorer's evidence for the latest line and which scorer
   ]);
   assert.deepEqual(view.evidence, { hidden_charges: 0.81 });
   assert.equal(view.scorer, "embedding");
+});
+
+test("approval requests read as plain words in the ledger and on the card", () => {
+  assert.equal(eventSummary({ kind: "approval_requested", payload: { tool: "book_field_visit" } }), "Field visit waits for a person's approval");
+  assert.equal(eventSummary({ kind: "approval_decided", payload: { tool: "raise_ticket", status: "rejected", by: "Sunita", note: "duplicate" } }),
+    "Support ticket rejected by Sunita (duplicate)");
+  assert.equal(toolLabel("get_device_status"), "get device status");
+  assert.equal(approvalDetails({ merchant_id: "m", purpose: "technician", slot: "2026-10-30T05:30:00+00:00" }), "technician visit, slot 11:00 IST");
+  assert.equal(minutesLeft("2026-10-30T10:30:00Z", "2026-10-30T10:00:30Z"), 29);
 });
