@@ -24,6 +24,10 @@ number in `.env`.
 
 3. Start the backend on port 8000 and the frontend on port 3000 (README, "Run locally"). If the frontend runs on
    another port, set `PHONE_LINK_PORT` to it.
+4. Optional, to get the onboarding link by email on the phone: in `.env` set `LINK_EMAIL_ENABLED=true`,
+   `LINK_EMAIL_TO` (your own address, the only one it ever writes to), `SMTP_USER` and `SMTP_PASSWORD`. With Gmail,
+   `SMTP_USER` is the Gmail address and `SMTP_PASSWORD` an app password (Google Account, Security, App passwords;
+   it needs 2-Step Verification). Restart the backend; its log says "Onboarding links sent on live calls are emailed".
 
 ### Each demo
 
@@ -31,10 +35,9 @@ number in `.env`.
    again. A merchant already onboarded in an earlier run makes the next sale to them stop, correctly.
    Never run `scripts/demo/e2e_track_b.py` against the ledger you demo on, for the same reason.
 2. On the laptop open `/missions`, select **Load demo signals**, open a mission's live call (`/call/<mission id>`).
-3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then tap
-   **Talk by voice instead** and allow the microphone.
-4. Speak as the merchant. The laptop's Live Call View fills as you talk. Turn the phone's volume up; on an iPhone
-   also turn off silent mode, which mutes browser audio.
+3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then hold the
+   mic button and allow the microphone.
+4. Speak as the merchant. The laptop's Live Call View fills as you talk.
 5. When done, select **Save run log**, then **Disconnect phone**. Stopping the backend also closes the link.
 
 While the link is open anyone who has its URL can open the demo and use your API keys, so disconnect after each
@@ -48,7 +51,7 @@ demo. Only the laptop can open or close the link or save a run; requests through
 | 2 Merchant asks | `/demo/soundbox`, **Request a callback** | A merchant-requested mission |
 | 3 ★ Signals | `/missions`, **Load demo signals** | Data-driven missions, cards, priority queue |
 | 4 ★ Phone call | phone + laptop `/call/<id>` | AI disclosure, worry meter, plan, sourced answers, consent, link through the safety gate |
-| 5 ★ Verified done | phone: tap the link in the actions list, complete the mock page | DONE only when the onboarding system confirms |
+| 5 ★ Verified done | phone: tap **Open the onboarding link** on the message card (or in the email), complete the mock page | DONE only when the onboarding system confirms |
 | 6 ★ Knowing when to stop | **Run scenario**: Distressed merchant | Hand-off to a person with a context card, no writes |
 | 7 Approval | **Run scenario**: Offline Soundbox, then the Approvals tab | The visit waits for a person's approval |
 | 8 Win-back | **Run scenario**: Win-back, device problem | Listens, raises a ticket, no offer |
@@ -64,8 +67,9 @@ Use a Soundbox mission such as Sharma General Store. These lines were run throug
 2. "Iska mahine ka kiraya kitna hai? Koi extra charge toh nahi katega?" The worry meter moves to charges; Chanakya
    points to official pricing and quotes no number.
 3. Wait until Chanakya asks whether to send the link, then: "Haan ji, link bhej dijiye. Reminder bhi bhej dena."
-   The link appears under actions as executed. A yes said before it asks, or a plain "Achha, theek hai", is
-   correctly not taken as consent, and it asks again.
+   A plain "Yes" or "Haan ji" also works. A message card with the link appears under the call, and the email arrives
+   if it is on. A yes said before it asks, or a bare "Haan", "Ok" or "Achha, theek hai", is correctly not taken as
+   consent, and it asks again.
 4. "Theek hai, dhanyavaad."
 
 Do not offer an OTP in the sale call: Chanakya refuses and closes the mission as not interested. To show that refusal,

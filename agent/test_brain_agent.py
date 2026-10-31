@@ -59,6 +59,20 @@ class BrainAgentTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([c.tool for c in gate.registry.executed], ["send_onboarding_link"])
         self.assertIn("mock", reply)
 
+    async def test_a_plain_yes_to_the_consent_question_unlocks_the_write(self):
+        gate = FakeSafetyGate()
+        agent = BrainAgent(gate=gate, actions_enabled=True)
+        await say(agent, "Hello", thread="t5", language="en-IN")
+        state = agent.threads["t5"]
+        for _ in range(10):
+            if state.moves[-1].type == MoveType.CONFIRM_CONSENT:
+                break
+            await say(agent, "Okay.", thread="t5", language="en-IN")
+        self.assertEqual(state.moves[-1].type, MoveType.CONFIRM_CONSENT)
+        await say(agent, "Yes.", thread="t5", language="en-IN")
+        self.assertTrue(state.transcript.has_consent("send_onboarding_link"))
+        self.assertEqual([c.tool for c in gate.registry.executed], ["send_onboarding_link"])
+
     async def test_distress_escalates_and_otp_requests_are_refused(self):
         agent = BrainAgent()
         await say(agent, "Hello", thread="t3")

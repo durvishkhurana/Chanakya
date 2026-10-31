@@ -88,6 +88,27 @@ def test_explicit_consent_never_accepts_a_bare_acknowledgement(text, consent):
     assert lib.explicit_consent(text) is consent
 
 
+@pytest.mark.parametrize("text,consent", [
+    ("Yes.", True),
+    ("Yes please", True),
+    ("Haan ji.", True),
+    ("Ji haan", True),
+    ("Bilkul!", True),
+    ("हाँ जी।", True),
+    ("ਜੀ ਹਾਂ", True),
+    ("Haan, bhej do.", True),
+    ("Haan.", False),
+    ("Ok.", False),
+    ("Theek hai.", False),
+    ("Achha.", False),
+    ("Hmm.", False),
+    ("Yes, but not now.", False),
+    ("No.", False),
+])
+def test_a_clear_yes_answers_the_consent_question_but_an_acknowledgement_does_not(text, consent):
+    assert lib.consent_reply(text) is consent
+
+
 def test_signals_for_distress_decline_and_sensitive_requests():
     assert lib.merchant_distressed("Mujhe kisi insaan se baat karni hai.")
     assert lib.merchant_declined("Not interested, don't call again.")

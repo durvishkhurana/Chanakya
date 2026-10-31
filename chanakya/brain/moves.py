@@ -81,6 +81,12 @@ MAX_PERMISSION_ASKS = 2
 HESITANT = re.compile(r"\b(sochna padega|think about it|pata nahi|dekhte hain|not sure)\b|सोचना पड़ेगा|पता नहीं|ਸੋਚਣਾ ਪਵੇਗਾ",
                       re.IGNORECASE)
 NEGATION = re.compile(r"\b(nahi|nahin|not|no|mat|don't)\b|नहीं|मत|ਨਹੀਂ", re.IGNORECASE)
+# The whole reply to the consent question is a clear yes. A bare "haan", "ok" or "achha" stays an acknowledgement.
+CLEAR_YES = re.compile(
+    r"^\W*(?:yes|yes please|haan ji|han ji|ji haan|ji han|bilkul|zaroor|zarur"
+    r"|हाँ जी|हां जी|जी हाँ|जी हां|बिल्कुल|ज़रूर|ਹਾਂ ਜੀ|ਜੀ ਹਾਂ|ਬਿਲਕੁਲ|ਜ਼ਰੂਰ)(?:,? ji|,? जी|,? ਜੀ)?\W*$",
+    re.IGNORECASE,
+)
 
 
 def merchant_declined(text: str) -> bool:
@@ -103,6 +109,11 @@ def explicit_consent(text: str) -> bool:
     if not AFFIRM.search(text) or NEGATION.search(text) or merchant_declined(text):
         return False
     return bool(ACTION_WORDS.search(text))
+
+
+def consent_reply(text: str) -> bool:
+    """A yes to the consent question just asked: explicit consent, or a clear yes such as "Yes" or "Haan ji"."""
+    return explicit_consent(text) or bool(CLEAR_YES.match(text))
 
 
 def disclosed(state: DialogueState) -> bool:

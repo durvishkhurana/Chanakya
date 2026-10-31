@@ -115,7 +115,7 @@ def to_brain_state(context: core.PlanContext, bank: ConcernBank | None = None) -
     """Rebuild the brain's dialogue state from a core plan context.
 
     Moves come from the agent turns; consent is recorded only where the merchant gave an explicit yes
-    right after the agent asked for it, exactly as the live agent records it.
+    right after the agent asked for it (``consent_reply``), exactly as the live agent records it.
     """
     bank = bank or default_bank()
     card = to_brain_card(context.mission, bank)
@@ -128,7 +128,7 @@ def to_brain_state(context: core.PlanContext, bank: ConcernBank | None = None) -
             moves.append(move)
             disclosed = disclosed or move.type == brain.MoveType.DISCLOSE_AND_GREET
         if (turn.speaker == core.Speaker.MERCHANT and moves and moves[-1].type == brain.MoveType.CONFIRM_CONSENT
-                and moves[-1].tool and lib.explicit_consent(turn.text)):
+                and moves[-1].tool and lib.consent_reply(turn.text)):
             consents.append(brain.ConsentRecord(tool=moves[-1].tool, turn_index=len(turns) - 1, utterance=turn.text))
     belief = brain.BeliefState(probabilities=worries(context.belief.probabilities, bank), turn_index=context.belief.turn)
     transcript = brain.Transcript(mission_id=card.mission_id, turns=turns, consents=consents, disclosed_ai=disclosed)

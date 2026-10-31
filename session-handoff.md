@@ -6,6 +6,15 @@
 - Current status: **Connect phone** and **Save run log** are built on `feat/I3-phone-link` and tested through a real Cloudflare tunnel. Left: a spoken call on a real phone microphone, then the backup video. A9 and N4 stay blocked on measured results (see `progress.md`)
 - Branch: `feat/I3-phone-link`, from `origin/main` at 1a4ea8d
 
+## Latest (2026-10-31, Durvish, `feat/I3-send-link`)
+
+- [x] Consent: a clear yes ("Yes", "Haan ji", "Ji haan", "Bilkul", "Zaroor") straight after the consent question is consent (`consent_reply` in `chanakya/brain/moves.py`, used in `agent/brain_agent.py` and `core_adapters.py`); bare "Haan", "Ok", "Achha" still are not
+- [x] The call page shows the sent onboarding link as a message card with **Open the onboarding link**
+- [x] `backend/link_email.py`: with `LINK_EMAIL_ENABLED=true`, each link sent on a live call is emailed to `LINK_EMAIL_TO` only (Gmail app password in `SMTP_PASSWORD`); demo scenarios never email
+- [ ] Not verified: a real email (needs the SMTP values in `.env`). Phone audio fix is on `fix/phone-voice-playback` (rebased on main, not pushed); this branch alone does not have it
+- Known: `test_backend_mounts_routes_only_when_enabled` fails whenever the local `.env` sets `MISSIONS_ENABLED=true` (`agent/graph.py` loads `.env` with `override=True`), on main too
+- Open: a "No" to a probe question is read as the worry not being needed (belief 0.999)
+
 ## Completed This Session (2026-10-31, Durvish)
 
 - [x] Twilio checked: trial accounts strip `<Stream>`, which the Twilio path needs, so the phone path runs in the browser instead (`docs/PHONE_DEMO.md`, path C)

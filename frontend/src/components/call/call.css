@@ -39,4 +39,7 @@
 .cx .mic-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .cx .voice-status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 /* The speak box sits inside the call panel, right under the last line of the transcript. */
+.cx .sent-link { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; background: var(--raised); }
+.cx .sent-link .who { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+.cx .sent-link p { margin: 6px 0 10px; white-space: pre-line; overflow-wrap: anywhere; }
 .cx .say-box { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }

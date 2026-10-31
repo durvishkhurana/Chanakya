@@ -62,7 +62,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 ### What's Next
 
 1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`), then `python -m chanakya.neural.train_worry --seed 7` for its per-slice results and mark N1 done. If a retrained head reads "Soundbox theek se kaam nahi karta tha, baar baar band ho jaata tha" as a device issue, re-run `WORRY_SCORER=embedding python scripts/demo/scenarios.py` and close N4
-2. I3 (Durvish, `feat/I3-phone-link`): **Connect phone** and **Save run log** are built and tested through a real tunnel (`docs/PHONE_DEMO.md`, path C). Left: a spoken call on a real phone microphone, then the backup video
+2. I3 (Durvish, `feat/I3-phone-link`): **Connect phone** and **Save run log** are built and tested through a real tunnel (`docs/PHONE_DEMO.md`, path C). Left: a spoken call on a real phone microphone, then the backup video. On `feat/I3-send-link`: a clear yes to the consent question counts, the sent link shows as a card on the call page, and `LINK_EMAIL_ENABLED` emails it to one allowed inbox
 3. Try a spoken browser call on a mission with a real microphone
 4. Gurnoor: review what was merged without his review (F1, W0, W1, the N2/N3 core settings, the codebase fixes, B10's UI, B13, N4)
 

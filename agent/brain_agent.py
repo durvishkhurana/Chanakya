@@ -118,7 +118,7 @@ class BrainAgent:
             state.card = state.card.model_copy(update={"merchant": merchant})
         turn = Turn(speaker="merchant", text=text, language=language)
         state.transcript.turns.append(turn)
-        if state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT and lib.explicit_consent(text):
+        if state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT and lib.consent_reply(text):
             state.transcript.consents.append(ConsentRecord(
                 tool=state.moves[-1].tool, turn_index=len(state.transcript.turns) - 1, utterance=text))
         tracker = BayesianBeliefTracker(self.bank, scorer=self.scorer)
