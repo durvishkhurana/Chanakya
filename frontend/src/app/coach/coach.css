@@ -13,7 +13,6 @@
 .cx .say select, .cx .say input { height: 36px; padding: 0 10px; border: 1px solid var(--control); border-radius: var(--radius-control); background: var(--surface); color: var(--text); font: inherit; font-size: 14px; min-width: 0; }
 .cx .say input::placeholder { color: var(--faint); }
 .cx .say select:focus-visible, .cx .say input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.cx .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (max-width: 1180px) { .cx .coach-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .cx .say { grid-template-columns: minmax(0, 1fr); } }

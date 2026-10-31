@@ -188,3 +188,8 @@
   .cx td.why { max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) { .cx *, .cx *::before, .cx *::after { transition-duration: 0.01ms !important; animation: none !important; } }
+
+/* ---------- shared helpers ---------- */
+.cx .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cx .note-input { height: 28px; min-width: 0; flex: 1 1 160px; padding: 0 10px; border: 1px solid var(--control); border-radius: var(--radius-control); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; }
+.cx .note-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
