@@ -459,6 +459,7 @@ async def run_voice_session(
                 data = message.data
                 kind = data.get("type")
                 if kind in {"playback_started", "playback_done", "playback_paused", "playback_resumed"}:
+                    logger.info("Browser playback: %s, speaker %s", kind, data.get("audio"))
                     if not response or not owns(response) or data.get("response_id") != response.response_id:
                         continue
                     if kind in {"playback_paused", "playback_resumed"} and data.get("utterance_id") != utterance_id:

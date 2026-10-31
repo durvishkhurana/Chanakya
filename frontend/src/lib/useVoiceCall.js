@@ -239,7 +239,8 @@ const startAudioCapture = useCallback((stream, ws) => {
         createContext: playbackContext,
         notify: (type, responseId, currentUtteranceId) => {
           if (isCurrentSession() && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type, response_id: responseId, utterance_id: currentUtteranceId }));
+            ws.send(JSON.stringify({ type, response_id: responseId, utterance_id: currentUtteranceId,
+              audio: playbackRef.current?.audioState }));
           }
         },
         onState: (state) => {
