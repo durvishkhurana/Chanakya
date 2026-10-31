@@ -20,8 +20,8 @@ export function moveLabel(move) {
   return move.concern_id ? `${base}: ${worryLabel(move.concern_id)}` : base;
 }
 
-/** Everything the Live Call View shows, from one mission's ledger events. */
-export default function CallView({ events, mission = null, newSince = 0 }) {
+/** Everything the Live Call View shows, from one mission's ledger events. ``composer`` sits right under the transcript. */
+export default function CallView({ events, mission = null, newSince = 0, composer = null }) {
   const view = deriveCallView(events, mission?.card || null);
   const card = view.card;
   const plan = view.plans.at(-1);
@@ -54,6 +54,7 @@ export default function CallView({ events, mission = null, newSince = 0 }) {
             {turn.text}
             {turn.move && <span className="move">Move: {moveLabel({ type: turn.move })}</span>}
           </div>)}<div ref={transcriptEnd} /></div>}
+        {composer}
         <h3 className="subhead">Actions</h3>
         {view.actions.length === 0 ? <p className="meta">No actions yet. Reads may run while the merchant talks; writes wait for an explicit yes.</p>
           : <ul className="checks">{view.actions.map((a, i) => <li key={i}>

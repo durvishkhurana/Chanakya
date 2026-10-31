@@ -38,3 +38,5 @@
 .cx .mic-btn:disabled { opacity: .4; cursor: not-allowed; }
 .cx .mic-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .cx .voice-status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+/* The speak box sits inside the call panel, right under the last line of the transcript. */
+.cx .say-box { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
