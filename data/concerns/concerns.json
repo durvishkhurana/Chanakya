@@ -49,7 +49,7 @@
       "resolve_conditions": [
         {
           "description": "Say that transaction charges depend on the chosen device and merchant terms and are confirmed through Paytm's official card machine and pricing pages; never state a rate.",
-          "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store"]
+          "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store", "card_machine_help"]
         }
       ]
     },
@@ -65,7 +65,7 @@
       "resolve_conditions": [
         {
           "description": "Describe the official route: onboarding happens through the Paytm for Business app or official site, and Chanakya can send the official onboarding link so the merchant can start when convenient; make no promise about how long approval takes.",
-          "knowledge_node_ids": ["onboarding", "signup_kyc"]
+          "knowledge_node_ids": ["onboarding", "signup_kyc", "limits_and_plans"]
         }
       ]
     },
@@ -97,7 +97,7 @@
       "resolve_conditions": [
         {
           "description": "Explain that the Paytm for Business app lets merchants track payments and view bank settlements, and that settlement schedules are confirmed with Paytm; never promise a settlement time.",
-          "knowledge_node_ids": ["onboarding", "settlement", "support"]
+          "knowledge_node_ids": ["onboarding", "settlement", "support", "settlement_help", "instant_settlement"]
         }
       ]
     },
@@ -145,7 +145,7 @@
       "resolve_conditions": [
         {
           "description": "Do not troubleshoot hardware on the call: note that features vary by model, offer a technician visit through field operations, and set a follow-up to check the device works.",
-          "knowledge_node_ids": ["soundbox", "card_machine", "soundbox_help", "support"]
+          "knowledge_node_ids": ["soundbox", "card_machine", "soundbox_help", "support", "card_machine_help"]
         }
       ]
     },

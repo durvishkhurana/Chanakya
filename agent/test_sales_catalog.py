@@ -13,14 +13,21 @@ class SalesCatalogTests(unittest.TestCase):
         store = DocumentStore({"Paytm_Products": json.loads(path.read_text())})
         index = BatchPageIndex(store)
         sources = [target for target in store.targets.values() if target.kind == "source"]
-        self.assertEqual(len(sources), 15)
+        self.assertEqual(len(sources), 25)
         seen = set()
         evidence = []
         for start in range(0, len(sources), 6):  # the tool reads at most six sources per request
             evidence += index.read({"source_ids": [s.id for s in sources[start:start + 6]]}, seen, 32000).evidence
-        self.assertEqual(len(evidence), 15)
+        self.assertEqual(len(evidence), 25)
         self.assertTrue(all(re.search(r"Source[^:.]*: https://", item["text"]) for item in evidence))
         self.assertTrue(all(re.search(r"Reviewed 2026-10-(26|31)\.", item["text"]) for item in evidence))
         self.assertTrue(any("without a website" in item["text"] for item in evidence))
         self.assertTrue(any("never ask" in item["text"] for item in evidence))
         self.assertFalse(any("—" in item["text"] for item in evidence), "spoken text never uses an em dash")
+
+    def test_no_concern_answer_is_grounded_in_the_offers_section(self):
+        """Calls never mention an offer, so no Concern Bank answer may cite the cashback section."""
+        path = Path(__file__).resolve().parent.parent / "data" / "concerns" / "concerns.json"
+        linked = {node for concern in json.loads(path.read_text())["concerns"]
+                  for condition in concern["resolve_conditions"] for node in condition["knowledge_node_ids"]}
+        self.assertNotIn("merchant_offers", linked)
