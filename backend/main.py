@@ -175,6 +175,9 @@ if flag("DEMO_TOOLS_ENABLED"):
         from backend.run_log import router as run_log_router
 
         app.include_router(run_log_router)
+        from backend.demo_reset import router as demo_reset_router
+
+        app.include_router(demo_reset_router)
 
 # Chanakya coach mode API (task B11); mounted only when COACH_ENABLED is true.
 if os.getenv("COACH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}:
