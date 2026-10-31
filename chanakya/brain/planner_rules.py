@@ -96,7 +96,9 @@ class RuleBasedPlanner:
             return self.winback(state)
         asked = state.moves and state.moves[-1].type == MoveType.CONFIRM_CONSENT
         asks = sum(1 for m in state.moves if m.type == MoveType.CONFIRM_CONSENT)
-        if lib.explicit_consent(last) and not asked and asks < 3:
+        answered_permission = bool(state.moves) and state.moves[-1].type == MoveType.ASK_PERMISSION
+        # "Sure, go ahead" to "two minutes?" means keep talking, not yes to an action.
+        if lib.explicit_consent(last) and not asked and not answered_permission and asks < 3:
             # An unprompted yes is welcome, but consent is only recorded for a clear question.
             return Move(type=MoveType.CONFIRM_CONSENT, tool=tool), "confirm_unprompted_yes"
         if len(state.transcript.turns) >= MAX_TURNS:
@@ -106,14 +108,14 @@ class RuleBasedPlanner:
         top, p = open_concerns[0] if open_concerns else (None, 0.0)
         if top == "just_busy" and p >= BUSY_THRESHOLD:
             return Move(type=MoveType.SCHEDULE_FOLLOWUP, args={"channel": "call"}), "busy"
-        if top is not None and p >= PROBE_THRESHOLD:
-            probe = Move(type=MoveType.PROBE_CONCERN, concern=top)
-            # A worry the merchant has clearly voiced, or one already probed, gets answered directly.
-            if probe.key() in done or p >= 0.6:
-                return Move(type=MoveType.RESOLVE_CONCERN, concern=top), "resolve_top_concern"
-            return probe, "probe_top_concern"
-        if "DISCOVER_NEED" not in done:
+        # A worry the merchant clearly voiced, or one already probed, gets answered directly.
+        if top is not None and (lib.probed(state, top) or (p >= 0.6 and lib.raised(state, top))):
+            return Move(type=MoveType.RESOLVE_CONCERN, concern=top), "resolve_top_concern"
+        # Otherwise Chanakya first says why it called (the reply still answers any question first).
+        if not any(m.type in (MoveType.DISCOVER_NEED, MoveType.RECOMMEND) for m in state.moves):
             return Move(type=MoveType.DISCOVER_NEED), "discover_need"
+        if top is not None and p >= PROBE_THRESHOLD:
+            return Move(type=MoveType.PROBE_CONCERN, concern=top), "probe_top_concern"
         product = mission_product(card)
         if card.kind == MissionKind.SALES and f"RECOMMEND({product})" not in done:
             return Move(type=MoveType.RECOMMEND, product=product), "recommend"

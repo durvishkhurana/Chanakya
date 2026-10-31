@@ -16,9 +16,12 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 
 from backend.phone_link import require_laptop
+from chanakya.brain.realizer import knowledge_texts
 from chanakya.sim.judge import safety_violations
 
 SLOW_REPLY_SECONDS = 4.0
+# A figure Chanakya quotes from the knowledge base is sourced, not invented.
+KNOWLEDGE = " ".join(knowledge_texts().values())
 MAX_LOG_PROBLEMS = 20
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 # A Hinglish line that switches into Devanagari mid-reply reads and sounds broken.
@@ -77,7 +80,7 @@ def review(events: list[dict]) -> tuple[list[str], list[str]]:
         if payload["speaker"] == "merchant":
             last_merchant = payload.get("at") or turn["at"]
             continue
-        for problem in safety_violations(payload["text"]):
+        for problem in safety_violations(payload["text"], KNOWLEDGE):
             problems.append(f"turn {number}: {problem} in \"{payload['text'][:80]}\"")
         if LATIN_WORDS.search(payload["text"]) and DEVANAGARI_WORDS.search(payload["text"]):
             problems.append(f"turn {number}: mixes Latin and Devanagari script in \"{payload['text'][:80]}\"")

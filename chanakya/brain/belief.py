@@ -163,12 +163,16 @@ class BayesianBeliefTracker:
                     for cid in evidence}
         return {cid: (EPSILON + evidence[cid]) ** SHARPNESS * boost[cid] for cid in evidence}
 
-    async def update(self, belief: BeliefState, turn: Turn, history: list[Turn]) -> BeliefState:
-        """Fold one turn into the belief. Agent turns leave the probabilities unchanged."""
+    async def update(self, belief: BeliefState, turn: Turn, history: list[Turn],
+                     ignore: frozenset[str] = frozenset()) -> BeliefState:
+        """Fold one turn into the belief. Agent turns leave the probabilities unchanged.
+
+        Concerns in ``ignore`` get no evidence from this turn (for example "who is this?" before the greeting).
+        """
         if turn.speaker != "merchant" or not turn.text.strip():
             return belief.model_copy(update={"turn_index": belief.turn_index + 1})
         started = time.perf_counter()
-        evidence = await self.scorer.score(turn.text, history)
+        evidence = {cid: v for cid, v in (await self.scorer.score(turn.text, history)).items() if cid not in ignore}
         cue = hesitation(turn)
         uniform = 1 / len(belief.probabilities)
         prior = {cid: (1 - self.decay) * p + self.decay * uniform for cid, p in belief.probabilities.items()}

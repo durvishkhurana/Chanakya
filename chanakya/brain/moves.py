@@ -48,7 +48,8 @@ WINBACK_PITCH = frozenset({MoveType.RECOMMEND, MoveType.RESOLVE_CONCERN, MoveTyp
 
 DECLINE = re.compile(
     r"\b(not interested|don't want|do not want|no thanks|don't call|stop calling|nahi chahiye|nahin chahiye"
-    r"|mat karo call|call mat|band karo|interest nahi|zaroorat nahi hai mujhe)\b|नहीं चाहिए|कॉल मत|ਨਹੀਂ ਚਾਹੀਦਾ|ਕਾਲ ਨਾ",
+    r"|mat karo call|call mat|band karo|interest nahi|zaroorat nahi hai mujhe|nahi lena|nahin lena|nahi leni)\b"
+    r"|नहीं चाहिए|नहीं चाहिये|नहीं लेना|नहीं लेनी|नहीं खरीदना|कॉल मत|फ़ोन मत|डोंट कॉल|डोंट वांट|ਨਹੀਂ ਚਾਹੀਦਾ|ਨਹੀਂ ਲੈਣਾ|ਕਾਲ ਨਾ",
     re.IGNORECASE,
 )
 DISTRESS = re.compile(
@@ -57,11 +58,17 @@ DISTRESS = re.compile(
     re.IGNORECASE,
 )
 SENSITIVE_REQUEST = re.compile(r"\b(otp|upi pin|cvv|password)\b|ओटीपी", re.IGNORECASE)
-AFFIRM = re.compile(r"\b(haan|haa|han ji|yes|yeah|ok|okay|theek hai|thik hai|bilkul|zaroor|sure)\b|हाँ|ठीक है|ਹਾਂ|ਠੀਕ ਹੈ",
+AFFIRM = re.compile(r"\b(haan|haa|han ji|yes|yeah|ok|okay|theek hai|thik hai|bilkul|zaroor|sure)\b|हाँ|हां|ठीक है|ਹਾਂ|ਠੀਕ ਹੈ",
                     re.IGNORECASE)
 ACTION_WORDS = re.compile(
     r"\b(bhej|bhejo|bhejiye|send|kar do|kardo|kar dijiye|book|please|go ahead|daal do|chalega|bana do|bana dijiye"
     r"|banaiye|raise)\b|भेज|कर दीजिए|कर दो|बुक|बना दीजिए|बना दो|ਭੇਜ|ਕਰ ਦਿਓ|ਬਣਾ ਦਿਓ",
+    re.IGNORECASE,
+)
+# A polite request to send or do it ("bhej dijiye", "send it to me") is a yes in its own words.
+REQUEST = re.compile(
+    r"\b(bhej (?:do|dijiye|dena)|bhejiye|send (?:it|me|them)|book (?:it|kar do|kar dijiye)|kar dijiye)\b"
+    r"|भेज (?:दो|दीजिए|देना)|भेजिए|भेजिये|कर दीजिए|बुक कर|ਭੇਜ ਦਿਓ|ਭੇਜੋ|ਕਰ ਦਿਓ",
     re.IGNORECASE,
 )
 DENIAL = re.compile(
@@ -106,9 +113,9 @@ def merchant_requests_sensitive_data(text: str) -> bool:
 
 def explicit_consent(text: str) -> bool:
     """An explicit yes to the action just asked about. A bare "haan" or "okay" is never consent."""
-    if not AFFIRM.search(text) or NEGATION.search(text) or merchant_declined(text):
+    if NEGATION.search(text) or merchant_declined(text):
         return False
-    return bool(ACTION_WORDS.search(text))
+    return bool(AFFIRM.search(text) and ACTION_WORDS.search(text) or REQUEST.search(text))
 
 
 def consent_reply(text: str) -> bool:
@@ -129,6 +136,21 @@ def declined_since_last_consent_request(state: DialogueState) -> bool:
 def resolved_concerns(state: DialogueState) -> set[str]:
     """Concerns the agent has already answered with RESOLVE_CONCERN."""
     return {m.concern for m in state.moves if m.type == MoveType.RESOLVE_CONCERN and m.concern}
+
+
+# A worry the merchant's words lifted this far above the mission card's starting guess counts as raised.
+RAISED_RISE = 0.1
+
+
+def probed(state: DialogueState, concern: str | None) -> bool:
+    """Whether Chanakya has already asked about ``concern``."""
+    return any(m.type == MoveType.PROBE_CONCERN and m.concern == concern for m in state.moves)
+
+
+def raised(state: DialogueState, concern: str | None) -> bool:
+    """Whether the merchant's own words raised ``concern``, not only the mission card's starting guess."""
+    start = state.card.starting_worries.get(concern, 0.0)
+    return state.belief.probabilities.get(concern, 0.0) - start >= RAISED_RISE
 
 
 def ruled_out_concerns(state: DialogueState) -> set[str]:
@@ -289,6 +311,9 @@ def violations(move: Move, state: DialogueState, bank: ConcernBank) -> list[str]
         problems.append("merchant_declined")
     if move.type in {MoveType.PROBE_CONCERN, MoveType.RESOLVE_CONCERN} and move.concern not in bank.concerns:
         problems.append("unknown_concern")
+    if (move.type == MoveType.RESOLVE_CONCERN and move.concern in bank.concerns and not is_winback(state)
+            and not (raised(state, move.concern) or probed(state, move.concern))):
+        problems.append("unraised_concern")  # answering a worry nobody mentioned sounds like a script
     if move.type == MoveType.RECOMMEND and move.product not in PRODUCTS:
         problems.append("unknown_product")
     if move.type == MoveType.CONFIRM_CONSENT and move.tool not in WRITE_TOOLS:

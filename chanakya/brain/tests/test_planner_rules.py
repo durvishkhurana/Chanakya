@@ -65,6 +65,12 @@ def test_unknown_concerns_products_and_tools_are_rejected():
                           BANK) == ["consent_needs_write_tool"]
 
 
+@pytest.mark.parametrize("text", ["नहीं, मुझे साउंड बॉक्स नहीं लेना है।", "डोंट कॉल मी बैक।", "Mujhe nahi lena.",
+                                  "ਨਹੀਂ, ਮੈਂ ਨਹੀਂ ਲੈਣਾ।"])
+def test_a_no_in_any_script_is_a_decline(text):
+    assert lib.merchant_declined(text)
+
+
 def test_after_a_clear_no_only_closing_moves_remain():
     state = with_turns(Turn(speaker="merchant", text="Mujhe nahi chahiye, call mat karo."), moves=[GREETED])
     assert "merchant_declined" in lib.violations(Move(type=MoveType.RECOMMEND, product="qr"), state, BANK)
@@ -78,6 +84,9 @@ def test_after_a_clear_no_only_closing_moves_remain():
     ("Yes, okay, please send it.", True),
     ("हाँ, ठीक है, आप भेज दीजिए।", True),
     ("ਹਾਂ, ਠੀਕ ਹੈ, ਤੁਸੀਂ ਭੇਜ ਦਿਓ।", True),
+    ("आप मेरे को सारी जानकारी भेजिए।", True),
+    ("Please send me the link.", True),
+    ("अच्छा। हां।", False),
     ("Haan.", False),
     ("Okay.", False),
     ("Theek hai.", False),
@@ -130,9 +139,24 @@ def test_planner_rules_in_order():
     state = with_turns(moves=[GREETED])
     state.belief = state.belief.model_copy(update={"probabilities": {"hidden_charges": 0.5, "competitor_qr": 0.3,
                                                                      "just_busy": 0.2}})
+    # A worry only the mission card guessed: say why we called first, then ask about it, then answer it.
+    assert plan(state) == Move(type=MoveType.DISCOVER_NEED, reason="discover_need")
+    state.moves.append(Move(type=MoveType.DISCOVER_NEED))
     assert plan(state) == Move(type=MoveType.PROBE_CONCERN, concern="hidden_charges", reason="probe_top_concern")
     state.moves.append(Move(type=MoveType.PROBE_CONCERN, concern="hidden_charges"))
     assert plan(state).type == MoveType.RESOLVE_CONCERN
+
+
+def test_a_worry_the_merchant_raised_is_answered_and_a_guessed_one_is_not():
+    state = with_turns(Turn(speaker="merchant", text="Haan ji, boliye."), moves=[GREETED])
+    start = state.card.starting_worries
+    top = max(start, key=start.get)
+    guessed = state.belief.model_copy(update={"probabilities": dict(start)})
+    state.belief = guessed
+    assert not lib.is_legal(Move(type=MoveType.RESOLVE_CONCERN, concern=top), state, BANK)
+    raised = {cid: 0.0 for cid in start} | {top: 1.0}
+    state.belief = guessed.model_copy(update={"probabilities": raised})
+    assert lib.is_legal(Move(type=MoveType.RESOLVE_CONCERN, concern=top), state, BANK)
 
 
 def test_planner_takes_the_action_once_consent_is_recorded_and_never_before():

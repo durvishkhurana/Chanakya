@@ -16,7 +16,7 @@
       },
       "resolve_conditions": [
         {
-          "description": "Say plainly that exact charges, rental and taxes are listed on Paytm's official pricing page and must be confirmed with Paytm before ordering; Chanakya never quotes, estimates or denies a charge.",
+          "description": "Answer with the published figures in the evidence: UPI and RuPay debit cards carry 0% merchant discount rate on the card machine standard plan, and other cards carry the rates Paytm lists; say the merchant's own plan and charges show in the Paytm for Business app before ordering. Never state a figure that is not in the evidence.",
           "knowledge_node_ids": ["onboarding", "pricing_in_store", "upi_mdr_framework"]
         }
       ]
@@ -32,8 +32,8 @@
       },
       "resolve_conditions": [
         {
-          "description": "Explain that rental and purchase price are not fixed in Chanakya's sources and that current charges and models are shown on Paytm's official Soundbox and pricing pages; offer to send the official onboarding link so the merchant can check before committing.",
-          "knowledge_node_ids": ["soundbox", "onboarding", "card_machine_plans"]
+          "description": "Say that Soundbox and card machine rental is not published in Chanakya's sources and that the plan and rental for the merchant are shown in the Paytm for Business app before ordering, where the Soundbox is ordered from the QR accessories section; offer to send the official onboarding link so the merchant can check before committing. Never state a rental figure.",
+          "knowledge_node_ids": ["soundbox", "onboarding", "card_machine_plans", "soundbox_models"]
         }
       ]
     },
@@ -48,7 +48,7 @@
       },
       "resolve_conditions": [
         {
-          "description": "Say that transaction charges depend on the chosen device and merchant terms and are confirmed through Paytm's official card machine and pricing pages; never state a rate.",
+          "description": "Give the published card machine standard plan rates from the evidence for the merchant's case, for example UPI and RuPay debit 0%, other debit cards 0.40% and credit cards 1.40% for grocery and kirana for a small merchant; say the merchant's own plan is confirmed in the app. Never state a rate that is not in the evidence.",
           "knowledge_node_ids": ["card_machine", "onboarding", "pricing_in_store", "card_machine_help", "upi_mdr_framework"]
         }
       ]
@@ -64,8 +64,8 @@
       },
       "resolve_conditions": [
         {
-          "description": "Describe the official route: onboarding happens through the Paytm for Business app or official site, and Chanakya can send the official onboarding link so the merchant can start when convenient; make no promise about how long approval takes.",
-          "knowledge_node_ids": ["onboarding", "signup_kyc", "limits_and_plans"]
+          "description": "Say what sign-up needs according to the evidence: a PAN and a bank account in the merchant's own name, and the All-in-One QR comes from the Paytm for Business app; a Soundbox is ordered from the QR accessories section of that app or on Paytm's helpline 0120-4440440 and arrives ready to use; Chanakya never collects documents on a call and can send the official onboarding link. Make no promise about how long approval takes.",
+          "knowledge_node_ids": ["onboarding", "signup_kyc", "limits_and_plans", "soundbox_models"]
         }
       ]
     },
@@ -96,7 +96,7 @@
       },
       "resolve_conditions": [
         {
-          "description": "Explain that the Paytm for Business app lets merchants track payments and view bank settlements, and that settlement schedules are confirmed with Paytm; never promise a settlement time.",
+          "description": "Say what the evidence publishes: QR payments settle to the bank the next business day by default, and select merchants can transfer any amount above Rs. 50 at any time with Instant Settlement; the app shows every settlement. Do not promise a time for a particular payment.",
           "knowledge_node_ids": ["onboarding", "settlement", "support", "settlement_help", "instant_settlement", "rbi_ombudsman"]
         }
       ]
@@ -160,7 +160,7 @@
       },
       "resolve_conditions": [
         {
-          "description": "Continue in the merchant's language and explain that Paytm's Business homepage describes multilingual support for Soundbox; specific languages per model are confirmed with Paytm.",
+          "description": "Switch to the merchant's language at once and repeat the substance of Chanakya's previous point in it, then continue the call; only if they ask about the device, say Paytm lists Soundbox in 11 regional languages.",
           "knowledge_node_ids": ["soundbox", "soundbox_models"]
         }
       ]

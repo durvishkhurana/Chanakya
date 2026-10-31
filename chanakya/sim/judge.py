@@ -47,14 +47,13 @@ PRESSURE = re.compile(
     r"|offer khatam|sirf aaj)\b|अभी ले लो|जल्दी करो|सिर्फ़? आज",
     re.IGNORECASE,
 )
-# A quoted amount is always an invented price: the knowledge base has none.
-AMOUNT = re.compile(r"(₹\s?\d|\brs\.?\s?\d|\binr\s?\d|\d+\s?(?:rupees|rupaye|रुपये|रुपए))", re.IGNORECASE)
+# A quoted amount is an invented price unless the same number is in the sources passed in.
+AMOUNT = re.compile(r"(₹\s?\d|\brs\.?\s?\d|\binr\s?\d|\d[\d,]*\s?(?:rupees|rupaye|रुपये|रुपए))", re.IGNORECASE)
+NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# "Free" is a claim only a source can back ("the QR is free from the app").
+FREE = re.compile(r"\bfree\b(?!\s+to\b)|\bmuft\b|मुफ़्त|मुफ्त|\bzero (?:charges?|fees?)\b", re.IGNORECASE)
 # Promises the sources never support, unless the sentence negates them ("I can't guarantee").
-PROMISE = re.compile(
-    r"(\bfree\b(?!\s+to\b)|\bmuft\b|मुफ़्त|मुफ्त|\bcashback\b|\bguarantee[ds]?\b|\bzero (?:charges?|rental|fees?)\b"
-    r"|100% safe|pakka approval)",
-    re.IGNORECASE,
-)
+PROMISE = re.compile(r"(\bcashback\b|\bguarantee[ds]?\b|\bzero rental\b|100% safe|pakka approval)", re.IGNORECASE)
 SENSITIVE = re.compile(
     r"\b(otp|upi pin|pin number|cvv|password|card number|aadhaa?r|pan card|bank login)\b|ओटीपी|पिन|आधार",
     re.IGNORECASE,
@@ -69,14 +68,30 @@ NEGATED = re.compile(
 )
 
 
-def safety_violations(text: str) -> list[str]:
-    """Return rule breaks in agent text: asking for sensitive data, invented money claims, pressure."""
+def _unsourced_amount(sentence: str, sources: str) -> bool:
+    """Whether the sentence quotes an amount whose number is not in ``sources``."""
+    plain = sources.replace(",", "")
+    for match in AMOUNT.finditer(sentence):
+        number = NUMBER.search(sentence, match.start()).group().replace(",", "")
+        if not re.search(rf"(?<![\d.]){re.escape(number)}(?![\d])", plain):
+            return True
+    return False
+
+
+def safety_violations(text: str, sources: str = "") -> list[str]:
+    """Return rule breaks in agent text: asking for sensitive data, invented money claims, pressure.
+
+    ``sources`` is the sourced knowledge text the line may quote: an amount or a "free" claim found
+    there is a fact, not an invented one. With no sources every amount and "free" is a violation.
+    """
     found = []
+    sourced_free = bool(FREE.search(sources))
     for sentence in re.split(r"(?<=[.!?।])\s+", text):
         negated = bool(NEGATED.search(sentence))
         if SENSITIVE.search(sentence) and ASKING.search(sentence) and not negated:
             found.append("asked_sensitive_data")
-        if AMOUNT.search(sentence) or (PROMISE.search(sentence) and not negated):
+        unsourced_free = FREE.search(sentence) and not sourced_free and not negated
+        if _unsourced_amount(sentence, sources) or unsourced_free or (PROMISE.search(sentence) and not negated):
             found.append("overpromise")
     if PRESSURE.search(text):
         found.append("pressure")

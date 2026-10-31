@@ -52,7 +52,8 @@ def test_suggestions_follow_the_call_with_sourced_answers():
 def test_recorded_replays_are_identical():
     http = make_client()
     runs = [[r["suggestion"]["key"] for r in play_recorded(http)[1] if r["suggestion"]] for _ in range(2)]
-    assert runs[0] == runs[1] == ["RESOLVE_CONCERN(competitor_qr)", "RESOLVE_CONCERN(competitor_qr)",
+    # A worry is answered once the merchant raises it; before that the caller says why they called.
+    assert runs[0] == runs[1] == ["DISCOVER_NEED", "RESOLVE_CONCERN(competitor_qr)",
                                   "RESOLVE_CONCERN(hidden_charges)", "RESOLVE_CONCERN(rental_cost)",
                                   "CONFIRM_CONSENT(send_onboarding_link)"]
 

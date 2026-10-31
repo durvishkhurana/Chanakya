@@ -122,10 +122,26 @@ class BrainAgent:
             state.transcript.consents.append(ConsentRecord(
                 tool=state.moves[-1].tool, turn_index=len(state.transcript.turns) - 1, utterance=text))
         tracker = BayesianBeliefTracker(self.bank, scorer=self.scorer)
-        state.belief = await tracker.update(state.belief, turn, state.transcript.turns)
+        # "Hello, who is this?" before Chanakya has introduced itself is answered by the greeting, not a worry.
+        ignore = frozenset() if lib.disclosed(state) else frozenset({"trust_in_caller"})
+        state.belief = await tracker.update(state.belief, turn, state.transcript.turns, ignore)
         mission = state.card.mission_id
         events = [BeliefUpdated(mission_id=mission, belief=state.belief, latency_ms=tracker.last_latency_ms,
                                 evidence=tracker.last_evidence, scorer=tracker.scorer_name)]
+        replies = []
+        while True:
+            step = await self._step(state, language, speculative, events)
+            if step is None:
+                return None
+            replies.append(step)
+            # A permission-first greeting asks nothing, so the permission question follows in the same reply.
+            last = state.moves[-1]
+            if not (last.type == MoveType.DISCLOSE_AND_GREET and state.card.permission_first and not state.ended):
+                return " ".join(replies), events
+
+    async def _step(self, state: DialogueState, language: str, speculative: bool, events: list):
+        """Plan, act on and speak one move; ``None`` when a speculative turn reaches a write action."""
+        mission = state.card.mission_id
         plan = await self.planner.plan(state)
         events.append(PlanComputed(mission_id=mission, plan=plan))
         move = plan.move
@@ -144,7 +160,7 @@ class BrainAgent:
         if move.type in lib.TERMINAL_MOVES:
             state.ended = True
         events.append(TurnCompleted(mission_id=mission, turn=agent_turn, belief=state.belief, move=move))
-        return reply, events
+        return reply
 
     async def prepare(self, partial: str, thread_id: str, language: str = "en-IN") -> None:
         """Start preparing the next turn from a partial transcript (planning while listening)."""

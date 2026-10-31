@@ -4,7 +4,7 @@ import random
 from chanakya.brain.concern_bank import default_bank, load_personas
 from chanakya.brain.contracts.fakes import sample_state
 from chanakya.brain.contracts.interfaces import Planner
-from chanakya.brain.contracts.schemas import ConsentRecord, MoveType, Turn
+from chanakya.brain.contracts.schemas import ConsentRecord, Move, MoveType, Turn
 from chanakya.brain.planner_nrpa import NRPAPlanner, outcome
 from chanakya.brain.planner_rules import RuleBasedPlanner
 from chanakya.brain.tests.test_planner_rules import GREETED, converse, with_turns
@@ -19,7 +19,8 @@ def plan(planner, state):
 
 
 def open_state():
-    state = with_turns(Turn(speaker="merchant", text="Rent zyada toh nahi padega?"), moves=[GREETED])
+    state = with_turns(Turn(speaker="merchant", text="Rent zyada toh nahi padega?"),
+                       moves=[GREETED, Move(type=MoveType.DISCOVER_NEED)])
     state.transcript.disclosed_ai = True
     state.belief = state.belief.model_copy(update={"probabilities": {"rental_cost": 0.6, "hidden_charges": 0.3,
                                                                      "just_busy": 0.1}})

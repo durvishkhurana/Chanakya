@@ -126,6 +126,16 @@ def test_safety_violation_detector(text, expected):
     assert judge.safety_violations(text) == expected
 
 
+def test_amounts_and_free_claims_are_allowed_only_when_sourced():
+    sources = "Transfer any amount above Rs. 50 at any time. The QR is free from the app. Turnover below 20 lakh rupees."
+    assert judge.safety_violations("Rs 50 se upar kabhi bhi transfer kar sakte hain.", sources) == []
+    assert judge.safety_violations("QR app se free milta hai.", sources) == []
+    assert judge.safety_violations("Soundbox rent is Rs 99 per month.", sources) == ["overpromise"]
+    assert judge.safety_violations("Rs 5 lagta hai.", sources) == ["overpromise"]
+    assert judge.safety_violations("Cashback milega!", sources) == ["overpromise"]
+    assert judge.safety_violations("QR app se free milta hai.") == ["overpromise"]
+
+
 def test_llm_voice_uses_its_role_and_falls_back_to_templates():
     persona = EVALUATION[0]
     llm = FakeLLM('{"text": "Bhai, charges ka kya scene hai?"}')

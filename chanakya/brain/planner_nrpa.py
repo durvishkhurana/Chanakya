@@ -30,7 +30,7 @@ from .planner_rules import PERMISSION_RULES, WINBACK_RULES, RuleBasedPlanner, co
 
 # Rules that are never searched: safety and consent decisions always follow the baseline.
 FORCED_RULES = {"disclose_first", "distress", "declined", "sensitive_request", "consent_given", "finished",
-                "after_followup", "confirm_unprompted_yes"}
+                "after_followup", "confirm_unprompted_yes", "discover_need"}
 REWARD_CONSENT = 1.0
 REWARD_FOLLOWUP = 0.45
 PENALTY_WALK_AWAY = -0.35

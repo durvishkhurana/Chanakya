@@ -173,7 +173,7 @@ def lead_call(tmp_path, enabled=True):
 
 def test_a_no_on_a_lead_list_mission_is_recorded_as_a_decline_and_closes_it(tmp_path):
     runtime, call = lead_call(tmp_path)
-    for line in ("Haan ji?", "Kaun? Haan boliye.", "Nahi."):
+    for line in ("Haan ji?", "Nahi."):  # the greeting and the two-minute question come in one reply
         asyncio.run(call.say(line))
     mission = runtime.ledger.store.get(call.mission_id)
     declines = [e.payload for e in runtime.ledger.store.events(call.mission_id)
@@ -184,7 +184,7 @@ def test_a_no_on_a_lead_list_mission_is_recorded_as_a_decline_and_closes_it(tmp_
 
 def test_busy_on_a_lead_list_mission_schedules_a_callback(tmp_path):
     runtime, call = lead_call(tmp_path)
-    for line in ("Haan ji?", "Haan?", "Abhi busy hoon, baad mein call karo."):
+    for line in ("Haan ji?", "Abhi busy hoon, baad mein call karo."):
         asyncio.run(call.say(line))
     assert runtime.ledger.store.get(call.mission_id).state == core.MissionState.SCHEDULED
     kinds = [e.payload.get("kind") for e in runtime.ledger.store.events(call.mission_id)
