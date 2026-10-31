@@ -6,6 +6,8 @@ Chanakya takes in missions through three doors (a merchant raises a hand, the me
 
 The full idea is in [docs/IDEA.md](docs/IDEA.md). Tasks and owners are in [docs/TASKS.md](docs/TASKS.md); live status is in [feature_list.json](feature_list.json).
 
+**Live demo:** https://chanakya-znow.onrender.com (free instance: the first visit after a quiet spell takes about a minute to wake up).
+
 > Independent project, not affiliated with Paytm. Paytm systems are represented by labelled mock services; product facts come from curated public Paytm for Business pages with source URLs and review dates.
 
 ## How it works
@@ -85,6 +87,18 @@ run; the old run stays in the ledger (`POST /api/demo-tools/missions/<id>/reset`
 When Chanakya sends the onboarding link, the call page shows it as a message card with an **Open the onboarding link**
 button. With `LINK_EMAIL_ENABLED=true` and the `LINK_EMAIL_TO` and `SMTP_*` values in `.env`, the link is also emailed
 to that one address, through the phone link when it is open, so it opens on your phone. Demo scenarios never email.
+
+### Hosted demo
+
+The [Dockerfile](Dockerfile) runs the backend and frontend in one container: Next.js serves `$PORT` (7860 by default)
+and proxies `/api`, REST and WebSockets, to the backend on `127.0.0.1:8000`. Missions, coach mode and win-back are on;
+the laptop-only demo tools, link email and Twilio are off. The live demo is a Render Docker web service built from this
+file; set `OPENROUTER_API_KEY` and `SARVAM_API_KEY` in the service's environment for live calls. Mission state lives in
+the container and resets on every deploy or restart.
+
+```bash
+docker build -t chanakya . && docker run -p 7860:7860 --env-file .env chanakya
+```
 
 ### Optional telephone transport
 
