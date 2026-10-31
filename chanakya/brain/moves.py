@@ -48,7 +48,10 @@ WINBACK_PITCH = frozenset({MoveType.RECOMMEND, MoveType.RESOLVE_CONCERN, MoveTyp
 
 DECLINE = re.compile(
     r"\b(not interested|don't want|do not want|no thanks|don't call|stop calling|nahi chahiye|nahin chahiye"
-    r"|mat karo call|call mat|band karo|interest nahi|zaroorat nahi hai mujhe|nahi lena|nahin lena|nahi leni)\b"
+    r"|mat karo call|call mat|band karo|interest nahi|zaroorat nahi hai mujhe|nahi lena|nahin lena|nahi leni"
+    r"|never call|cut (?:this|the) call|hang up|end (?:this|the) call|stop this call|leave me alone|do not disturb"
+    r"|phone rakh|call kaat|call kat|dobara (?:call|phone) mat)\b"
+    r"|फ़ोन रख|फोन रख|कॉल काट|कॉल कट|दोबारा (?:कॉल|फ़ोन|फोन) मत"
     r"|नहीं चाहिए|नहीं चाहिये|नहीं लेना|नहीं लेनी|नहीं खरीदना|कॉल मत|फ़ोन मत|डोंट कॉल|डोंट वांट|ਨਹੀਂ ਚਾਹੀਦਾ|ਨਹੀਂ ਲੈਣਾ|ਕਾਲ ਨਾ",
     re.IGNORECASE,
 )

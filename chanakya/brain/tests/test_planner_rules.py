@@ -66,7 +66,8 @@ def test_unknown_concerns_products_and_tools_are_rejected():
 
 
 @pytest.mark.parametrize("text", ["नहीं, मुझे साउंड बॉक्स नहीं लेना है।", "डोंट कॉल मी बैक।", "Mujhe nahi lena.",
-                                  "ਨਹੀਂ, ਮੈਂ ਨਹੀਂ ਲੈਣਾ।"])
+                                  "ਨਹੀਂ, ਮੈਂ ਨਹੀਂ ਲੈਣਾ।", "uh can you cut this call and never call me again?",
+                                  "Phone rakhiye, dobara call mat karna.", "कॉल काट दीजिए।"])
 def test_a_no_in_any_script_is_a_decline(text):
     assert lib.merchant_declined(text)
 
