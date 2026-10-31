@@ -59,6 +59,10 @@ function MissionControl() {
   const listed = tab === "queue" ? groups.waiting : tab === "active" ? groups.active : groups.finished;
   const selectedId = selected || listed[0]?.mission.id || null;
   const next = groups.waiting.find((r) => r.queue?.ready)?.mission;
+  // The primary button follows the selected row: open a running call, call a ready one, else the top of the queue.
+  const running = groups.active.find((r) => r.mission.id === selectedId)?.mission;
+  const ready = groups.waiting.find((r) => r.mission.id === selectedId && r.queue?.ready)?.mission;
+  const target = running || ready || next;
 
   async function act(label, fn) {
     setBusy(label);
@@ -82,7 +86,7 @@ function MissionControl() {
       <div className="actions">
         <ScenarioRunner busy={busy} act={act} />
         <button className="btn" disabled={!!busy} onClick={() => act("feed", () => api("/api/missions/signals/demo-feed", { method: "POST" }))}>{busy === "feed" ? "Loading…" : "Load demo signals"}</button>
-        {next ? <Link className="btn primary" href={`/call/${next.id}`}>Call {next.card.merchant_name}</Link>
+        {target ? <Link className="btn primary" href={`/call/${target.id}`}>{target === running ? `Open ${target.card.merchant_name}'s call` : `Call ${target.card.merchant_name}`}</Link>
           : <button className="btn primary" disabled>Nobody to call right now</button>}
       </div>
     </div>
