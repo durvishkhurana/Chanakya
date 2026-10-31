@@ -1,9 +1,8 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { wsBase } from "./chanakyaApi";
 import { createVoicePlayback, VOICE_PROTOCOL_VERSION } from "./voicePlayback.mjs";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 function float32ToPcm16(float32Array) {
   const len = float32Array.length;
@@ -191,7 +190,7 @@ const startAudioCapture = useCallback((stream, ws) => {
         return;
       }
       micStreamRef.current = stream;
-      const ws = new WebSocket(API_URL.replace(/^http/, "ws") +
+      const ws = new WebSocket(wsBase() +
         `${path}?retrieval_provider=${encodeURIComponent(retrievalProvider)}`);
       wsRef.current = ws;
       ws.binaryType = "arraybuffer";

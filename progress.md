@@ -3,7 +3,7 @@
 ## Current State
 
 **Last Updated:** 2026-10-31
-**Active Feature:** none. Everything planned is built; what is left needs people: Gurnoor's hand-written N1 test set, the I3 phone demo or backup video, and a real-microphone call. The code-review fixes are on `fix/codebase-review`, and B10 (UI), B13, N4 and the measurements below on `feat/finish-remaining`.
+**Active Feature:** I3 phone demo (Durvish, `feat/I3-phone-link`): Connect phone and Save run log built; a real-microphone phone call and the backup video are left. Everything else planned is built; what is left needs people: Gurnoor's hand-written N1 test set, the I3 phone demo or backup video, and a real-microphone call. The code-review fixes are on `fix/codebase-review`, and B10 (UI), B13, N4 and the measurements below on `feat/finish-remaining`.
 
 | Track | Owner | Done | Open |
 |---|---|---|---|
@@ -62,7 +62,7 @@ Specs for F1, W0, W1, W2 and P1 are in `docs/TASKS.md` (Phase 6) and `feature_li
 ### What's Next
 
 1. N1, Gurnoor: write the hand-written test set by hand (`data/neural/README.md`), then `python -m chanakya.neural.train_worry --seed 7` for its per-slice results and mark N1 done. If a retrained head reads "Soundbox theek se kaam nahi karta tha, baar baar band ho jaata tha" as a device issue, re-run `WORRY_SCORER=embedding python scripts/demo/scenarios.py` and close N4
-2. I3: record the backup video or make the allowlisted phone call (`docs/PHONE_DEMO.md`)
+2. I3 (Durvish, `feat/I3-phone-link`): **Connect phone** and **Save run log** are built and tested through a real tunnel (`docs/PHONE_DEMO.md`, path C). Left: a spoken call on a real phone microphone, then the backup video
 3. Try a spoken browser call on a mission with a real microphone
 4. Gurnoor: review what was merged without his review (F1, W0, W1, the N2/N3 core settings, the codebase fixes, B10's UI, B13, N4)
 
@@ -82,7 +82,8 @@ Measured on 2026-10-31 (commands and seeds in each README):
 - [ ] #23 dropped the N0-N4 entries from `feature_list.json` in a merge (restored in #29); check that file after resolving merge conflicts
 
 - [ ] OpenRouter account shows $0 credits and the key expires 2026-11-04 with a $50/day limit; Groq is in use meanwhile, and its free tier (8,000 tokens per minute on the main model) rules out full online evaluations
-- [ ] Twilio trial accounts block Media Streams, so live phone calls may not work. Browser voice is the safe demo path
+- [ ] Twilio trial accounts strip `<Stream>` (Twilio's trial TwiML rules), so the Twilio path needs an upgraded account. The phone-in-browser path (`DEMO_TOOLS_ENABLED`, Connect phone) needs none
+- [ ] Demo script traps found on 2026-10-31: offering an OTP closes a sale mission as not interested; a yes before Chanakya asks, or "Achha, theek hai", is not consent; a merchant onboarded in an earlier run blocks the next sale to them, so demo on a fresh ledger. The model sometimes mixes Hinglish and Devanagari in one reply (the run report flags it); not fixed
 - [ ] All Track B PRs (#1-#14) were self-merged at the owner's request without Durvish's review; the Track A PRs need Gurnoor's review, especially the `core:` change
 - [x] Main was broken by the N2/N3 merge (a SyntaxError in `backend/main.py` and `mission_call.py`, and `PLANNER_VALUE` always None); fixed on `fix/codebase-review`, with a SQLite thread race in the ledger and a cross-merchant ticket read
 - [ ] Browser voice calls on a mission are wired but not yet tried with a microphone; phone calls are not tied to missions; `/call/demo` stays a labelled scripted recording

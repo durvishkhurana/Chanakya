@@ -22,6 +22,10 @@ from backend.twilio_routes import router as telephony_router
 voice_agent_instance = None
 
 
+def flag(name: str) -> bool:
+    return os.getenv(name, "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def llm_key_name():
     """The API key the voice agent needs: OpenRouter, or Groq while OpenRouter is unavailable."""
     return "GROQ_API_KEY" if provider_settings().llm_provider == "groq" else "OPENROUTER_API_KEY"
@@ -57,6 +61,12 @@ def create_voice_agent():
 @asynccontextmanager
 async def lifespan(app):
     global voice_agent_instance
+    log_handler = None
+    if flag("DEMO_TOOLS_ENABLED"):
+        from backend import run_log
+
+        log_handler = run_log.start_file_logging(run_log.log_path())
+        run_log.configure_run_log(run_log.RunLog(run_log.state_dir() / "runs", run_log.log_path()))
     if os.getenv(llm_key_name(), "").strip():
         voice_agent_instance = create_voice_agent()
     try:
@@ -73,6 +83,12 @@ async def lifespan(app):
                 voice_agent_instance = None
         finally:
             await asyncio.to_thread(wait_for_all_tracers)
+            if log_handler is not None:
+                from backend import run_log
+                from backend.phone_link import tunnel
+
+                await asyncio.to_thread(tunnel.stop)
+                run_log.stop_file_logging(log_handler)
 
 
 app = FastAPI(title="Chanakya Voice API", lifespan=lifespan)
@@ -141,6 +157,16 @@ if os.getenv("MISSIONS_ENABLED", "false").strip().lower() in {"1", "true", "yes"
     from chanakya.actions.systems.messaging_channels import router as messages_router
 
     app.include_router(messages_router)
+
+# Demo tools (task I3): backend log file, phone link tunnel and saved run logs; only when DEMO_TOOLS_ENABLED is true.
+if flag("DEMO_TOOLS_ENABLED"):
+    from backend.phone_link import router as phone_link_router
+
+    app.include_router(phone_link_router)
+    if flag("MISSIONS_ENABLED"):
+        from backend.run_log import router as run_log_router
+
+        app.include_router(run_log_router)
 
 # Chanakya coach mode API (task B11); mounted only when COACH_ENABLED is true.
 if os.getenv("COACH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}:

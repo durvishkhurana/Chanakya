@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+/** WebSocket origin: the backend directly on the laptop; elsewhere (a phone through the tunnel) this page's own
+ * origin, whose /api proxy forwards WebSockets to the backend. */
+export function wsBase() {
+  const { hostname, protocol, host } = window.location;
+  if (hostname === "localhost" || hostname === "127.0.0.1") return API_URL.replace(/^http/, "ws");
+  return `${protocol === "https:" ? "wss" : "ws"}://${host}`;
+}
+
 /** JSON request to the backend through the same-origin /api proxy. Throws with the server's detail on error. */
 export async function api(path, { method = "GET", body } = {}) {
   const response = await fetch(path, {
@@ -34,7 +42,7 @@ export function useMissionStream({ missionId = null, replay = 200, enabled = tru
     const connect = () => {
       const params = new URLSearchParams({ replay: String(replay) });
       if (missionId) params.set("mission_id", missionId);
-      socket = new WebSocket(`${API_URL.replace(/^http/, "ws")}/api/missions/stream?${params}`);
+      socket = new WebSocket(`${wsBase()}/api/missions/stream?${params}`);
       socket.onopen = () => setConnected(true);
       socket.onmessage = (message) => {
         const event = JSON.parse(message.data);

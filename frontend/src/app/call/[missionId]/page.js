@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import CallView from "../../../components/call/CallView";
 import { demoEvents } from "../../../components/call/demoFixture";
+import PhoneLink from "../../../components/call/PhoneLink";
 import AppShell from "../../../components/missions/AppShell";
 import { api, useMissionStream } from "../../../lib/chanakyaApi";
 import useVoiceCall from "../../../lib/useVoiceCall";
@@ -78,6 +79,7 @@ function LiveCall({ missionId }) {
     {mission && scenarioRunning && <p className="note" style={{ marginTop: 24 }}>A demo scenario is playing on this mission. You can speak on it once the scenario has finished.</p>}
     {canSpeak && <SayAsMerchant missionId={missionId} />}
     {canSpeak && <VoiceOnMission missionId={missionId} />}
+    {mission && <PhoneLink missionId={missionId} />}
   </AppShell>;
 }
 

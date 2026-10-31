@@ -2,55 +2,50 @@
 
 ## Current Objective
 
-- Goal: build Chanakya as specified in `docs/IDEA.md`, task by task from `feature_list.json`
-- Current status: everything planned is built. Left: Gurnoor's hand-written N1 test set, the I3 phone demo or backup video, a real-microphone call, and Gurnoor's review of work merged without it. A9 and N4 are blocked on measured results, not on code (see below)
-- Branches: `fix/codebase-review` (bug fixes from a full review) and `feat/finish-remaining` (built on it: B10 UI, B13, N4, measurements, docs)
+- Goal: a demo that shows every feature in one go, with you speaking as the merchant on your own phone (I3)
+- Current status: **Connect phone** and **Save run log** are built on `feat/I3-phone-link` and tested through a real Cloudflare tunnel. Left: a spoken call on a real phone microphone, then the backup video. A9 and N4 stay blocked on measured results (see `progress.md`)
+- Branch: `feat/I3-phone-link`, from `origin/main` at 1a4ea8d
 
 ## Completed This Session (2026-10-31, Durvish)
 
-- [x] N3 value network measured and merged (#36); N2 semantic memory built, measured and merged (#38)
-- [x] Codebase review, on `fix/codebase-review`:
-  - the N2/N3 merge left `backend/main.py` and `chanakya/brain/mission_call.py` unable to import and `PLANNER_VALUE` always None; the planner now gets both settings
-  - the ledger, scheduler and hand-off queue shared one SQLite connection with unlocked reads across threads (the flaky scenario test); every use now holds the store's lock, and the mock systems database has the same lock
-  - `get_ticket_status` could read another merchant's ticket; it now needs the merchant id
-  - visit slots and callback times must be ISO date-times; device usage tolerates zone-less rows
-- [x] On `feat/finish-remaining`:
-  - B10: Gurnoor's approval queue merged in, plus the Mission Control Approvals tab
-  - B13: `chanakya/actions/systems/messaging_channels.py` (templates per channel and language, simulated inbox, replies move the mission), `/api/messages`, thread and reply box on the mission detail
-  - N4: `core:` beliefs carry the scorer's evidence and name; Live Call View and coach mode show what the scorer heard; coach mode shows each suggestion's look-ahead value and follows `PLANNER_VALUE` and `PLANNER_MEMORY=neural`; architecture diagram and README updated
-  - win-back re-measured with the embedding scorer; every planner variant measured with the embedding scorer
-  - README repaired after the N2 merge (duplicate rows and paragraphs); the demo script prints Hindi on Windows consoles
+- [x] Twilio checked: trial accounts strip `<Stream>`, which the Twilio path needs, so the phone path runs in the browser instead (`docs/PHONE_DEMO.md`, path C)
+- [x] `init.sh` failed at once on Windows when no Python 3.12 was on PATH; it now accepts the existing 3.12 `.venv`
+- [x] `backend/phone_link.py`: `POST /api/phone-link/start|stop`, `GET /api/phone-link`; one cloudflared quick tunnel to the frontend (`PHONE_LINK_PORT`, default 3000). The Next.js `/api` proxy forwards WebSockets too, so one tunnel carries pages, REST, the ledger stream and voice. Requests that came through the tunnel (Cloudflare headers) cannot start, stop or save
+- [x] `backend/run_log.py`: backend log file `.state/logs/backend.log`; `POST /api/run-logs` writes `.state/runs/<time>/` with `missions.json`, `transcript.md`, `report.md` and checks for AI disclosure, write without consent, slow replies, rule breaks in Chanakya's lines (the sim judge's `safety_violations`), mixed Latin and Devanagari, and log errors
+- [x] Both mounted in `backend/main.py` behind `DEMO_TOOLS_ENABLED` (off by default); the tunnel closes on shutdown
+- [x] Frontend: `wsBase()` in `chanakyaApi.js` (same-origin WebSockets off localhost), `allowedDevOrigins` for `*.trycloudflare.com`, `components/call/PhoneLink.js` (QR code via the `qrcode` package) on the Live Call View, laptop only
+- [x] Runbook with the demo flow, the tested phone script, logs and a rehearsal loop: `docs/PHONE_DEMO.md`; README section "Demo on your phone"
 
 ## Verification Evidence
 
 | Check | Command | Result |
 |---|---|---|
-| Everything, with the real encoder | `NEURAL=1 FULL=1 ./init.sh` on `feat/finish-remaining` | passed, 477 pytest, Ruff clean, frontend lint, tests and build |
-| End to end, every neural setting on | backend with `MISSIONS_ENABLED=true CALLING_HOURS=0-24 WORRY_SCORER=embedding PLANNER_MEMORY=neural PLANNER_VALUE=network`, then `python scripts/demo/e2e_track_b.py http://127.0.0.1:8767` | 18/18 |
-| Demo scenarios, every neural setting on | `WORRY_SCORER=embedding PLANNER_MEMORY=neural PLANNER_VALUE=network python scripts/demo/scenarios.py` | 5/6: `winback_device_fix` fails (see Blockers); 6/6 with the default scorer |
-| Approvals and messages in the browser | live backend with `APPROVAL_TOOLS=book_field_visit`, `soundbox_service` scenario | the visit waited, was approved as Sunita and executed; the thread shows the SMS template |
-| Planner variants with the embedding scorer | `docs/results/neural-combined/README.md` | no consistent gain from forest, memory or value network |
-| Win-back with the embedding scorer | `docs/results/winback/README.md` | reason accuracy 0.90/0.84 vs 0.94/0.88; no gain |
+| Baseline before changes | `SKIP_INSTALL=1 ./init.sh` (after the init fix) | agent 105 OK, backend 98 OK, pytest 477 passed, Ruff clean, frontend 30 passed |
+| New tests | `python -m unittest backend.test_demo_tools` | 8 OK |
+| Full | `FULL=1 SKIP_INSTALL=1 ./init.sh` | passed: agent 105 OK, backend 106 OK, pytest 477 passed, Ruff clean, frontend lint and tests, build compiled |
+| Demo scenarios | `python scripts/demo/scenarios.py` | 6/6 |
+| End to end | `scripts/demo/e2e_track_b.py http://127.0.0.1:8020` with `DEMO_TOOLS_ENABLED=true` | 18/18 |
+| Through a real tunnel, mobile viewport | Connect phone on the laptop, the trycloudflare URL in a 375 px tab | page, ledger stream and voice socket connect; a typed call with Groq replied in 1.1-1.9 s; link sent on consent; mock onboarding completed on the "phone"; mission DONE; start/stop/save through the tunnel return 403 |
+| Live scenarios + run log | all six scenarios via the API, then Save run log | 8 calls, 0 problems, no log errors, median reply 1.3-1.4 s |
 
 ## Decisions Made
 
-- Defaults stay `WORRY_SCORER` unset (lexical), `PLANNER_MEMORY=forest`, `PLANNER_VALUE=formula`: N2 and N3 show no gain
-- Coach mode keeps planning without the forest unless `PLANNER_MEMORY=neural`, so its replay is unchanged
-- The N1 head was not retrained or tuned on the win-back demo line; N4 stays blocked until a head reads it
+- One tunnel to the frontend instead of two: measured, the Next.js dev proxy forwards WebSocket upgrades
+- `DEMO_TOOLS_ENABLED` is read in `backend/main.py` like `MISSIONS_ENABLED`, not added to `chanakya/core/config.py`, so no `core:` PR is needed; it only mounts backend routes
+- A frontend change in Track B's Live Call View (`PhoneLink` panel, `wsBase`) was needed for the button; Gurnoor should review it
 
 ## Blockers / Risks
 
-- N4 done-when needs all demo scenarios with every neural setting on; `winback_device_fix` fails with `WORRY_SCORER=embedding`. Cause (`docs/results/neural-worry-scorer/filler-diagnosis/`): filler lines such as "Achha." move the belief, because the tracker compares their near-zero scores with the base rates. Stopping that passes 6/6 demo scenarios but lowers embedding sales success (0.84/0.77 to 0.67/0.75 on held-out lines), so it is not merged
-- A9 has no consistent measured gain with either scorer
-- `gh` was installed on Durvish's machine, but its login had not completed, so the last two branches may be pushed without PRs; see the next step
-- Work merged at the owner's request without Gurnoor's review: F1, W0, W1, the two `core:` settings, the codebase fixes, B10's UI, B13, N4
+- Not tried with a real phone microphone yet: the voice socket connects through the tunnel, but the spoken audio path on a phone is untested
+- While the link is open anyone with the URL can use the demo and the API keys; disconnect after each demo
+- Demo traps: an OTP offer closes a sale mission; consent must answer Chanakya's question; demo on a fresh ledger (see `docs/PHONE_DEMO.md`)
+- The model sometimes mixes Hinglish and Devanagari in one reply; the run report flags it, not fixed
 
 ## Next Session Startup
 
-1. Read `CLAUDE.md`, `progress.md` and this file; run `./init.sh` (and `NEURAL=1 ./init.sh` for neural work, with `HF_HOME` on a drive with space).
-2. If `fix/codebase-review` and `feat/finish-remaining` have no PRs yet: `gh auth login`, then open and merge `fix/codebase-review` first, then `feat/finish-remaining` (it contains the fix branch, so no conflict).
+1. Read `CLAUDE.md`, `progress.md` and this file; run `./init.sh`.
+2. Open the PR for `feat/I3-phone-link` if it is not open yet.
 
 ## Recommended Next Step
 
-- Gurnoor: N4, check whether Chanakya keeps answering a worry it already answered once fillers stop moving the belief (patches in `docs/results/neural-worry-scorer/filler-diagnosis/`); then the hand-written N1 test set
-- I3: the backup video or the allowlisted phone call (`docs/PHONE_DEMO.md`)
+- Durvish: follow `docs/PHONE_DEMO.md` path C with your phone, Save run log, read `report.md`, then record the backup video and mark I3 done with that evidence
