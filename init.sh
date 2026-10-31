@@ -20,14 +20,15 @@ for candidate in "python3.12" "py -3.12" "python3" "python" "py -3"; do
     break
   fi
 done
-# 3.11's asyncio.wait_for can swallow cancellation, which hangs voice session teardown tests.
-[ ${#PYTHON[@]} -gt 0 ] || { echo "Python 3.12+ required (see pyproject.toml)"; exit 1; }
-
 VENV="$APP_ROOT/.venv"
 # Windows virtualenvs keep the interpreter in Scripts/, POSIX ones in bin/.
 venv_python() {
   if [ -x "$VENV/Scripts/python.exe" ]; then echo "$VENV/Scripts/python.exe"; else echo "$VENV/bin/python"; fi
 }
+# 3.11's asyncio.wait_for can swallow cancellation, which hangs voice session teardown tests.
+# An existing 3.12 virtualenv is enough when no 3.12 interpreter is on PATH.
+[ ${#PYTHON[@]} -gt 0 ] || "$(venv_python)" -c 'import sys; assert sys.version_info >= (3, 12)' >/dev/null 2>&1 \
+  || { echo "Python 3.12+ required (see pyproject.toml)"; exit 1; }
 if [ ! -x "$(venv_python)" ]; then
   [ -n "${SKIP_INSTALL:-}" ] && { echo "No virtualenv at $VENV and SKIP_INSTALL is set"; exit 1; }
   echo "--- Creating virtualenv with $("${PYTHON[@]}" --version) and installing locked dependencies"
