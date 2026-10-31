@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.git
+.venv
+.state
+.cache
+.claude
+.pytest_cache
+.ruff_cache
+**/__pycache__
+**/node_modules
+frontend/.next
+*.pdf
