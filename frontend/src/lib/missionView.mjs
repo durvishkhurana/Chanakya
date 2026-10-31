@@ -128,7 +128,7 @@ export function deriveCallView(events, card = null) {
       if (chosen) view.willingness.push({ turn: view.plans.length, value: chosen.score });
     } else if (event.kind === "consent_given") view.consent = "given";
     else if (event.kind === "consent_declined") view.consent = "declined";
-    else if (event.kind === "action_decision") view.actions.push({ tool: p.call?.tool, verdict: p.verdict, reason: p.reason, data: p.result?.data || {} });
+    else if (event.kind === "action_decision") view.actions.push({ tool: p.call?.tool, args: p.call?.args || {}, verdict: p.verdict, reason: p.reason, data: p.result?.data || {} });
   }
   return view;
 }

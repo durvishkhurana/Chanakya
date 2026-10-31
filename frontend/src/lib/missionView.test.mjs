@@ -42,7 +42,7 @@ test("call view follows the ledger: transcript, concern meter, plans, willingnes
     { kind: "plan_computed", payload: plan("DISCOVER_NEED", 0.2) },
     { kind: "plan_computed", payload: plan("CONFIRM_CONSENT", 0.55) },
     { kind: "consent_given", payload: { tools: ["send_onboarding_link"] } },
-    { kind: "action_decision", payload: { call: { tool: "send_onboarding_link" }, verdict: "executed", reason: "ok", result: { data: { link: "/demo/onboard/x" } } } },
+    { kind: "action_decision", payload: { call: { tool: "send_onboarding_link", args: { channel: "whatsapp" } }, verdict: "executed", reason: "ok", result: { data: { link: "/demo/onboard/x" } } } },
   ]);
   assert.equal(view.state, "IN_CONVERSATION");
   assert.equal(view.transcript[0].text, "Kitna katega?");
@@ -50,6 +50,7 @@ test("call view follows the ledger: transcript, concern meter, plans, willingnes
   assert.deepEqual(view.willingness, [{ turn: 1, value: 0.2 }, { turn: 2, value: 0.55 }]);
   assert.equal(view.consent, "given");
   assert.equal(view.actions[0].data.link, "/demo/onboard/x");
+  assert.equal(view.actions[0].args.channel, "whatsapp");
 });
 
 test("headline counts add up from the rows", () => {

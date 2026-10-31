@@ -35,6 +35,7 @@ export default function CallView({ events, mission = null, newSince = 0, compose
   if (!card) return <div className="panel" aria-busy="true"><div className="skeleton" style={{ width: "40%" }} /><div className="skeleton" style={{ height: 160, marginTop: 16 }} /></div>;
   const writes = view.actions.filter((a) => a.verdict === "executed");
   const blocked = view.actions.filter((a) => a.verdict !== "executed");
+  const sentLink = writes.findLast((a) => a.data?.link);
 
   return <>
     <div className="kpis" aria-label="Call at a glance">
@@ -54,6 +55,11 @@ export default function CallView({ events, mission = null, newSince = 0, compose
             {turn.text}
             {turn.move && <span className="move">Move: {moveLabel({ type: turn.move })}</span>}
           </div>)}<div ref={transcriptEnd} /></div>}
+        {sentLink && <div className="sent-link" role="status">
+          <span className="who">Chanakya sent a {sentLink.args.channel === "sms" ? "text" : "WhatsApp message"} (mock)</span>
+          <p>{sentLink.data.body}</p>
+          <Link href={sentLink.data.link} className="btn primary">Open the onboarding link</Link>
+        </div>}
         {composer}
         <h3 className="subhead">Actions</h3>
         {view.actions.length === 0 ? <p className="meta">No actions yet. Reads may run while the merchant talks; writes wait for an explicit yes.</p>
