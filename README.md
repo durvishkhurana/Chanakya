@@ -80,6 +80,10 @@ on your phone while the laptop shows the call. **Save run log** writes every mis
 problem report to `.state/runs/`, and the backend log goes to `.state/logs/backend.log`. Setup, demo flow and script
 are in [docs/PHONE_DEMO.md](docs/PHONE_DEMO.md).
 
+When Chanakya sends the onboarding link, the call page shows it as a message card with an **Open the onboarding link**
+button. With `LINK_EMAIL_ENABLED=true` and the `LINK_EMAIL_TO` and `SMTP_*` values in `.env`, the link is also emailed
+to that one address, through the phone link when it is open, so it opens on your phone. Demo scenarios never email.
+
 ### Optional telephone transport
 
 Twilio is disabled by default. Set the `TWILIO_*` values in `.env` with a streaming-capable account, an HTTPS public backend origin and your own allowlisted number. Tests never place real calls.

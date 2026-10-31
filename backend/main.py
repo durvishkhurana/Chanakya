@@ -67,6 +67,12 @@ async def lifespan(app):
 
         log_handler = run_log.start_file_logging(run_log.log_path())
         run_log.configure_run_log(run_log.RunLog(run_log.state_dir() / "runs", run_log.log_path()))
+    link_mail = None
+    if flag("LINK_EMAIL_ENABLED") and flag("MISSIONS_ENABLED"):
+        from backend import link_email
+        from chanakya.missions.runtime import get_runtime
+
+        link_mail = link_email.start(get_runtime().ledger.bus)
     if os.getenv(llm_key_name(), "").strip():
         voice_agent_instance = create_voice_agent()
     try:
@@ -82,6 +88,8 @@ async def lifespan(app):
                 await voice_agent_instance.aclose()
                 voice_agent_instance = None
         finally:
+            if link_mail is not None:
+                link_mail.cancel()
             await asyncio.to_thread(wait_for_all_tracers)
             if log_handler is not None:
                 from backend import run_log
