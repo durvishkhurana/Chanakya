@@ -187,7 +187,8 @@ function Microphone({ end = false }) {
 }
 
 function VoiceSession({ onClose }) {
-  const call = useVoiceCall({ isOpen: true, onClose, retrievalProvider: "llm_batch" });
+  const call = useVoiceCall({ isOpen: true, onClose, retrievalProvider: "llm_batch", pushToTalk: true });
+  const ready = call.callState !== "connecting" && call.callState !== "error";
   const labels = { connecting: "Connecting to Chanakya", listening: "Chanakya is listening", processing: "One moment", thinking: "Finding the right fit", speaking: "Chanakya is speaking", error: "Let us reconnect" };
   return <div className="session-backdrop" ref={call.callOverlayRef}>
     <section className="session" role="dialog" aria-modal="true" aria-labelledby="session-title" data-state={call.callState}>
@@ -198,8 +199,20 @@ function VoiceSession({ onClose }) {
       <div className="transcript" ref={call.messagesContainerRef} tabIndex={0} aria-label="Conversation transcript" aria-live="polite">
         {call.callMessages.length ? call.callMessages.map((message) => <article key={message.id} className={`utterance ${message.role}`}><span>{message.role === "user" ? "You" : "Chanakya"}</span><p>{message.text || "Thinking..."}</p></article>) : <p className="transcript-empty">Try saying, “Meri kirana ki dukaan hai. Soundbox kya karta hai?”</p>}
       </div>
+      <button
+        type="button"
+        className="push-to-talk"
+        data-talking={call.talking}
+        disabled={!ready}
+        onPointerDown={(e) => { e.preventDefault(); call.holdMic(); }}
+        onPointerUp={call.releaseMic}
+        onPointerLeave={() => call.talking && call.releaseMic()}
+        onPointerCancel={call.releaseMic}
+        onKeyDown={(e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); call.holdMic(); } }}
+        onKeyUp={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); call.releaseMic(); } }}
+      ><Microphone />{call.talking ? "Listening, release to send" : "Hold to talk"}</button>
       <button className="end-call" ref={call.endButtonRef} onClick={call.handleEndCall}><Microphone end />End conversation</button>
-      <p className="session-footnote">Your microphone stops when you end the conversation.</p>
+      <p className="session-footnote">Hold the mic button while you speak, then release. End the conversation to stop the microphone.</p>
     </section>
   </div>;
 }

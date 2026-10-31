@@ -25,9 +25,15 @@ function float32ToPcm16(float32Array) {
  * 3. Persistent, scrollable transcription history viewable throughout the call.
  */
 /** `path` picks the voice endpoint (a mission call uses its own); `modal: false` leaves the page usable behind the call. */
-export default function useVoiceCall({ isOpen, onClose, retrievalProvider = "llm_batch", path = "/api/voice/ws", modal = true }) {
+export default function useVoiceCall({ isOpen, onClose, retrievalProvider = "llm_batch", path = "/api/voice/ws", modal = true, pushToTalk = false }) {
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  // Push-to-talk: only send live mic audio while the button is held; otherwise send silence so the
+  // server's speech detection segments the utterance at release. Default off keeps continuous streaming.
+  const pushToTalkRef = useRef(pushToTalk);
+  useEffect(() => { pushToTalkRef.current = pushToTalk; }, [pushToTalk]);
+  const micHeldRef = useRef(false);
+  const [talking, setTalking] = useState(false);
   const [callState, setCallState] = useState("connecting");
   const [connectionError, setConnectionError] = useState("");
   // "connecting" | "listening" | "processing" | "thinking" | "speaking"
@@ -129,6 +135,9 @@ const startAudioCapture = useCallback((stream, ws) => {
     // Keep any leftover samples for next callback
     const consumed = Math.floor(outputLen / resampleRatio);
     accumBuffer = accumBuffer.slice(consumed);
+
+    // While push-to-talk is on and the button is not held, mute the frame to silence.
+    if (pushToTalkRef.current && !micHeldRef.current) output.fill(0);
 
     const pcm16Bytes = float32ToPcm16(output);
     ws.send(pcm16Bytes);
@@ -392,6 +401,10 @@ const startAudioCapture = useCallback((stream, ws) => {
     };
   }, [isOpen, modal, handleEndCall]);
 
+  const holdMic = useCallback(() => { micHeldRef.current = true; setTalking(true); }, []);
+  const releaseMic = useCallback(() => { micHeldRef.current = false; setTalking(false); }, []);
+
   return { callState, connectionError, callMessages, duration: formatDuration(callDuration),
-    messagesContainerRef, endButtonRef, callOverlayRef, handleEndCall };
+    messagesContainerRef, endButtonRef, callOverlayRef, handleEndCall,
+    pushToTalk, talking, holdMic, releaseMic };
 }
