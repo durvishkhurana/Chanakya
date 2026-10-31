@@ -1,10 +1,10 @@
 {
   "metadata": {
     "name": "Paytm business payment products",
-    "description": "Official product capabilities for QR, Soundbox, card machines, online payments, Payment Links, and the Business app. Prices and merchant terms require official confirmation.",
-    "pageNum": 6,
-    "reviewed_at": "2026-10-26",
-    "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26. Section text includes its source URL. This is a local knowledge snapshot, not a live offer feed."
+    "description": "Official product capabilities, published pricing, settlement, devices, sign-up, safety and support for QR, Soundbox, card machines, online payments, Payment Links and the Business app. A merchant's own plan and charges require official confirmation.",
+    "pageNum": 15,
+    "reviewed_at": "2026-10-31",
+    "provenance": "Curated summaries of official Paytm pages retrieved on 2026-10-26 (first six sections) and 2026-10-31 (the rest). Section text includes its source URL and review date. This is a local knowledge snapshot, not a live offer feed."
   },
   "tree": {
     "result": [
@@ -49,6 +49,69 @@
         "page_index": 6,
         "summary": "Official next steps and payment tracking; no verified price quotes or sales execution.",
         "text": "Paytm for Business offers a Business app and merchant dashboard for managing business payments. The homepage describes tracking payments and viewing bank settlements. Its official merchant app route is https://business.paytm.com/p4b-app-download . Merchants can explore official product information at https://business.paytm.com/ and pricing at https://business.paytm.com/pricing . Source: https://business.paytm.com/ . Reviewed 2026-10-26. Exact product costs, rental, taxes, transaction charges, device availability, settlement schedules, and promotions are not established in this snapshot. A merchant must confirm current applicable terms directly with Paytm. Scout is an independent AI sales demo with no order, callback, lead-storage, messaging, payment-processing, or Paytm account access. It must not claim to complete those actions. Onboarding and any payment happen through official channels."
+      },
+      {
+        "node_id": "pricing_in_store",
+        "title": "Card machine pricing: standard plan MDR",
+        "page_index": 7,
+        "summary": "Published merchant discount rates for card machine payments, by payment source and merchant size.",
+        "text": "Paytm's official pricing page lists a Standard Plan merchant discount rate (MDR) for card machine (EDC) payments, applicable to SME merchants. A small merchant has a previous financial year turnover below 20 lakh rupees; a big merchant has a turnover above 20 lakh. Rates listed for a small merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards (Visa, Mastercard, Maestro) 0.40%, UPI credit card and credit line on UPI 0.00% below 2,000 rupees and 1.99% above, credit cards 1.40% for grocery and kirana, 1.20% for tolls, government, utilities and education, 1.99% for other categories. Rates listed for a big merchant: UPI 0.00%, RuPay debit cards 0.00%, other debit cards 0.40% below 2,000 rupees and 0.90% above, UPI credit card and credit line on UPI 1.99%, credit cards the same category rates as a small merchant. Premium, corporate and international cards carry higher rates listed on the same page. The page says the monthly transaction limit depends on the documents a merchant provides, and lists free account setup and no annual maintenance charges. Source: https://business.paytm.com/pricing . Reviewed 2026-10-31. The page does not state device rental, security deposit or whether GST is added. A merchant's own plan can differ from the published standard plan and is shown in the Paytm for Business app. Do not promise a rate to a merchant; point to the official page."
+      },
+      {
+        "node_id": "pricing_online",
+        "title": "Online payment pricing: gateway and links",
+        "page_index": 8,
+        "summary": "No setup fee, no annual maintenance charge and no charge on UPI for the Payment Gateway.",
+        "text": "Paytm's pricing page says the All-In-One Payment Gateway charges no fee for integration, no annual maintenance charge and nothing on transactions made through UPI, with lifetime free charges on UPI and RuPay cards. Other payment sources carry a transaction charge that varies by source; the full online rate card is at https://www.paytmpayments.com/pricing . The gateway supports credit and debit cards, UPI apps, net banking, EMI and wallets. Payment Links and invoices are listed as other online products. Source: https://business.paytm.com/pricing . Reviewed 2026-10-31. This snapshot does not include the online rate card itself, approval, activation time or settlement timing for online payments. Confirm with Paytm."
+      },
+      {
+        "node_id": "settlement",
+        "title": "Settlement: when money reaches the bank",
+        "page_index": 9,
+        "summary": "QR payments settle to the bank the next business day by default, or instantly on request.",
+        "text": "Paytm's All-in-One QR page says merchants get automatic settlement in their bank the next business day, or instantly in a few clicks, and that the Paytm for Business app shows payments and bank settlements, lets the merchant initiate refunds, manage disputes and download reports. The card machine page lists a choice of batch settlement, on-demand settlement and instant settlement. Paytm's Settlements page describes batch settlement on a T+n cycle, same-day settlement, on-demand settlement available 24x7, and real-time settlement, with status visible on dashboards, reports and notifications. Sources: https://business.paytm.com/retail and https://business.paytm.com/settlement . Reviewed 2026-10-31. Which settlement options a merchant has depends on its account and plan. This snapshot does not establish a fee for instant settlement or a guaranteed time for a particular payment. A delayed settlement must be checked in the app or with Paytm support, never on this call."
+      },
+      {
+        "node_id": "soundbox_models",
+        "title": "Soundbox models, languages and battery",
+        "page_index": 10,
+        "summary": "Current Soundbox range: 4G models, card tap, display, solar, music; 11 regional languages.",
+        "text": "Paytm's Soundbox pages list these current models: Soundbox Double Battery (about 30 days of battery), Solar Soundbox (solar charging), NFC Card Soundbox (accepts contactless card and mobile taps, merchant display, numeric keypad), Display Soundbox (shows each payment on a screen), Soundbox 9 (compact, 5W speaker), Soundbox 7, Pocket Soundbox 2 (pocket size with a lanyard and torch), Music Soundbox (Bluetooth music) and Soundbox 3. Current models use 4G and Type C charging. Paytm says Soundbox is available in 11 regional languages and gives up to 30 days of battery backup, with battery life depending on the device. To order, a merchant opens the QR accessories section of the Paytm for Business app, or calls 0120-4440440; the Soundbox is delivered ready to use. Sources: https://business.paytm.com/soundbox-devices , https://business.paytm.com/soundbox and https://business.paytm.com/support/how-do-i-order-my-soundbox-device . Reviewed 2026-10-31. The device pages show different battery figures for the same model in places, so give battery life only as a range and confirm the model. This snapshot does not establish Soundbox price, rental or availability."
+      },
+      {
+        "node_id": "soundbox_help",
+        "title": "Soundbox help: announcements, faults and damage",
+        "page_index": 11,
+        "summary": "What a Soundbox announces, how to replay, and where to report faults or damage.",
+        "text": "Paytm support says a Soundbox announces successful payments only; it does not announce failed or pending payments. A merchant can replay past payments by pressing the function key. The first generation Soundbox has no battery and must stay plugged in to a power socket. To change the announcement language, Paytm asks merchants to call the Business Helpdesk at 0120-4440440. For a damaged Soundbox, Paytm asks merchants to email smartretail.support@paytm.com with a photo and video of the damage. Physical damage and liquid damage are not covered by warranty. The Soundbox page lists a 24x7 service guarantee as a Soundbox benefit. Source: https://business.paytm.com/support/paytm-soundbox . Reviewed 2026-10-31. Do not troubleshoot hardware on a call beyond these steps; offer a technician visit or the official helpdesk."
+      },
+      {
+        "node_id": "card_machine_plans",
+        "title": "Card machine models and plan details",
+        "page_index": 12,
+        "summary": "Printer and non-printer card machines, EMI and international cards; plan and rental shown in the app.",
+        "text": "Paytm's card machine page lists a printer card machine (Android 11, 4G and 5 GHz Wi-Fi, printer and scanner) and a non-printer card machine for stores, restaurants and delivery businesses (Android, 4G and Wi-Fi, scanner). It describes brand and bank EMI, acceptance of 95 plus currencies with settlement in rupees, split settlement, shift management and tip collection. Paytm support says a merchant can see the card machine rental plan, security deposit or usage fee, and terms including the refund policy in the Paytm for Business app under Business Profile, EDC Details. Sources: https://business.paytm.com/pos-card-machine and https://business.paytm.com/support/how-can-i-check-my-plan-details-including-rental-and-charges-for-my-edc-machine . Reviewed 2026-10-31. This snapshot does not establish a rental amount, deposit amount or delivery time."
+      },
+      {
+        "node_id": "signup_kyc",
+        "title": "Sign-up, documents and KYC",
+        "page_index": 13,
+        "summary": "Free sign-up with a PAN and an own-name bank account; documents go only through official channels.",
+        "text": "Paytm support says a merchant needs a personal or business PAN and a bank account in their own name to sign up for Paytm for Business, and that plans with higher monthly limits need more documents, listed by Paytm. After becoming a merchant, KYC is not mandatory to accept payments, but Paytm highly recommends completing KYC at a Paytm authorised KYC point. The All-in-One QR is free from the Paytm for Business app: tap Show QR Code, download and print it, or order a QR sticker that is delivered in a few days and then activated by scanning it. Sources: https://business.paytm.com/support/what-are-the-documents-required-to-activate-my-paytm-for-business-account , https://business.paytm.com/support/do-i-require-kyc-to-start-accepting-payments-via-paytm and https://business.paytm.com/retail . Reviewed 2026-10-31. Chanakya never collects a PAN, bank detail or any document on a call; the merchant submits them only in the official app or at an authorised point."
+      },
+      {
+        "node_id": "merchant_safety",
+        "title": "Staying safe from payment fraud",
+        "page_index": 14,
+        "summary": "Paytm never asks for an OTP, PIN or password, and no PIN is needed to receive money.",
+        "text": "Paytm says users should never share an OTP, UPI PIN, password or login details with anyone, including people claiming to be from Paytm, a bank or the police, and that Paytm will never ask for them. No UPI PIN or password is ever needed to receive money: if someone asks for a PIN or OTP so that a payment can be received, it is a scam and the merchant should disconnect. Paytm describes real-time fraud detection that flags suspicious transactions. Sources: https://paytm.com/support/privacy-security/paytm-security-features-guide and https://paytm.com/support/money-transfers/paytm-safe-secure-money-transfer-tips . Reviewed 2026-10-31. Chanakya is an AI assistant and follows the same rule: it never asks for an OTP, PIN, CVV, password, card number or identity document."
+      },
+      {
+        "node_id": "support",
+        "title": "Getting help from Paytm",
+        "page_index": 15,
+        "summary": "Official helpdesk number and in-app query route for QR, Soundbox and card machine.",
+        "text": "Paytm's contact page says merchants with queries about the QR code, Soundbox, card machine or becoming a Paytm merchant can call the IVR helpdesk at 0120-4440440, or raise a query in the Paytm for Business app. Payment Gateway queries go through https://dashboard.paytmpayments.com/login/ . The pricing page lists 24x7 merchant support. Source: https://business.paytm.com/contact-us . Reviewed 2026-10-31. A merchant can always check a caller's claims by calling this official number themselves."
       }
     ]
   },

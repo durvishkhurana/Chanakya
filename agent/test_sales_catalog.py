@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -12,10 +13,14 @@ class SalesCatalogTests(unittest.TestCase):
         store = DocumentStore({"Paytm_Products": json.loads(path.read_text())})
         index = BatchPageIndex(store)
         sources = [target for target in store.targets.values() if target.kind == "source"]
-        self.assertEqual(len(sources), 6)
+        self.assertEqual(len(sources), 15)
         seen = set()
-        result = index.read({"source_ids": [source.id for source in sources]}, seen, 32000)
-        self.assertEqual(len(result.evidence), 6)
-        self.assertTrue(all("https://" in item["text"] for item in result.evidence))
-        self.assertTrue(all("2026-10-26" in item["text"] for item in result.evidence))
-        self.assertTrue(any("without a website" in item["text"] for item in result.evidence))
+        evidence = []
+        for start in range(0, len(sources), 6):  # the tool reads at most six sources per request
+            evidence += index.read({"source_ids": [s.id for s in sources[start:start + 6]]}, seen, 32000).evidence
+        self.assertEqual(len(evidence), 15)
+        self.assertTrue(all(re.search(r"Source[^:.]*: https://", item["text"]) for item in evidence))
+        self.assertTrue(all(re.search(r"Reviewed 2026-10-(26|31)\.", item["text"]) for item in evidence))
+        self.assertTrue(any("without a website" in item["text"] for item in evidence))
+        self.assertTrue(any("never ask" in item["text"] for item in evidence))
+        self.assertFalse(any("—" in item["text"] for item in evidence), "spoken text never uses an em dash")
