@@ -64,7 +64,8 @@ function LiveCall({ missionId }) {
     api(`/api/calls/${missionId}/status`).then((d) => setScenarioRunning(d.scenario_running)).catch(() => setScenarioRunning(false));
   }, [missionId, events.length]);
 
-  const canSpeak = mission && !FINISHED.has(mission.state) && !scenarioRunning;
+  const canSpeak = mission && !scenarioRunning;
+  const finished = !!mission && FINISHED.has(mission.state);
 
   return <AppShell current="/call/live" connected={connected}>
     <div className="title-row">
@@ -76,7 +77,7 @@ function LiveCall({ missionId }) {
     </div>
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>{error}</span><Link className="text-action" href="/missions">Back to Mission control</Link></div>}
     {!error && <CallView events={events} mission={mission} newSince={Infinity}
-      composer={canSpeak ? <SayAsMerchant missionId={missionId} /> : null} />}
+      composer={canSpeak ? <SayAsMerchant missionId={missionId} finished={finished} /> : null} />}
     {mission && scenarioRunning && <p className="note" style={{ marginTop: 24 }}>A demo scenario is playing on this mission. You can speak on it once the scenario has finished.</p>}
     {mission && <PhoneLink missionId={missionId} />}
   </AppShell>;
@@ -85,7 +86,7 @@ function LiveCall({ missionId }) {
 const VOICE_LABELS = { connecting: "Connecting the microphone…", listening: "Hold the mic and speak", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Voice stopped" };
 
 /** Type what the merchant says, or hold the mic and say it; Chanakya answers on this mission and the call above updates from the ledger. */
-function SayAsMerchant({ missionId }) {
+function SayAsMerchant({ missionId, finished }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -93,6 +94,11 @@ function SayAsMerchant({ missionId }) {
   const [voiceOpen, setVoiceOpen] = useState(false);
   const voice = useVoiceCall({ isOpen: voiceOpen, onClose: () => setVoiceOpen(false), path: `/api/calls/${missionId}/voice`, modal: false, pushToTalk: true });
   const voiceFailed = voiceOpen && voice.callState === "error";
+  // When the call ends, the voice session stays open until Chanakya's last line has been spoken.
+  const replying = ["processing", "thinking", "speaking"].includes(voice.callState);
+  useEffect(() => {
+    if (finished && voiceOpen && !replying) setVoiceOpen(false);
+  }, [finished, voiceOpen, replying]);
   function hold(e) {
     e.preventDefault();
     if (voiceFailed) return;
@@ -106,6 +112,9 @@ function SayAsMerchant({ missionId }) {
     try { await api(`/api/calls/${missionId}/say`, { method: "POST", body: { text } }); setText(""); setError(""); }
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
+  }
+  if (finished) {
+    return voiceOpen ? <p className="voice-status" role="status"><b>{VOICE_LABELS[voice.callState] || "Call ended"}</b></p> : null;
   }
   return <form className="say-box" onSubmit={send}>
     <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant: type a line, or hold the mic and talk</label>
