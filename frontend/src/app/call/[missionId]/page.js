@@ -78,35 +78,27 @@ function LiveCall({ missionId }) {
     {!error && <CallView events={events} mission={mission} newSince={Infinity} />}
     {mission && scenarioRunning && <p className="note" style={{ marginTop: 24 }}>A demo scenario is playing on this mission. You can speak on it once the scenario has finished.</p>}
     {canSpeak && <SayAsMerchant missionId={missionId} />}
-    {canSpeak && <VoiceOnMission missionId={missionId} />}
     {mission && <PhoneLink missionId={missionId} />}
   </AppShell>;
 }
 
-/** Speak as the merchant through the microphone; the call runs on this mission, so the view above fills live. */
-function VoiceOnMission({ missionId }) {
-  const [open, setOpen] = useState(false);
-  return open ? <VoicePanel missionId={missionId} onClose={() => setOpen(false)} />
-    : <div className="panel" style={{ marginTop: 12 }}><button className="btn" onClick={() => setOpen(true)}>Talk by voice instead</button></div>;
-}
+const VOICE_LABELS = { connecting: "Connecting the microphone…", listening: "Hold the mic and speak", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Voice stopped" };
 
-function VoicePanel({ missionId, onClose }) {
-  const call = useVoiceCall({ isOpen: true, onClose, path: `/api/calls/${missionId}/voice`, modal: false });
-  const labels = { connecting: "Connecting…", listening: "Chanakya is listening", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Call stopped" };
-  return <div className="panel" role="status" style={{ marginTop: 12, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-    <b>{labels[call.callState] || call.callState}</b>
-    <span className="meta num">{call.duration}</span>
-    {call.callState === "error" && <span className="meta">{call.connectionError}</span>}
-    <span ref={call.messagesContainerRef} hidden />
-    <button className="btn" ref={call.endButtonRef} onClick={call.handleEndCall} style={{ marginLeft: "auto" }}>End voice call</button>
-  </div>;
-}
-
-/** Type what the merchant says; Chanakya answers on this mission and the call above updates from the ledger. */
+/** Type what the merchant says, or hold the mic and say it; Chanakya answers on this mission and the call above updates from the ledger. */
 function SayAsMerchant({ missionId }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // The first press opens a voice session on this mission; while it is open, only held speech is sent.
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const voice = useVoiceCall({ isOpen: voiceOpen, onClose: () => setVoiceOpen(false), path: `/api/calls/${missionId}/voice`, modal: false, pushToTalk: true });
+  const voiceFailed = voiceOpen && voice.callState === "error";
+  function hold(e) {
+    e.preventDefault();
+    if (voiceFailed) return;
+    if (!voiceOpen) setVoiceOpen(true);
+    voice.holdMic();
+  }
   async function send(e) {
     e.preventDefault();
     if (!text.trim()) return;
@@ -116,10 +108,37 @@ function SayAsMerchant({ missionId }) {
     finally { setBusy(false); }
   }
   return <form className="panel" onSubmit={send} style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
-    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant (text stands in for the phone line)</label>
+    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant: type a line, or hold the mic and talk</label>
     <input id="say" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={text} maxLength={500}
       onChange={(e) => setText(e.target.value)} placeholder="Haan ji, boliye?" disabled={busy} />
+    <button
+      type="button"
+      className={`mic-btn${voice.talking ? " talking" : ""}`}
+      aria-label={voice.talking ? "Release to send" : "Hold to talk"}
+      aria-pressed={voice.talking}
+      title="Hold to talk"
+      disabled={voiceFailed}
+      onPointerDown={hold}
+      onPointerUp={voice.releaseMic}
+      onPointerLeave={() => voice.talking && voice.releaseMic()}
+      onPointerCancel={voice.releaseMic}
+      onKeyDown={(e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) hold(e); }}
+      onKeyUp={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); voice.releaseMic(); } }}
+    ><MicIcon /></button>
     <button className="btn primary" disabled={busy || !text.trim()}>{busy ? "Chanakya is thinking…" : "Say"}</button>
+    {voiceOpen && <div className="voice-status" role="status" style={{ flexBasis: "100%" }}>
+      <b>{voice.talking ? "Listening, release to send" : VOICE_LABELS[voice.callState] || voice.callState}</b>
+      <span className="meta num">{voice.duration}</span>
+      {voiceFailed && <span className="meta">{voice.connectionError}</span>}
+      <span ref={voice.messagesContainerRef} hidden />
+      <button type="button" className="text-action" onClick={voice.handleEndCall}>Turn off the mic</button>
+    </div>}
     {error && <p className="error" role="alert" style={{ flexBasis: "100%" }}>{error}</p>}
   </form>;
+}
+
+function MicIcon() {
+  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+  </svg>;
 }
