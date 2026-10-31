@@ -75,9 +75,9 @@ function LiveCall({ missionId }) {
       <div className="actions"><Link className="btn" href={`/missions?m=${missionId}`}>Open in Mission control</Link></div>
     </div>
     {error && <div className="error" role="alert" style={{ marginBottom: 24 }}><span>{error}</span><Link className="text-action" href="/missions">Back to Mission control</Link></div>}
-    {!error && <CallView events={events} mission={mission} newSince={Infinity} />}
+    {!error && <CallView events={events} mission={mission} newSince={Infinity}
+      composer={canSpeak ? <SayAsMerchant missionId={missionId} /> : null} />}
     {mission && scenarioRunning && <p className="note" style={{ marginTop: 24 }}>A demo scenario is playing on this mission. You can speak on it once the scenario has finished.</p>}
-    {canSpeak && <SayAsMerchant missionId={missionId} />}
     {mission && <PhoneLink missionId={missionId} />}
   </AppShell>;
 }
@@ -107,7 +107,7 @@ function SayAsMerchant({ missionId }) {
     catch (err) { setError(err.message); }
     finally { setBusy(false); }
   }
-  return <form className="panel" onSubmit={send} style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
+  return <form className="say-box" onSubmit={send}>
     <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant: type a line, or hold the mic and talk</label>
     <input id="say" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={text} maxLength={500}
       onChange={(e) => setText(e.target.value)} placeholder="Haan ji, boliye?" disabled={busy} />
