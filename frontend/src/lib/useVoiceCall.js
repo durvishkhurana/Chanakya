@@ -4,6 +4,31 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { wsBase } from "./chanakyaApi";
 import { createVoicePlayback, VOICE_PROTOCOL_VERSION } from "./voicePlayback.mjs";
 
+const PLAYBACK_RATE = 22050;
+let primedPlayback = null;
+
+/** Start the reply speaker inside the user's tap. Phone browsers keep an AudioContext created later (on the first
+ * reply) muted, so call this from the click handler that opens a call. */
+export function primeVoiceAudio() {
+  if (primedPlayback && primedPlayback.state !== "closed") return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  primedPlayback = new AudioCtx({ sampleRate: PLAYBACK_RATE });
+  primedPlayback.resume().catch(() => {});
+  // Playing one silent sample is what unlocks output on iOS Safari.
+  const silent = primedPlayback.createBufferSource();
+  silent.buffer = primedPlayback.createBuffer(1, 1, PLAYBACK_RATE);
+  silent.connect(primedPlayback.destination);
+  silent.start(0);
+}
+
+function playbackContext() {
+  const context = primedPlayback;
+  primedPlayback = null;
+  if (context && context.state !== "closed") return context;
+  return new (window.AudioContext || window.webkitAudioContext)({ sampleRate: PLAYBACK_RATE });
+}
+
 function float32ToPcm16(float32Array) {
   const len = float32Array.length;
   const buffer = new ArrayBuffer(len * 2);
@@ -182,6 +207,7 @@ const startAudioCapture = useCallback((stream, ws) => {
     if (!activeRef.current) return;
     const sessionVersion = sessionVersionRef.current;
     const isCurrentSession = () => activeRef.current && sessionVersionRef.current === sessionVersion;
+    primeVoiceAudio(); // fallback when the opener did not: still inside Chrome's short activation window
     const failCall = (message) => {
       if (!isCurrentSession()) return;
       releaseCallResources();
@@ -210,10 +236,11 @@ const startAudioCapture = useCallback((stream, ws) => {
       let utteranceId = 0;
       let assistantMsgId = null;
       const playback = createVoicePlayback({
-        createContext: () => new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 22050 }),
+        createContext: playbackContext,
         notify: (type, responseId, currentUtteranceId) => {
           if (isCurrentSession() && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type, response_id: responseId, utterance_id: currentUtteranceId }));
+            ws.send(JSON.stringify({ type, response_id: responseId, utterance_id: currentUtteranceId,
+              audio: playbackRef.current?.audioState }));
           }
         },
         onState: (state) => {

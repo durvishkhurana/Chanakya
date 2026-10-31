@@ -33,7 +33,8 @@ number in `.env`.
 2. On the laptop open `/missions`, select **Load demo signals**, open a mission's live call (`/call/<mission id>`).
 3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then tap
    **Talk by voice instead** and allow the microphone.
-4. Speak as the merchant. The laptop's Live Call View fills as you talk.
+4. Speak as the merchant. The laptop's Live Call View fills as you talk. Turn the phone's volume up; on an iPhone
+   also turn off silent mode, which mutes browser audio.
 5. When done, select **Save run log**, then **Disconnect phone**. Stopping the backend also closes the link.
 
 While the link is open anyone who has its URL can open the demo and use your API keys, so disconnect after each

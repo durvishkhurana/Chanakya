@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import Doors from "../components/landing/Doors";
 import TryDemo from "../components/landing/TryDemo";
 import { STAGES, stageWeights } from "../lib/landingData.mjs";
-import useVoiceCall from "../lib/useVoiceCall";
+import useVoiceCall, { primeVoiceAudio } from "../lib/useVoiceCall";
 import "./landing.css";
 
 const display = League_Spartan({ subsets: ["latin"], weight: ["700"], variable: "--font-display", display: "swap" });
@@ -41,7 +41,7 @@ export default function Home() {
       <div className="tile links"><nav aria-label="Main">
         <a href="#try">Try it</a><a href="#how">How it works</a><Link href="/missions">Mission control</Link><a href="#faq">Questions</a>
       </nav></div>
-      <button className="tile action" onClick={() => setInCall(true)}>Talk to Chanakya</button>
+      <button className="tile action" onClick={() => { primeVoiceAudio(); setInCall(true); }}>Talk to Chanakya</button>
     </header>
 
     <main id="main">
@@ -120,7 +120,7 @@ export default function Home() {
           <div>
             <h2 id="cta-title" className="display">Hear it for yourself</h2>
             <p>Talk to Chanakya in Hindi or English, right in your browser. Your microphone stops the moment you end the call.</p>
-            <button className="btn btn-dark" onClick={() => setInCall(true)}>Talk to Chanakya</button>
+            <button className="btn btn-dark" onClick={() => { primeVoiceAudio(); setInCall(true); }}>Talk to Chanakya</button>
           </div>
           <p className="prompt"><span>Try saying</span>“Meri kirana ki dukaan hai. Soundbox kya karta hai, aur kitna katega?”</p>
         </div>
@@ -139,7 +139,7 @@ export default function Home() {
         <div className="contact"><span>Built by Team Legacy, Thapar University</span><span>For the Paytm AI Hackathon, Track 3</span><span>Independent project, not affiliated with Paytm. Business systems in this demo are labelled mocks.</span></div>
       </div>
       <p className="credits">Pictures show the merchants’ world, not Chanakya’s customers: <a href="https://commons.wikimedia.org/wiki/File:Species_shop_in_Chandni_Chowk.jpg">“Species shop in Chandni Chowk”</a> and <a href="https://commons.wikimedia.org/wiki/File:Shop_in_Chandni_Chowk_3.jpg">“Shop in Chandni Chowk 3”</a> by SimónK, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Chandni_Chowk,_Delhi_(2278255256).jpg">“Chandni Chowk, Delhi”</a> by Dan from Brussels, <a href="https://creativecommons.org/licenses/by-sa/2.0">CC BY-SA 2.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Sangam_General_Store_Chinawal.jpg">“Sangam General Store Chinawal”</a> by abhiriksh, <a href="https://creativecommons.org/licenses/by-sa/3.0">CC BY-SA 3.0</a>; all via Wikimedia Commons, shown in greyscale or cropped.</p>
-      <div className="last-row"><span>© 2026 Team Legacy</span><button className="btn btn-dark" onClick={() => setInCall(true)}>Talk to Chanakya</button></div>
+      <div className="last-row"><span>© 2026 Team Legacy</span><button className="btn btn-dark" onClick={() => { primeVoiceAudio(); setInCall(true); }}>Talk to Chanakya</button></div>
     </footer>
 
     {inCall && <VoiceSession onClose={() => setInCall(false)} />}
