@@ -17,6 +17,8 @@ COPY requirements.lock.txt ./
 RUN pip install --no-cache-dir -r requirements.lock.txt
 COPY --chown=user . .
 COPY --from=frontend --chown=user /app/frontend /app/frontend
+# /app itself stays root-owned; the ledger and run logs write under .state.
+RUN mkdir -p .state && chown user .state
 USER user
 
 # Public demo: missions and dashboards on, laptop-only demo tools, email and phone calls off.
