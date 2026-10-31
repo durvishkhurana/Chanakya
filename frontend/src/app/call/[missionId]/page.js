@@ -9,7 +9,7 @@ import { demoEvents } from "../../../components/call/demoFixture";
 import PhoneLink from "../../../components/call/PhoneLink";
 import AppShell from "../../../components/missions/AppShell";
 import { api, useMissionStream } from "../../../lib/chanakyaApi";
-import useVoiceCall from "../../../lib/useVoiceCall";
+import useVoiceCall, { primeVoiceAudio } from "../../../lib/useVoiceCall";
 import { FINISHED } from "../../../lib/missionView.mjs";
 
 export default function CallPage() {
@@ -96,7 +96,7 @@ function SayAsMerchant({ missionId }) {
   function hold(e) {
     e.preventDefault();
     if (voiceFailed) return;
-    if (!voiceOpen) setVoiceOpen(true);
+    if (!voiceOpen) { primeVoiceAudio(); setVoiceOpen(true); }
     voice.holdMic();
   }
   async function send(e) {

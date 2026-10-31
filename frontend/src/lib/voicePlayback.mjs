@@ -73,6 +73,8 @@ export function createVoicePlayback({ createContext, notify, onState, onAnalyser
     accepts,
     get responseId() { return responseId; },
     get paused() { return paused; },
+    /** The speaker's state for diagnostics, for example "running@22050"; "suspended" means the browser muted it. */
+    get audioState() { return context ? `${context.state}@${context.sampleRate}` : "none"; },
     get playing() { return sources.size > 0 && !paused; },
     begin(id) {
       if (disposed || !Number.isInteger(id) || id <= responseId) return false;
