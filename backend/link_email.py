@@ -53,7 +53,7 @@ def send(mail: EmailMessage) -> None:
     host, port = os.getenv("SMTP_HOST", "smtp.gmail.com"), int(os.getenv("SMTP_PORT", "587"))
     with smtplib.SMTP(host, port, timeout=20) as smtp:
         smtp.starttls()
-        smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
+        smtp.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"].replace(" ", ""))  # Google shows app passwords in groups of four
         smtp.send_message(mail)
 
 
