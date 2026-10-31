@@ -75,6 +75,9 @@ def test_consent_is_rebuilt_from_the_core_transcript_and_unlocks_the_action():
     bare = context(agent("Namaste, main ek AI assistant hoon.", greet), merchant("Haan"), agent("Link bhej doon?", ask),
                    merchant("Haan."))
     assert to_brain_state(bare).transcript.consents == []
+    plain_yes = context(agent("Namaste, main ek AI assistant hoon.", greet), merchant("Haan"),
+                        agent("Link bhej doon?", ask), merchant("Yes."))
+    assert to_brain_state(plain_yes).transcript.has_consent("send_onboarding_link")
     clear = context(agent("Namaste, main ek AI assistant hoon.", greet), merchant("Haan"), agent("Link bhej doon?", ask),
                     merchant("Haan, bhej do."))
     state = to_brain_state(clear)
