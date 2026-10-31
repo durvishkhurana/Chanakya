@@ -83,14 +83,14 @@ function LiveCall({ missionId }) {
   </AppShell>;
 }
 
-const VOICE_LABELS = { connecting: "Connecting the microphone…", listening: "Hold the mic and speak", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Voice stopped" };
+const VOICE_LABELS = { connecting: "Connecting the microphone…", listening: "Tap the mic and speak", processing: "One moment", thinking: "Chanakya is thinking", speaking: "Chanakya is speaking", error: "Voice stopped" };
 
-/** Type what the merchant says, or hold the mic and say it; Chanakya answers on this mission and the call above updates from the ledger. */
+/** Type what the merchant says, or tap the mic and say it; Chanakya answers on this mission and the call above updates from the ledger. */
 function SayAsMerchant({ missionId, finished }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // The first press opens a voice session on this mission; while it is open, only held speech is sent.
+  // The first tap opens a voice session on this mission; while it is open, speech is sent only while the mic is on.
   const [voiceOpen, setVoiceOpen] = useState(false);
   const voice = useVoiceCall({ isOpen: voiceOpen, onClose: () => setVoiceOpen(false), path: `/api/calls/${missionId}/voice`, modal: false, pushToTalk: true });
   const voiceFailed = voiceOpen && voice.callState === "error";
@@ -99,11 +99,10 @@ function SayAsMerchant({ missionId, finished }) {
   useEffect(() => {
     if (finished && voiceOpen && !replying) setVoiceOpen(false);
   }, [finished, voiceOpen, replying]);
-  function hold(e) {
-    e.preventDefault();
+  function tapMic() {
     if (voiceFailed) return;
     if (!voiceOpen) { primeVoiceAudio(); setVoiceOpen(true); }
-    voice.holdMic();
+    voice.toggleMic();
   }
   async function send(e) {
     e.preventDefault();
@@ -117,26 +116,21 @@ function SayAsMerchant({ missionId, finished }) {
     return voiceOpen ? <p className="voice-status" role="status"><b>{VOICE_LABELS[voice.callState] || "Call ended"}</b></p> : null;
   }
   return <form className="say-box" onSubmit={send}>
-    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant: type a line, or hold the mic and talk</label>
+    <label htmlFor="say" className="meta" style={{ flexBasis: "100%" }}>Speak as the merchant: type a line, or tap the mic and talk</label>
     <input id="say" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={text} maxLength={500}
       onChange={(e) => setText(e.target.value)} placeholder="Haan ji, boliye?" disabled={busy} />
     <button
       type="button"
       className={`mic-btn${voice.talking ? " talking" : ""}`}
-      aria-label={voice.talking ? "Release to send" : "Hold to talk"}
+      aria-label={voice.talking ? "Mute the mic" : "Tap to talk"}
       aria-pressed={voice.talking}
-      title="Hold to talk"
+      title={voice.talking ? "Tap to mute" : "Tap to talk"}
       disabled={voiceFailed}
-      onPointerDown={hold}
-      onPointerUp={voice.releaseMic}
-      onPointerLeave={() => voice.talking && voice.releaseMic()}
-      onPointerCancel={voice.releaseMic}
-      onKeyDown={(e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) hold(e); }}
-      onKeyUp={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); voice.releaseMic(); } }}
+      onClick={tapMic}
     ><MicIcon /></button>
     <button className="btn primary" disabled={busy || !text.trim()}>{busy ? "Chanakya is thinking…" : "Say"}</button>
     {voiceOpen && <div className="voice-status" role="status" style={{ flexBasis: "100%" }}>
-      <b>{voice.talking ? "Listening, release to send" : VOICE_LABELS[voice.callState] || voice.callState}</b>
+      <b>{voice.talking ? "Listening, tap the mic to mute" : VOICE_LABELS[voice.callState] || voice.callState}</b>
       <span className="meta num">{voice.duration}</span>
       {voiceFailed && <span className="meta">{voice.connectionError}</span>}
       <span ref={voice.messagesContainerRef} hidden />

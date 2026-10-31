@@ -39,7 +39,7 @@ number in `.env`.
    the mock systems forget what it wrote (the merchant's products go back to the seed), and a fresh copy waits in the
    queue.
 2. On the laptop open `/missions`, select **Load demo signals**, open a mission's live call (`/call/<mission id>`).
-3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then hold the
+3. Under **Demo tools** select **Connect phone** (up to 45 seconds). Scan the QR code with the phone, then tap the
    mic button and allow the microphone.
 4. Speak as the merchant. The laptop's Live Call View fills as you talk.
 5. When done, select **Save run log**, then **Disconnect phone**. Stopping the backend also closes the link.

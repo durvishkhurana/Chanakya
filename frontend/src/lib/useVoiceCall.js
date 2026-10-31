@@ -175,6 +175,8 @@ const startAudioCapture = useCallback((stream, ws) => {
   // Tear down every resource on end, errors, external close, or unmount.
   const releaseCallResources = useCallback(() => {
     activeRef.current = false;
+    micHeldRef.current = false;  // a tapped-on mic never stays live into the next session
+    setTalking(false);
     sessionVersionRef.current += 1;
     clearInterval(durationTimerRef.current);
     const ws = wsRef.current;
@@ -428,10 +430,10 @@ const startAudioCapture = useCallback((stream, ws) => {
     };
   }, [isOpen, modal, handleEndCall]);
 
-  const holdMic = useCallback(() => { micHeldRef.current = true; setTalking(true); }, []);
-  const releaseMic = useCallback(() => { micHeldRef.current = false; setTalking(false); }, []);
+  // Tap to talk: one tap opens the mic, the next mutes it.
+  const toggleMic = useCallback(() => { micHeldRef.current = !micHeldRef.current; setTalking(micHeldRef.current); }, []);
 
   return { callState, connectionError, callMessages, duration: formatDuration(callDuration),
     messagesContainerRef, endButtonRef, callOverlayRef, handleEndCall,
-    pushToTalk, talking, holdMic, releaseMic };
+    pushToTalk, talking, toggleMic };
 }
