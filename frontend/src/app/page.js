@@ -204,15 +204,11 @@ function VoiceSession({ onClose }) {
         className="push-to-talk"
         data-talking={call.talking}
         disabled={!ready}
-        onPointerDown={(e) => { e.preventDefault(); call.holdMic(); }}
-        onPointerUp={call.releaseMic}
-        onPointerLeave={() => call.talking && call.releaseMic()}
-        onPointerCancel={call.releaseMic}
-        onKeyDown={(e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); call.holdMic(); } }}
-        onKeyUp={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); call.releaseMic(); } }}
-      ><Microphone />{call.talking ? "Listening, release to send" : "Hold to talk"}</button>
+        aria-pressed={call.talking}
+        onClick={call.toggleMic}
+      ><Microphone />{call.talking ? "Listening, tap to mute" : "Tap to talk"}</button>
       <button className="end-call" ref={call.endButtonRef} onClick={call.handleEndCall}><Microphone end />End conversation</button>
-      <p className="session-footnote">Hold the mic button while you speak, then release. End the conversation to stop the microphone.</p>
+      <p className="session-footnote">Tap the mic to speak and tap it again to mute. End the conversation to stop the microphone.</p>
     </section>
   </div>;
 }

@@ -45,7 +45,7 @@ export default function PhoneLink({ missionId }) {
       {/* eslint-disable-next-line @next/next/no-img-element -- a generated data URL, nothing for next/image to optimise */}
       {qr && <img src={qr} width={220} height={220} alt={`QR code for ${phoneUrl}`} />}
       <div style={{ display: "grid", gap: 8, minWidth: 0 }}>
-        <span className="meta">Scan with the phone, allow the microphone, then hold the black mic button while you speak.</span>
+        <span className="meta">Scan with the phone, allow the microphone, then tap the black mic button to speak and tap it again to mute.</span>
         <a className="text-action" href={phoneUrl} target="_blank" rel="noreferrer" style={{ overflowWrap: "anywhere" }}>{phoneUrl}</a>
         <span className="meta">Anyone with this link can open the demo while it is connected.</span>
         <div><button className="btn" disabled={!!busy} onClick={() => run("stop", "/api/phone-link/stop", setLink)}>
