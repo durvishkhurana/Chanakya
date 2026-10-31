@@ -40,7 +40,7 @@
 
 ## Blockers / Risks
 
-- N4 done-when needs all demo scenarios with every neural setting on; `winback_device_fix` fails with `WORRY_SCORER=embedding` (head: rental cost 0.35, device issue 0.34)
+- N4 done-when needs all demo scenarios with every neural setting on; `winback_device_fix` fails with `WORRY_SCORER=embedding`. Cause (`docs/results/neural-worry-scorer/filler-diagnosis/`): filler lines such as "Achha." move the belief, because the tracker compares their near-zero scores with the base rates. Stopping that passes 6/6 demo scenarios but lowers embedding sales success (0.84/0.77 to 0.67/0.75 on held-out lines), so it is not merged
 - A9 has no consistent measured gain with either scorer
 - `gh` was installed on Durvish's machine, but its login had not completed, so the last two branches may be pushed without PRs; see the next step
 - Work merged at the owner's request without Gurnoor's review: F1, W0, W1, the two `core:` settings, the codebase fixes, B10's UI, B13, N4
@@ -52,5 +52,5 @@
 
 ## Recommended Next Step
 
-- Gurnoor: the hand-written test set, then retrain or re-check N1 and re-run the demo scenarios with `WORRY_SCORER=embedding` to close N4
+- Gurnoor: N4, check whether Chanakya keeps answering a worry it already answered once fillers stop moving the belief (patches in `docs/results/neural-worry-scorer/filler-diagnosis/`); then the hand-written N1 test set
 - I3: the backup video or the allowlisted phone call (`docs/PHONE_DEMO.md`)

@@ -1,0 +1,21 @@
+diff --git a/chanakya/brain/belief.py b/chanakya/brain/belief.py
+index c5ff47c..c1bfa01 100644
+--- a/chanakya/brain/belief.py
++++ b/chanakya/brain/belief.py
+@@ -154,12 +154,14 @@ class BayesianBeliefTracker:
+ 
+         A scorer with ``base_rates`` returns calibrated probabilities (the N1 embedding scorer). For it the likelihood
+         is the Bayesian odds ratio of the score against the worry's training base rate, with no tuned sharpening; a
+-        line scored at the base rates leaves the belief where it was.
++        line scored at the base rates leaves the belief where it was. Only a score above the base rate counts: the
++        head says whether this line voices a worry, and a line that voices none ("achha") says nothing about which
++        worry the merchant holds, so its near-zero scores must not reweigh the worries against each other.
+         """
+         boost = {cid: 1 + HESITATION_WEIGHT * cue.score if cid in UNSPOKEN_CONCERNS else 1.0 for cid in evidence}
+         base_rates = getattr(self.scorer, "base_rates", None)
+         if base_rates:
+-            return {cid: _odds(evidence[cid]) / _odds(base_rates.get(cid, 1 / len(evidence))) * boost[cid]
++            return {cid: max(1.0, _odds(evidence[cid]) / _odds(base_rates.get(cid, 1 / len(evidence)))) * boost[cid]
+                     for cid in evidence}
+         return {cid: (EPSILON + evidence[cid]) ** SHARPNESS * boost[cid] for cid in evidence}
+ 

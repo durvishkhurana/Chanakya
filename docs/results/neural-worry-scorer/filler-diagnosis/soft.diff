@@ -1,0 +1,43 @@
+diff --git a/chanakya/brain/belief.py b/chanakya/brain/belief.py
+index c5ff47c..4d5773f 100644
+--- a/chanakya/brain/belief.py
++++ b/chanakya/brain/belief.py
+@@ -154,12 +154,15 @@ class BayesianBeliefTracker:
+ 
+         A scorer with ``base_rates`` returns calibrated probabilities (the N1 embedding scorer). For it the likelihood
+         is the Bayesian odds ratio of the score against the worry's training base rate, with no tuned sharpening; a
+-        line scored at the base rates leaves the belief where it was.
++        line scored at the base rates leaves the belief where it was. The ratio is tempered by the line's top score:
++        the head says whether this line voices a worry, and a line that voices none ("achha") says little about
++        which worry the merchant holds, so its near-zero scores must barely reweigh the worries against each other.
+         """
+         boost = {cid: 1 + HESITATION_WEIGHT * cue.score if cid in UNSPOKEN_CONCERNS else 1.0 for cid in evidence}
+         base_rates = getattr(self.scorer, "base_rates", None)
+         if base_rates:
+-            return {cid: _odds(evidence[cid]) / _odds(base_rates.get(cid, 1 / len(evidence))) * boost[cid]
++            voiced = max(evidence.values(), default=0.0)
++            return {cid: (_odds(evidence[cid]) / _odds(base_rates.get(cid, 1 / len(evidence)))) ** voiced * boost[cid]
+                     for cid in evidence}
+         return {cid: (EPSILON + evidence[cid]) ** SHARPNESS * boost[cid] for cid in evidence}
+ 
+diff --git a/chanakya/brain/tests/test_belief.py b/chanakya/brain/tests/test_belief.py
+index ff75021..3ce90e6 100644
+--- a/chanakya/brain/tests/test_belief.py
++++ b/chanakya/brain/tests/test_belief.py
+@@ -167,6 +167,16 @@ def test_a_confident_calibrated_score_moves_the_belief_to_that_worry():
+     assert after.probabilities["rental_cost"] > 0.5
+ 
+ 
++def test_a_line_that_voices_no_worry_does_not_reweigh_the_worries():
++    # "Achha" scores every worry below its base rate, some less far below than others; that is noise, not evidence.
++    prior = BANK.priors[TriggerType.CALLBACK_REQUEST]
++    noise = {cid: 0.005 for cid in BANK.ids} | {"setup_hassle": 0.05}
++    tracker = BayesianBeliefTracker(BANK, scorer=CalibratedStub(noise), decay=0.0)
++    start = tracker.start(prior)
++    after = run(tracker, prior, merchant("Achha."))
++    assert all(abs(after.probabilities[c] - start.probabilities[c]) < 0.02 for c in BANK.ids)
++
++
+ def test_scorers_without_base_rates_keep_the_tuned_lexical_likelihood():
+     tracker = BayesianBeliefTracker(BANK)
+     cue = hesitation(merchant("kiraya"))
