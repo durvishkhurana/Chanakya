@@ -30,3 +30,11 @@
 
 @media (max-width: 1180px) { .cx .call-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 860px) { .cx .branch { grid-template-columns: minmax(0, 1fr) 72px; } .cx .branch .track { grid-column: 1 / -1; grid-row: 2; } .cx .turn { max-width: 100%; } }
+
+/* Hold-to-talk mic on the live call view: black when idle, red while held. */
+.cx .mic-btn { flex: none; width: var(--control-height); height: var(--control-height); border-radius: 50%; border: 0; background: #111; color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; touch-action: none; user-select: none; transition: transform .08s ease, box-shadow .15s ease, background-color .15s ease; }
+.cx .mic-btn:hover:not(:disabled) { background: #333; }
+.cx .mic-btn.talking { background: #a6463b; transform: scale(1.08); box-shadow: 0 0 0 6px #a6463b33; }
+.cx .mic-btn:disabled { opacity: .4; cursor: not-allowed; }
+.cx .mic-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cx .voice-status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
